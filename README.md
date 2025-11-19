@@ -1,3 +1,3 @@
 # Beach-Circle
 
-Welcome to Beach Circle
+Welcome to Beach Circle.
