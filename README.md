@@ -9,3 +9,7 @@ git checkout -b branchnamehere
 
 view which branch is on:
 git branch
+
+git fetch
+
+git pull
