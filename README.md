@@ -10,7 +10,6 @@ git checkout -b branchnamehere
 view which branch is on:
 git branch
 
-
 how to make a venv:
 python -m venv beachcircle_venv
 
