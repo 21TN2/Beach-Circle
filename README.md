@@ -2,6 +2,30 @@
 
 Welcome to Beach Circle.
 
+
+Demo check:
+
+Theresa:  
+
+Tiffany:
+
+Giselle:
+
+Rey:
+
+Josue:
+
+
+
+
+
+
+
+
+
+
+
+
 Git commands:
 
 Make new branch and switch to it:
