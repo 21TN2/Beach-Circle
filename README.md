@@ -11,7 +11,7 @@ Tiffany:
 
 Giselle:
 
-Rey: test
+Rey: 
 
 Josue:
 
