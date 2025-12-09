@@ -7,7 +7,7 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-#add a name and email to demo_test_users table :D
+#add a name and email to demo_test_users table :D hello
 def add_user(name, email): 
     db.collection("demo_test_users").add({
         "name": name,
