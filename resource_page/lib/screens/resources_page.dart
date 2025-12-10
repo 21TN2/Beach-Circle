@@ -20,6 +20,8 @@ class _ResourcesPageState extends State<ResourcesPage> {
   bool advisingOpen = false;
   bool calendarOpen = false;
   bool catalogOpen = false;
+  bool enrollmentOpen = false;
+  bool helpcenterOpen = false;
 
   //This is the current text in the search query
   String _searchQuery = '';
@@ -60,6 +62,8 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const calendarUrl =
         'https://www.csulb.edu/academic-affairs/academic-affairs-calendar';
     const catalogUrl = 'http://catalog.csulb.edu/';
+    const enrollmentUrl = 'https://www.csulb.edu/enrollment-services';
+    const helpcenterUrl = 'https://www.csulb.edu/information-technology';
 
     // ---------- SEARCH MATCHES -------------------------------------
     //Check which sub-resources match the query, this is to search the resources
@@ -68,6 +72,8 @@ class _ResourcesPageState extends State<ResourcesPage> {
     final showAdvising = _matchesQuery('Advising', advisingUrl);
     final showCalendar = _matchesQuery('Academic Calendar', calendarUrl);
     final showCatalog = _matchesQuery('Class Catalog', catalogUrl);
+    final showEnrollment = _matchesQuery('Enrollment Service', enrollmentUrl);
+    final showHelpcenter = _matchesQuery('Help Center', helpcenterUrl);
 
     // Auto-expand Resource Title when searching
     final showAcademicsExpanded = academicsExpanded || _searchQuery.isNotEmpty;
@@ -450,7 +456,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             child: Row(
                               children: [
                                 Icon(
-                                  calendarOpen ? Icons.remove : Icons.add,
+                                  catalogOpen ? Icons.remove : Icons.add,
                                   size: 24,
                                 ),
                                 const SizedBox(width: 12),
@@ -487,8 +493,135 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
+                // ------------------------  Enrollment ---------------------------------------------
+                if (showEnrollment)
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              enrollmentOpen = !enrollmentOpen;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  enrollmentOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Enrollment',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (enrollmentOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            onTap: () => _openLink(enrollmentUrl),
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                enrollmentUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                // ------------------------ Help Center --------------------------------------------
+                if (showHelpcenter)
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              helpcenterOpen = !helpcenterOpen;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  helpcenterOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Help Center',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (helpcenterOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            onTap: () => _openLink(helpcenterUrl),
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                helpcenterUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 //-------If resources don't show up in the search bar -------------------------------
-                if (!showTutoring && !showAdvising && !showCalendar)
+                if (!showTutoring &&
+                    !showAdvising &&
+                    !showCalendar &&
+                    !showCatalog &&
+                    !showEnrollment &&
+                    !showHelpcenter)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
