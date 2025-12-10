@@ -13,29 +13,28 @@ class ResourcesPage extends StatefulWidget {
 
 //Page Details
 class _ResourcesPageState extends State<ResourcesPage> {
-
   //This is for expanding the card
   //Academics Section
-  bool academicsExpanded = false; 
-  bool tutoringOpen = false; 
+  bool academicsExpanded = false;
+  bool tutoringOpen = false;
   bool advisingOpen = false;
   bool calendarOpen = false;
+  bool catalogOpen = false;
 
   //This is the current text in the search query
   String _searchQuery = '';
 
   //Allows the url to open
   Future<void> _openLink(String url) async {
-
     //Turns string into url
     final uri = Uri.parse(url);
 
     //Opens the browser, if it fails an error message will pop up
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
       }
     }
   }
@@ -52,7 +51,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-// ---------- URLs -----------------------------------------------
+    // ---------- URLs -----------------------------------------------
     //URL links from specific resources
     //Academic Section
     const tutoringUrl =
@@ -60,22 +59,22 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const advisingUrl = 'https://www.csulb.edu/undergraduate-advising';
     const calendarUrl =
         'https://www.csulb.edu/academic-affairs/academic-affairs-calendar';
+    const catalogUrl = 'http://catalog.csulb.edu/';
 
- // ---------- SEARCH MATCHES -------------------------------------
+    // ---------- SEARCH MATCHES -------------------------------------
     //Check which sub-resources match the query, this is to search the resources
     //Academic Section
     final showTutoring = _matchesQuery('Tutoring', tutoringUrl);
     final showAdvising = _matchesQuery('Advising', advisingUrl);
-    final showCalendar =
-        _matchesQuery('Academic Calendar', calendarUrl);
+    final showCalendar = _matchesQuery('Academic Calendar', calendarUrl);
+    final showCatalog = _matchesQuery('Class Catalog', catalogUrl);
 
     // Auto-expand Resource Title when searching
     final showAcademicsExpanded = academicsExpanded || _searchQuery.isNotEmpty;
-//------------------------------------------------------------------
+    //------------------------------------------------------------------
 
     //Page Set up
     return Scaffold(
-
       //Title
       appBar: AppBar(
         title: const Text('Resources4U'),
@@ -101,7 +100,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-
               // Page header
               Text(
                 'Find the right campus resources fast.',
@@ -137,9 +135,9 @@ class _ResourcesPageState extends State<ResourcesPage> {
               //The space in between cards
               const SizedBox(height: 16),
 
-// ============================ ACADEMICS SECTION ===========================
-    
-    //------------------Academic Card(Main Card)---------------
+              // ============================ ACADEMICS SECTION ===========================
+
+              //------------------Academic Card(Main Card)---------------
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -150,7 +148,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
                     setState(() {
-
                       //Allows the Card to expand
                       academicsExpanded = !academicsExpanded;
                     });
@@ -170,12 +167,13 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             color: Colors.yellow.shade100,
                             shape: BoxShape.circle,
                           ),
-                          
+
                           //Custom Icon
                           child: const Icon(
-                            Icons.school, 
+                            Icons.school,
                             color: Colors.black,
-                            size: 24),
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 16),
 
@@ -214,19 +212,18 @@ class _ResourcesPageState extends State<ResourcesPage> {
                   ),
                 ),
               ),
-        //------------------Academic card ends here-----------------------------
+              //------------------Academic card ends here-----------------------------
               const SizedBox(height: 8),
 
-    //-------------------------------Sub Section Starting----------------------------------
+              //-------------------------------Sub Section Starting----------------------------------
 
               //Shows the sub-section of Academics(Tutoring, Calendar, etc.)
               if (showAcademicsExpanded) ...[
                 const SizedBox(height: 4),
 
-        // -------------------- TUTORING -------------------------------------------
+                // -------------------- TUTORING -------------------------------------------
                 if (showTutoring)
-
-                //Card Details
+                  //Card Details
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
@@ -239,7 +236,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
                             setState(() {
-
                               //Allows tutoring to be opened
                               tutoringOpen = !tutoringOpen;
                             });
@@ -254,7 +250,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             child: Row(
                               children: [
                                 Icon(
-
                                   //Add icon(Open) and subtract(Close)
                                   tutoringOpen ? Icons.remove : Icons.add,
                                   size: 24,
@@ -283,8 +278,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         if (tutoringOpen) ...[
                           const Divider(height: 1),
                           InkWell(
-
-                            //Shows the link and allows it to be opened 
+                            //Shows the link and allows it to be opened
                             onTap: () => _openLink(tutoringUrl),
 
                             //Layering
@@ -307,7 +301,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                 //Closes the card and adds the spacing
                 if (showTutoring) const SizedBox(height: 8),
 
-      // ---------------------- ADVISING --------------------------------------
+                // ---------------------- ADVISING --------------------------------------
                 if (showAdvising)
                   Card(
                     elevation: 2,
@@ -370,7 +364,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                   ),
                 if (showAdvising) const SizedBox(height: 8),
 
-      // ----------------------------- ACADEMIC CALENDAR ---------------------------
+                // ----------------------------- ACADEMIC CALENDAR ---------------------------
                 if (showCalendar)
                   Card(
                     elevation: 2,
@@ -431,7 +425,69 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
-    //-------If resources don't show up in the search bar -------------------------------
+
+                /// --------------------- CLASS CATALOG --------------------------------------------
+                if (showCatalog)
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              catalogOpen = !catalogOpen;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  calendarOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Class Catalog',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (catalogOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            onTap: () => _openLink(catalogUrl),
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                catalogUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                //-------If resources don't show up in the search bar -------------------------------
                 if (!showTutoring && !showAdvising && !showCalendar)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -443,193 +499,193 @@ class _ResourcesPageState extends State<ResourcesPage> {
                     ),
                   ),
               ],
-//==================================End of Aademic Section============================================================
+              //==================================End of Academic Section============================================================
 
-//Paste Here For new sections 
+              //Paste Here For new sections
 
-// // ============================Template ===========================
-    
-//     //------------------Main Card------------------
-//               Card(
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(16),
-//                 ),
-//                 elevation: 3,
+              // // ============================Template ===========================
 
-//                 child: InkWell(
-//                   borderRadius: BorderRadius.circular(16),
-//                   onTap: () {
-//                     setState(() {
+              //     //------------------Main Card------------------
+              //               Card(
+              //                 shape: RoundedRectangleBorder(
+              //                   borderRadius: BorderRadius.circular(16),
+              //                 ),
+              //                 elevation: 3,
 
-//                       //Allows the Card to expand
-//                       (Resource Name)Expanded = !(Resource name)Expanded;
-//                     });
-//                   },
+              //                 child: InkWell(
+              //                   borderRadius: BorderRadius.circular(16),
+              //                   onTap: () {
+              //                     setState(() {
 
-//                   //Layering Card
-//                   child: Padding(
-//                     padding: const EdgeInsets.symmetric(
-//                       horizontal: 16,
-//                       vertical: 18,
-//                     ),
-//                     child: Row(
-//                       children: [
-//                         Container(
-//                           padding: const EdgeInsets.all(10),
-//                           decoration: BoxDecoration(
-//                             color: Colors.yellow.shade100,
-//                             shape: BoxShape.circle,
-//                           ),
-                          
-//                           //Custom Icon
-//                           child: const Icon(
-//                             Icons.(Icon name), 
-//                             color: Colors.(color),
-//                             size: (num size)),
-//                         ),
-//                         const SizedBox(width: 16),
+              //                       //Allows the Card to expand
+              //                       (Resource Name)Expanded = !(Resource name)Expanded;
+              //                     });
+              //                   },
 
-//                         //Academic Card Title
-//                         Expanded(
-//                           child: Column(
-//                             crossAxisAlignment: CrossAxisAlignment.start,
-//                             children: [
-//                               Text(
-//                                 '(message)',
-//                                 style: theme.textTheme.titleMedium?.copyWith(
-//                                   fontWeight: FontWeight.bold,
-//                                 ),
-//                               ),
-//                               const SizedBox(height: 4),
+              //                   //Layering Card
+              //                   child: Padding(
+              //                     padding: const EdgeInsets.symmetric(
+              //                       horizontal: 16,
+              //                       vertical: 18,
+              //                     ),
+              //                     child: Row(
+              //                       children: [
+              //                         Container(
+              //                           padding: const EdgeInsets.all(10),
+              //                           decoration: BoxDecoration(
+              //                             color: Colors.yellow.shade100,
+              //                             shape: BoxShape.circle,
+              //                           ),
 
-//                               //Academic description
-//                               Text(
-//                                 '(message)',
-//                                 style: theme.textTheme.bodyMedium?.copyWith(
-//                                   color: theme.textTheme.bodySmall?.color,
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ),
+              //                           //Custom Icon
+              //                           child: const Icon(
+              //                             Icons.(Icon name),
+              //                             color: Colors.(color),
+              //                             size: (num size)),
+              //                         ),
+              //                         const SizedBox(width: 16),
 
-//                         //Shows the arrow icon going up(opening) and going down(closing)
-//                         Icon(
-//                           show(Resource name)Expanded
-//                               ? Icons.keyboard_arrow_up
-//                               : Icons.keyboard_arrow_down,
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//         //------------------Academic card ends here-----------------------------
-//               const SizedBox(height: 8),
+              //                         //Academic Card Title
+              //                         Expanded(
+              //                           child: Column(
+              //                             crossAxisAlignment: CrossAxisAlignment.start,
+              //                             children: [
+              //                               Text(
+              //                                 '(message)',
+              //                                 style: theme.textTheme.titleMedium?.copyWith(
+              //                                   fontWeight: FontWeight.bold,
+              //                                 ),
+              //                               ),
+              //                               const SizedBox(height: 4),
 
-//     //-------------------------------Sub Section Starting----------------------------------
+              //                               //Academic description
+              //                               Text(
+              //                                 '(message)',
+              //                                 style: theme.textTheme.bodyMedium?.copyWith(
+              //                                   color: theme.textTheme.bodySmall?.color,
+              //                                 ),
+              //                               ),
+              //                             ],
+              //                           ),
+              //                         ),
 
-//               //Shows the sub-section of Academics(Tutoring, Calendar, etc.)
-//               if (show(Resource name)Expanded) ...[
-//                 const SizedBox(height: 4),
+              //                         //Shows the arrow icon going up(opening) and going down(closing)
+              //                         Icon(
+              //                           show(Resource name)Expanded
+              //                               ? Icons.keyboard_arrow_up
+              //                               : Icons.keyboard_arrow_down,
+              //                         ),
+              //                       ],
+              //                     ),
+              //                   ),
+              //                 ),
+              //               ),
+              //         //------------------Academic card ends here-----------------------------
+              //               const SizedBox(height: 8),
 
-//         // -------------------- TUTORING -------------------------------------------
-//                 if (show(Resource name))
+              //     //-------------------------------Sub Section Starting----------------------------------
 
-//                 //Card Details
-//                   Card(
-//                     elevation: 2,
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
+              //               //Shows the sub-section of Academics(Tutoring, Calendar, etc.)
+              //               if (show(Resource name)Expanded) ...[
+              //                 const SizedBox(height: 4),
 
-//                     child: Column(
-//                       children: [
-//                         InkWell(
-//                           borderRadius: BorderRadius.circular(12),
-//                           onTap: () {
-//                             setState(() {
+              //         // -------------------- TUTORING -------------------------------------------
+              //                 if (show(Resource name))
 
-//                               //Allows tutoring to be opened
-//                               (Resource name)Open = !(Resouce name)Open;
-//                             });
-//                           },
+              //                 //Card Details
+              //                   Card(
+              //                     elevation: 2,
+              //                     shape: RoundedRectangleBorder(
+              //                       borderRadius: BorderRadius.circular(12),
+              //                     ),
 
-//                           //Layering
-//                           child: Padding(
-//                             padding: const EdgeInsets.symmetric(
-//                               horizontal: 12,
-//                               vertical: 14,
-//                             ),
-//                             child: Row(
-//                               children: [
-//                                 Icon(
+              //                     child: Column(
+              //                       children: [
+              //                         InkWell(
+              //                           borderRadius: BorderRadius.circular(12),
+              //                           onTap: () {
+              //                             setState(() {
 
-//                                   //Add icon(Open) and subtract(Close)
-//                                   (Resource name)Open ? Icons.remove : Icons.add,
-//                                   size: 24,
-//                                 ),
-//                                 const SizedBox(width: 12),
+              //                               //Allows tutoring to be opened
+              //                               (Resource name)Open = !(Resouce name)Open;
+              //                             });
+              //                           },
 
-//                                 //Title for sub card
-//                                 const Expanded(
-//                                   child: Text(
-//                                     '(message)',
-//                                     style: TextStyle(
-//                                       fontSize: 18,
-//                                       fontWeight: FontWeight.w500,
-//                                     ),
-//                                   ),
-//                                 ),
+              //                           //Layering
+              //                           child: Padding(
+              //                             padding: const EdgeInsets.symmetric(
+              //                               horizontal: 12,
+              //                               vertical: 14,
+              //                             ),
+              //                             child: Row(
+              //                               children: [
+              //                                 Icon(
 
-//                                 //External link icon
-//                                 const Icon(Icons.open_in_new, size: 18),
-//                               ],
-//                             ),
-//                           ),
-//                         ),
+              //                                   //Add icon(Open) and subtract(Close)
+              //                                   (Resource name)Open ? Icons.remove : Icons.add,
+              //                                   size: 24,
+              //                                 ),
+              //                                 const SizedBox(width: 12),
 
-//                         //When Tutor card is open
-//                         if ((Resource name)Open) ...[
-//                           const Divider(height: 1),
-//                           InkWell(
+              //                                 //Title for sub card
+              //                                 const Expanded(
+              //                                   child: Text(
+              //                                     '(message)',
+              //                                     style: TextStyle(
+              //                                       fontSize: 18,
+              //                                       fontWeight: FontWeight.w500,
+              //                                     ),
+              //                                   ),
+              //                                 ),
 
-//                             //Shows the link and allows it to be opened 
-//                             onTap: () => _openLink((Resource name)Url),
+              //                                 //External link icon
+              //                                 const Icon(Icons.open_in_new, size: 18),
+              //                               ],
+              //                             ),
+              //                           ),
+              //                         ),
 
-//                             //Layering
-//                             child: const Padding(
-//                               padding: EdgeInsets.all(12),
-//                               child: Text(
-//                                 (Resource name)Url,
-//                                 style: TextStyle(
-//                                   color: Colors.blue,
-//                                   decoration: TextDecoration.underline,
-//                                 ),
-//                               ),
-//                             ),
-//                           ),
-//                         ],
-//                       ],
-//                     ),
-//                   ),
+              //                         //When Tutor card is open
+              //                         if ((Resource name)Open) ...[
+              //                           const Divider(height: 1),
+              //                           InkWell(
 
-//                 //Closes the card and adds the spacing
-//                 if (show(Resource name)) const SizedBox(height: 8),
+              //                             //Shows the link and allows it to be opened
+              //                             onTap: () => _openLink((Resource name)Url),
 
-//     //-------If resources don't show up in the search bar -------------------------------
-//                 if (!show(Resource name) && !show(Resource name) && !show(Resource name))
-//                   Padding(
-//                     padding: const EdgeInsets.only(top: 12),
-//                     child: Text(
-//                       'No (Resource name) resources match your search.',
-//                       style: theme.textTheme.bodyMedium?.copyWith(
-//                         color: theme.colorScheme.onSurfaceVariant,
-//                       ),
-//                     ),
-//                   ),
-//               ],
-// //==================================Template============================================================  
+              //                             //Layering
+              //                             child: const Padding(
+              //                               padding: EdgeInsets.all(12),
+              //                               child: Text(
+              //                                 (Resource name)Url,
+              //                                 style: TextStyle(
+              //                                   color: Colors.blue,
+              //                                   decoration: TextDecoration.underline,
+              //                                 ),
+              //                               ),
+              //                             ),
+              //                           ),
+              //                         ],
+              //                       ],
+              //                     ),
+              //                   ),
+
+              //                 //Closes the card and adds the spacing
+              //                 if (show(Resource name)) const SizedBox(height: 8),
+
+              //     //-------If resources don't show up in the search bar -------------------------------
+              //                 if (!show(Resource name) && !show(Resource name) && !show(Resource name))
+              //                   Padding(
+              //                     padding: const EdgeInsets.only(top: 12),
+              //                     child: Text(
+              //                       'No (Resource name) resources match your search.',
+              //                       style: theme.textTheme.bodyMedium?.copyWith(
+              //                         color: theme.colorScheme.onSurfaceVariant,
+              //                       ),
+              //                     ),
+              //                   ),
+              //               ],
+              // //==================================Template============================================================
             ],
           ),
         ),
