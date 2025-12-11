@@ -1,6 +1,60 @@
+# -----------------------
+# SENSITIVE / SECRETS
+# -----------------------
+# Your service key (Critical)
+test_beach_circle_key.json
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
+# Firebase Config (Critical)
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Keystores
+*.jks
+*.keystore
 key.properties
-**/*.keystore
-**/*.jks
+
+# -----------------------
+# FLUTTER / DART
+# -----------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.packages
+build/
+app/build/
+.gradle/
+
+# Android specific
+android/local.properties
+android/.gradle
+android/captures/
+android/gradlew
+android/gradlew.bat
+
+# iOS specific
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/.generated/
+ios/Pods/
+ios/Podfile.lock
+
+# IDE settings
+.idea/
+.vscode/
+*.iml
+
+# -----------------------
+# PYTHON
+# -----------------------
+beachcircle_venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# -----------------------
+# SYSTEM
+# -----------------------
+.DS_Store
+Thumbs.db
