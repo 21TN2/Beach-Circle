@@ -1,14 +1,8 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.beach_circle_flutter">
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-<<<<<<<< HEAD:beach_circle_flutter/android/app/src/main/AndroidManifest.xml
-        android:label="beach_circle_flutter"
-========
         android:label="resource_page"
->>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/android/app/src/main/AndroidManifest.xml
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

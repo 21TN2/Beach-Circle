@@ -3,13 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-<<<<<<<< HEAD:beach_circle_flutter/windows/flutter/generated_plugins.cmake
-  cloud_firestore
-  firebase_auth
-  firebase_core
-========
   url_launcher_windows
->>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/windows/flutter/generated_plugins.cmake
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
