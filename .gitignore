@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+# -----------------------
+# SENSITIVE / SECRETS
+# -----------------------
+# Your service key (Critical)
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -207,6 +213,60 @@ marimo/_lsp/
 __marimo__/
 
 #test json key thing
+>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9
 test_beach_circle_key.json
 
-beachcircle_venv
+# Firebase Config (Critical)
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Keystores
+*.jks
+*.keystore
+key.properties
+
+# -----------------------
+# FLUTTER / DART
+# -----------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.packages
+build/
+app/build/
+.gradle/
+
+# Android specific
+android/local.properties
+android/.gradle
+android/captures/
+android/gradlew
+android/gradlew.bat
+
+# iOS specific
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/.generated/
+ios/Pods/
+ios/Podfile.lock
+
+# IDE settings
+.idea/
+.vscode/
+*.iml
+
+# -----------------------
+# PYTHON
+# -----------------------
+beachcircle_venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# -----------------------
+# SYSTEM
+# -----------------------
+.DS_Store
+Thumbs.db
