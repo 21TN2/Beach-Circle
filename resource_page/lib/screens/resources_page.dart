@@ -31,7 +31,13 @@ class _ResourcesPageState extends State<ResourcesPage> {
   bool groupcounselingOpen = false;
   bool crisisOpen = false;
 
-
+  // Care & Wellness Section
+  bool careExpanded = false;
+  bool needsOpen = false;
+  bool balanceOpen = false;
+  bool wellnessOpen = false;
+  bool centerOpen = false;
+  bool oceanOpen = false;
 
   //This is the current text in the search query
   String _searchQuery = '';
@@ -76,11 +82,22 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const helpcenterUrl = 'https://www.csulb.edu/information-technology';
 
     //Mental Health Section
-    const accessbilityUrl = 'https://www.csulb.edu/student-affairs/bob-murphy-access-center';
+    const accessbilityUrl =
+        'https://www.csulb.edu/student-affairs/bob-murphy-access-center';
     const capsUrl =
         'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/counseling-and-psychological-services';
-    const groupcounselingUrl = 'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/group-counseling';
-    const crisisUrl = 'https://www.csulb.edu/student-affairs/beach-wellness/crisis-and-mental-health-resources';
+    const groupcounselingUrl =
+        'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/group-counseling';
+    const crisisUrl =
+        'https://www.csulb.edu/student-affairs/beach-wellness/crisis-and-mental-health-resources';
+
+    // Care & Wellness Section
+    const needsUrl = 'https://www.csulb.edu/student-affairs/basic-needs';
+    const balanceUrl = 'https://www.asirecreation.org/beach-balance';
+    const wellnessUrl = 'https://www.csulb.edu/student-affairs/beach-wellness';
+    const centerUrl = 'https://www.asirecreation.org/';
+    const oceanUrl =
+        'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/rising-tides';
 
     // ---------- SEARCH MATCHES -------------------------------------
     //Check which sub-resources match the query, this is to search the resources
@@ -98,9 +115,20 @@ class _ResourcesPageState extends State<ResourcesPage> {
     final showGroup = _matchesQuery('Group Counseling', groupcounselingUrl);
     final showCrisis = _matchesQuery('Crisis Line', crisisUrl);
 
+    // Care & Wellness Section
+    final showNeeds = _matchesQuery('Basic Needs', needsUrl);
+    final showBalance = _matchesQuery('Beach Balance', balanceUrl);
+    final showWellness = _matchesQuery('Beach Wellness', wellnessUrl);
+    final showCenter = _matchesQuery(
+      'Student Recreation Center & Wellness',
+      centerUrl,
+    );
+    final showOcean = _matchesQuery('Project Ocean', oceanUrl);
+
     // Auto-expand Resource Title when searching
     final showAcademicsExpanded = academicsExpanded || _searchQuery.isNotEmpty;
     final showMentalExpanded = mentalExpanded || _searchQuery.isNotEmpty;
+    final showCareExpanded = careExpanded || _searchQuery.isNotEmpty;
     //------------------------------------------------------------------
 
     //Page Set up
@@ -222,7 +250,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
 
                               //Academic description
                               Text(
-                                'Tutoring, advising, calendar, and more',
+                                'Tutoring, advising, calendar, and more !',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.textTheme.bodySmall?.color,
                                 ),
@@ -455,6 +483,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
+                if (showCalendar) const SizedBox(height: 8),
 
                 /// --------------------- CLASS CATALOG --------------------------------------------
                 if (showCatalog)
@@ -517,6 +546,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
+                if (showCatalog) const SizedBox(height: 8),
                 // ------------------------  Enrollment ---------------------------------------------
                 if (showEnrollment)
                   Card(
@@ -578,6 +608,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
+                if (showEnrollment) const SizedBox(height: 8),
                 // ------------------------ Help Center --------------------------------------------
                 if (showHelpcenter)
                   Card(
@@ -639,6 +670,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                       ],
                     ),
                   ),
+                if (showHelpcenter) const SizedBox(height: 8),
                 //-------If resources don't show up in the search bar -------------------------------
                 if (!showTutoring &&
                     !showAdvising &&
@@ -659,624 +691,927 @@ class _ResourcesPageState extends State<ResourcesPage> {
               //==================================End of Academic Section============================================================
 
               //==================================Mental Health Section============================================================
-              
-              
-                  //------------------Mental Health Card------------------
-                            Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 3,
 
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  setState(() {
+              //------------------Mental Health Card------------------
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 3,
 
-                                    //Allows the Card to expand
-                                    mentalExpanded = !mentalExpanded;
-                                  });
-                                },
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    setState(() {
+                      //Allows the Card to expand
+                      mentalExpanded = !mentalExpanded;
+                    });
+                  },
 
-                                //Layering Card
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 18,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.yellow.shade100,
-                                          shape: BoxShape.circle,
-                                        ),
+                  //Layering Card
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.shade100,
+                            shape: BoxShape.circle,
+                          ),
 
-                                        //Custom Icon
-                                        child: const Icon(
-                                          Icons.self_improvement,
-                                          color: Colors.black,
-                                          size: 24),
-                                      ),
-                                      const SizedBox(width: 16),
+                          //Custom Icon
+                          child: const Icon(
+                            Icons.self_improvement,
+                            color: Colors.black,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
 
-                                      //Academic Card Title
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Mental Health',
-                                              style: theme.textTheme.titleMedium?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-
-                                            //Academic description
-                                            Text(
-                                              'CAPS, group counseling, accessibility, and more',
-                                              style: theme.textTheme.bodyMedium?.copyWith(
-                                                color: theme.textTheme.bodySmall?.color,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      //Shows the arrow icon going up(opening) and going down(closing)
-                                      Icon(
-                                        showMentalExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                      ),
-                                    ],
-                                  ),
+                        //Academic Card Title
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Mental Health',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                      //------------------Mental Health card ends here-----------------------------
-                            const SizedBox(height: 8),
-
-                  //-------------------------------Sub Section Starting----------------------------------
-
-                            //Shows the sub-section
-                            if (showMentalExpanded) ...[
                               const SizedBox(height: 4),
 
-                      // -------------------- Accesibility -------------------------------------------
-                              if (showAccessbility)
-
-                              //Card Details
-                                Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-
-                                  child: Column(
-                                    children: [
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          setState(() {
-
-                                            //Allows accesiblity to be opened
-                                            accessibilityOpen = !accessibilityOpen;
-                                          });
-                                        },
-
-                                        //Layering
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-
-                                                //Add icon(Open) and subtract(Close)
-                                                accessibilityOpen ? Icons.remove : Icons.add,
-                                                size: 24,
-                                              ),
-                                              const SizedBox(width: 12),
-
-                                              //Title for sub card
-                                              const Expanded(
-                                                child: Text(
-                                                  'Accesibility',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              //External link icon
-                                              const Icon(Icons.open_in_new, size: 18),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-
-                                      //When Accesiblity card is open
-                                      if (accessibilityOpen) ...[
-                                        const Divider(height: 1),
-                                        InkWell(
-
-                                          //Shows the link and allows it to be opened
-                                          onTap: () => _openLink(accessbilityUrl),
-
-                                          //Layering
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Text(
-                                              accessbilityUrl,
-                                              style: TextStyle(
-                                                color: Colors.blue,
-                                                decoration: TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                              //Academic description
+                              Text(
+                                'CAPS, group counseling, accessibility, and more !',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color,
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                              //Closes the card and adds the spacing
-                              if (showAccessbility) const SizedBox(height: 8),
+                        //Shows the arrow icon going up(opening) and going down(closing)
+                        Icon(
+                          showMentalExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              //------------------Mental Health card ends here-----------------------------
+              const SizedBox(height: 8),
 
-                      // -------------------- CAPS -------------------------------------------
-                              if (showCaps)
+              //-------------------------------Sub Section Starting----------------------------------
 
-                              //Card Details
-                                Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+              //Shows the sub-section
+              if (showMentalExpanded) ...[
+                const SizedBox(height: 4),
 
-                                  child: Column(
-                                    children: [
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          setState(() {
+                // -------------------- Accesibility -------------------------------------------
+                if (showAccessbility)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
 
-                                            //Allows card to be opened
-                                            capsOpen = !capsOpen;
-                                          });
-                                        },
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows accesiblity to be opened
+                              accessibilityOpen = !accessibilityOpen;
+                            });
+                          },
 
-                                        //Layering
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-
-                                                //Add icon(Open) and subtract(Close)
-                                                capsOpen ? Icons.remove : Icons.add,
-                                                size: 24,
-                                              ),
-                                              const SizedBox(width: 12),
-
-                                              //Title for sub card
-                                              const Expanded(
-                                                child: Text(
-                                                  'CAPS',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              //External link icon
-                                              const Icon(Icons.open_in_new, size: 18),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-
-                                      //When Accesiblity card is open
-                                      if (capsOpen) ...[
-                                        const Divider(height: 1),
-                                        InkWell(
-
-                                          //Shows the link and allows it to be opened
-                                          onTap: () => _openLink(capsUrl),
-
-                                          //Layering
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Text(
-                                              capsUrl,
-                                              style: TextStyle(
-                                                color: Colors.blue,
-                                                decoration: TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  accessibilityOpen ? Icons.remove : Icons.add,
+                                  size: 24,
                                 ),
+                                const SizedBox(width: 12),
 
-                              //Closes the card and adds the spacing
-                              if (showCaps) const SizedBox(height: 8),
-                      // -------------------- Group Counseling -------------------------------------------
-                              if (showGroup)
-
-                              //Card Details
-                                Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-
-                                  child: Column(
-                                    children: [
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          setState(() {
-
-                                            //Allows card to be opened
-                                            groupcounselingOpen = !groupcounselingOpen;
-                                          });
-                                        },
-
-                                        //Layering
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-
-                                                //Add icon(Open) and subtract(Close)
-                                                groupcounselingOpen ? Icons.remove : Icons.add,
-                                                size: 24,
-                                              ),
-                                              const SizedBox(width: 12),
-
-                                              //Title for sub card
-                                              const Expanded(
-                                                child: Text(
-                                                  'Group Counseling',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              //External link icon
-                                              const Icon(Icons.open_in_new, size: 18),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-
-                                      //When Accesiblity card is open
-                                      if (groupcounselingOpen) ...[
-                                        const Divider(height: 1),
-                                        InkWell(
-
-                                          //Shows the link and allows it to be opened
-                                          onTap: () => _openLink(groupcounselingUrl),
-
-                                          //Layering
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Text(
-                                              groupcounselingUrl,
-                                              style: TextStyle(
-                                                color: Colors.blue,
-                                                decoration: TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-
-                              //Closes the card and adds the spacing
-                              if (showGroup) const SizedBox(height: 8),
-
-                        // -------------------- Crisis Line -------------------------------------------
-                              if (showCrisis)
-
-                              //Card Details
-                                Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-
-                                  child: Column(
-                                    children: [
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          setState(() {
-
-                                            //Allows card to be opened
-                                            crisisOpen = !crisisOpen;
-                                          });
-                                        },
-
-                                        //Layering
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-
-                                                //Add icon(Open) and subtract(Close)
-                                                crisisOpen ? Icons.remove : Icons.add,
-                                                size: 24,
-                                              ),
-                                              const SizedBox(width: 12),
-
-                                              //Title for sub card
-                                              const Expanded(
-                                                child: Text(
-                                                  'Crisis Line',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              //External link icon
-                                              const Icon(Icons.open_in_new, size: 18),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-
-                                      //When Accesiblity card is open
-                                      if (crisisOpen) ...[
-                                        const Divider(height: 1),
-                                        InkWell(
-
-                                          //Shows the link and allows it to be opened
-                                          onTap: () => _openLink(crisisUrl),
-
-                                          //Layering
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Text(
-                                              crisisUrl,
-                                              style: TextStyle(
-                                                color: Colors.blue,
-                                                decoration: TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-
-                              //Closes the card and adds the spacing
-                              if (showCrisis) const SizedBox(height: 8),
-                  //-------If resources don't show up in the search bar -------------------------------
-                              if (!showAccessbility && !showCaps && !showGroup && !showCrisis)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
+                                //Title for sub card
+                                const Expanded(
                                   child: Text(
-                                    'No Mental Health resources match your search.',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
+                                    'Accesibility',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
-                            ],
-              //==================================Template============================================================
 
-              //Paste Here For new sections
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
 
-              // // ============================Template ===========================
+                        //When Accesiblity card is open
+                        if (accessibilityOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(accessbilityUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                accessbilityUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showAccessbility) const SizedBox(height: 8),
+
+                // -------------------- CAPS -------------------------------------------
+                if (showCaps)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              capsOpen = !capsOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  capsOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'CAPS',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Accesiblity card is open
+                        if (capsOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(capsUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                capsUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showCaps) const SizedBox(height: 8),
+                // -------------------- Group Counseling -------------------------------------------
+                if (showGroup)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              groupcounselingOpen = !groupcounselingOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  groupcounselingOpen
+                                      ? Icons.remove
+                                      : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Group Counseling',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Accesiblity card is open
+                        if (groupcounselingOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(groupcounselingUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                groupcounselingUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showGroup) const SizedBox(height: 8),
+
+                // -------------------- Crisis Line -------------------------------------------
+                if (showCrisis)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              crisisOpen = !crisisOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  crisisOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Crisis Line',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Accesiblity card is open
+                        if (crisisOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(crisisUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                crisisUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showCrisis) const SizedBox(height: 8),
+                //-------If resources don't show up in the search bar -------------------------------
+                if (!showAccessbility && !showCaps && !showGroup && !showCrisis)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'No Mental Health resources match your search.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
+              //================================== Care & Wellness Section  ===========================================================
+
+              // // ============================ Care & Wellness  ===========================
 
               //     //------------------Main Card------------------
-              //               Card(
-              //                 shape: RoundedRectangleBorder(
-              //                   borderRadius: BorderRadius.circular(16),
-              //                 ),
-              //                 elevation: 3,
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 3,
 
-              //                 child: InkWell(
-              //                   borderRadius: BorderRadius.circular(16),
-              //                   onTap: () {
-              //                     setState(() {
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    setState(() {
+                      //Allows the Card to expand
+                      careExpanded = !careExpanded;
+                    });
+                  },
 
-              //                       //Allows the Card to expand
-              //                       (Resource Name)Expanded = !(Resource name)Expanded;
-              //                     });
-              //                   },
+                  //Layering Card
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.shade100,
+                            shape: BoxShape.circle,
+                          ),
 
-              //                   //Layering Card
-              //                   child: Padding(
-              //                     padding: const EdgeInsets.symmetric(
-              //                       horizontal: 16,
-              //                       vertical: 18,
-              //                     ),
-              //                     child: Row(
-              //                       children: [
-              //                         Container(
-              //                           padding: const EdgeInsets.all(10),
-              //                           decoration: BoxDecoration(
-              //                             color: Colors.yellow.shade100,
-              //                             shape: BoxShape.circle,
-              //                           ),
+                          //Custom Icon
+                          child: const Icon(
+                            Icons.emoji_nature,
+                            color: Colors.black,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
 
-              //                           //Custom Icon
-              //                           child: const Icon(
-              //                             Icons.(Icon name),
-              //                             color: Colors.(color),
-              //                             size: (num size)),
-              //                         ),
-              //                         const SizedBox(width: 16),
+                        // Care & Welness Card Title
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Care & Wellness',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
 
-              //                         //Academic Card Title
-              //                         Expanded(
-              //                           child: Column(
-              //                             crossAxisAlignment: CrossAxisAlignment.start,
-              //                             children: [
-              //                               Text(
-              //                                 '(message)',
-              //                                 style: theme.textTheme.titleMedium?.copyWith(
-              //                                   fontWeight: FontWeight.bold,
-              //                                 ),
-              //                               ),
-              //                               const SizedBox(height: 4),
+                              // Wellness description
+                              Text(
+                                'Basic Needs, Beach Wellness, Rising Tide, and more !',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-              //                               //Academic description
-              //                               Text(
-              //                                 '(message)',
-              //                                 style: theme.textTheme.bodyMedium?.copyWith(
-              //                                   color: theme.textTheme.bodySmall?.color,
-              //                                 ),
-              //                               ),
-              //                             ],
-              //                           ),
-              //                         ),
-
-              //                         //Shows the arrow icon going up(opening) and going down(closing)
-              //                         Icon(
-              //                           show(Resource name)Expanded
-              //                               ? Icons.keyboard_arrow_up
-              //                               : Icons.keyboard_arrow_down,
-              //                         ),
-              //                       ],
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ),
-              //         //------------------Academic card ends here-----------------------------
-              //               const SizedBox(height: 8),
+                        //Shows the arrow icon going up(opening) and going down(closing)
+                        Icon(
+                          showCareExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              //------------------ Wellness card ends here-----------------------------
+              const SizedBox(height: 8),
 
               //     //-------------------------------Sub Section Starting----------------------------------
 
               //               //Shows the sub-section of Academics(Tutoring, Calendar, etc.)
-              //               if (show(Resource name)Expanded) ...[
-              //                 const SizedBox(height: 4),
+              if (showCareExpanded) ...[
+                const SizedBox(height: 4),
 
-              //         // -------------------- TUTORING -------------------------------------------
-              //                 if (show(Resource name))
+                //         // -------------------- Basic Needs -------------------------------------------
+                if (showNeeds)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
 
-              //                 //Card Details
-              //                   Card(
-              //                     elevation: 2,
-              //                     shape: RoundedRectangleBorder(
-              //                       borderRadius: BorderRadius.circular(12),
-              //                     ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows basic needs to be opened
+                              needsOpen = !needsOpen;
+                            });
+                          },
 
-              //                     child: Column(
-              //                       children: [
-              //                         InkWell(
-              //                           borderRadius: BorderRadius.circular(12),
-              //                           onTap: () {
-              //                             setState(() {
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  needsOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
 
-              //                               //Allows tutoring to be opened
-              //                               (Resource name)Open = !(Resouce name)Open;
-              //                             });
-              //                           },
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Basic Needs',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
 
-              //                           //Layering
-              //                           child: Padding(
-              //                             padding: const EdgeInsets.symmetric(
-              //                               horizontal: 12,
-              //                               vertical: 14,
-              //                             ),
-              //                             child: Row(
-              //                               children: [
-              //                                 Icon(
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
 
-              //                                   //Add icon(Open) and subtract(Close)
-              //                                   (Resource name)Open ? Icons.remove : Icons.add,
-              //                                   size: 24,
-              //                                 ),
-              //                                 const SizedBox(width: 12),
+                        //When Needs card is open
+                        if (needsOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(needsUrl),
 
-              //                                 //Title for sub card
-              //                                 const Expanded(
-              //                                   child: Text(
-              //                                     '(message)',
-              //                                     style: TextStyle(
-              //                                       fontSize: 18,
-              //                                       fontWeight: FontWeight.w500,
-              //                                     ),
-              //                                   ),
-              //                                 ),
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                needsUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
 
-              //                                 //External link icon
-              //                                 const Icon(Icons.open_in_new, size: 18),
-              //                               ],
-              //                             ),
-              //                           ),
-              //                         ),
+                //Closes the card and adds the spacing
+                if (showNeeds) const SizedBox(height: 8),
 
-              //                         //When Tutor card is open
-              //                         if ((Resource name)Open) ...[
-              //                           const Divider(height: 1),
-              //                           InkWell(
+                // --------------------  Beach Balance -------------------------------------------
+                if (showBalance)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
 
-              //                             //Shows the link and allows it to be opened
-              //                             onTap: () => _openLink((Resource name)Url),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              balanceOpen = !balanceOpen;
+                            });
+                          },
 
-              //                             //Layering
-              //                             child: const Padding(
-              //                               padding: EdgeInsets.all(12),
-              //                               child: Text(
-              //                                 (Resource name)Url,
-              //                                 style: TextStyle(
-              //                                   color: Colors.blue,
-              //                                   decoration: TextDecoration.underline,
-              //                                 ),
-              //                               ),
-              //                             ),
-              //                           ),
-              //                         ],
-              //                       ],
-              //                     ),
-              //                   ),
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  balanceOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
 
-              //                 //Closes the card and adds the spacing
-              //                 if (show(Resource name)) const SizedBox(height: 8),
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Beach Balance',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
 
-              //     //-------If resources don't show up in the search bar -------------------------------
-              //                 if (!show(Resource name) && !show(Resource name) && !show(Resource name))
-              //                   Padding(
-              //                     padding: const EdgeInsets.only(top: 12),
-              //                     child: Text(
-              //                       'No (Resource name) resources match your search.',
-              //                       style: theme.textTheme.bodyMedium?.copyWith(
-              //                         color: theme.colorScheme.onSurfaceVariant,
-              //                       ),
-              //                     ),
-              //                   ),
-              //               ],
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Balance card is open
+                        if (balanceOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(balanceUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                balanceUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showBalance) const SizedBox(height: 8),
+
+                // -------------------- Beach Wellness -------------------------------------------
+                if (showWellness)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              wellnessOpen = !wellnessOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  wellnessOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Beach Wellness',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Wellness card is open
+                        if (wellnessOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(wellnessUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                wellnessUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showWellness) const SizedBox(height: 8),
+
+                // -------------------- Student Rec Center -------------------------------------------
+                if (showCenter)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              centerOpen = !centerOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  centerOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Student Recreation Wellness Center',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Rec Center card is open
+                        if (centerOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(centerUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                centerUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showCenter) const SizedBox(height: 8),
+
+                // -------------------- Rising Tide / Project Ocean -------------------------------------------
+                if (showOcean)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows card to be opened
+                              oceanOpen = !oceanOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  oceanOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Rising Tide',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Rising Tide card is open
+                        if (oceanOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(oceanUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                oceanUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showOcean) const SizedBox(height: 8),
+
+                //-------If resources don't show up in the search bar -------------------------------
+                if (!showNeeds &&
+                    !showBalance &&
+                    !showWellness &&
+                    !showCenter &&
+                    !showOcean)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'No Careness & Wellness resources match your search.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
               // //==================================Template============================================================
             ],
           ),
