@@ -1,6 +1,7 @@
 //Dependencies
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 //Page Set Up
 class ResourcesPage extends StatefulWidget {
@@ -46,6 +47,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
   bool mentorOpen = false;
   bool researchOpen = false;
   bool graduateOpen = false;
+  bool clubsOpen = false;
 
   //This is the current text in the search query
   String _searchQuery = '';
@@ -99,6 +101,11 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const crisisUrl =
         'https://www.csulb.edu/student-affairs/beach-wellness/crisis-and-mental-health-resources';
 
+    //Caps Social Media
+    const capsInstagramUrl = 'https://www.instagram.com/csulbcaps/';
+    const capsFacebookUrl = 'https://www.facebook.com/csulongbeachCAPS/';
+    const capsLinktreeUrl = 'https://linktr.ee/csulongbeachcaps';
+
     // Care & Wellness Section
     const needsUrl = 'https://www.csulb.edu/student-affairs/basic-needs';
     const balanceUrl = 'https://www.asirecreation.org/beach-balance';
@@ -106,6 +113,17 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const centerUrl = 'https://www.asirecreation.org/';
     const oceanUrl =
         'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/rising-tides';
+
+    // Basic Needs socials
+    const needsInstagramUrl = 'https://www.instagram.com/basicneedscsulb/';
+    const needsLinktreeUrl = 'https://linktr.ee/basicneedscsulb';
+
+    // Student Recreation & Wellness Center socials
+    const centerInstagramUrl = 'https://www.instagram.com/csulbsrwc/';
+
+    // Project OCEAN / Rising Tides socials
+    const oceanInstagramUrl = 'https://www.instagram.com/projectocean_csulb/';
+    const oceanLinktreeUrl = 'https://linktr.ee/CSULBProjectOCEAN';
 
     // Success & Development
     const careerUrl =
@@ -118,6 +136,16 @@ class _ResourcesPageState extends State<ResourcesPage> {
         'https://www.csulb.edu/office-of-research-and-economic-development/student-research-opportunities';
     const graduateUrl =
         'https://www.csulb.edu/graduate-studies/graduate-programs-and-academic-advisors';
+    const clubsMainUrl =
+        'https://www.csulb.edu/sustainability/clubs-organizations';
+    const clubsDirectoryUrl =
+        'https://csulb.campuslabs.com/engage/organizations';
+    // ASI (Associated Students, Inc.) Social Media
+    const asiWebsiteUrl = 'https://www.instagram.com/csulbasi/';
+    const asiInstagramUrl = 'https://www.instagram.com/csulbasi/';
+    const asiFacebookUrl = 'https://www.facebook.com/csulbasi/';
+    const asiTwitterUrl = 'https://twitter.com/csulbasi';
+    const asiTikTokUrl = 'https://www.tiktok.com/@csulbasi';
 
     // ---------- SEARCH MATCHES -------------------------------------
     //Check which sub-resources match the query, this is to search the resources
@@ -154,6 +182,9 @@ class _ResourcesPageState extends State<ResourcesPage> {
     final showMentor = _matchesQuery('Mentorship Program', mentorUrl);
     final showResearch = _matchesQuery('Research Opportunities', researchUrl);
     final showGraduate = _matchesQuery('Graduate Programs', graduateUrl);
+    final showClubs =
+        _matchesQuery('Clubs & Organizations', clubsMainUrl) ||
+        _matchesQuery('Clubs & Organizations', clubsDirectoryUrl);
 
     // Auto-expand Resource Title when searching
     final showAcademicsExpanded = academicsExpanded || _searchQuery.isNotEmpty;
@@ -379,20 +410,49 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Tutor card is open
                         if (tutoringOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(tutoringUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                tutoringUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Short description
+                                Text(
+                                  'Tutoring helps you review course material, prepare for exams, '
+                                  'and build strong study habits across many subjects.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+
+                                // Hours / appointment info
+                                Text(
+                                  'Hours & how to get help:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Hours and availability can change each term. '
+                                  'Check the tutoring website for the most current schedule and how to sign up for sessions.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Button with icon (similar style to CAPS)
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(tutoringUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 20,
+                                      ),
+                                      label: const Text(
+                                        'Open Tutoring website',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -445,19 +505,48 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             ),
                           ),
                         ),
+
+                        //when card is open
                         if (advisingOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            onTap: () => _openLink(advisingUrl),
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                advisingUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Undergraduate advising helps you plan your classes, stay on track '
+                                  'for graduation, and understand university policies.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Appointments & hours:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Most advising is scheduled online through your college advising center. '
+                                  'Appointment availability and drop-in hours are listed on the website.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(advisingUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Open Advising website',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -508,19 +597,48 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             ),
                           ),
                         ),
+
+                        //When card is open
                         if (calendarOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            onTap: () => _openLink(calendarUrl),
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                calendarUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The academic calendar lists important dates like the first day of classes, '
+                                  'add/drop deadlines, holidays, and finals week.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tip:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Always check the calendar before changing your schedule so you don’t '
+                                  'miss refund deadlines or withdrawal dates.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(calendarUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.calendarDays,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'View Academic Calendar',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -571,19 +689,45 @@ class _ResourcesPageState extends State<ResourcesPage> {
                             ),
                           ),
                         ),
+
+                        //When card is open
                         if (catalogOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            onTap: () => _openLink(catalogUrl),
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                catalogUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The catalog lists degree requirements, course descriptions, and university policies.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'How to use it:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Check your catalog year and review major or minor requirements, '
+                                  'prerequisites, and course options.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(catalogUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.bookOpen,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open Class Catalog'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -635,17 +779,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         ),
                         if (enrollmentOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            onTap: () => _openLink(enrollmentUrl),
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                enrollmentUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Enrollment Services handles admissions, registration, financial aid, and student records.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'When to contact them:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Use their site for questions about fees, transcripts, financial aid status, '
+                                  'and enrollment changes.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(enrollmentUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Go to Enrollment Services',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -697,17 +867,41 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         ),
                         if (helpcenterOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            onTap: () => _openLink(helpcenterUrl),
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                helpcenterUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The Help Center supports technology issues like passwords, campus Wi-Fi, '
+                                  'software access, and account problems.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'How to get support:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'You can submit a ticket, browse help articles, or find contact info for live support on the website.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(helpcenterUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.circleQuestion,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open Help Center'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -876,20 +1070,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Accesiblity card is open
                         if (accessibilityOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(accessbilityUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                accessbilityUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The Bob Murphy Access Center (BMAC) supports students with disabilities '
+                                  'through accommodations, assistive technology, and advocacy.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Getting started:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'New students usually complete an intake form and meet with an access coordinator. '
+                                  'The website explains required documentation and how to schedule.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _openLink(accessbilityUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.universalAccess,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Visit BMAC website'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -953,23 +1170,86 @@ class _ResourcesPageState extends State<ResourcesPage> {
                           ),
                         ),
 
-                        //When Accesiblity card is open
+                        //When card is open
                         if (capsOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(capsUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                capsUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Description
+                                Text(
+                                  'Counseling and Psychological Services (CAPS) provides short-term counseling, '
+                                  'groups, crisis support, and workshops to support your mental health.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+
+                                // Hours / appointments
+                                Text(
+                                  'Hours & appointments:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Typical hours are Monday–Friday, 9 a.m.–5 p.m. '
+                                  'Check the CAPS website for current hours and instructions on how to '
+                                  'schedule an initial appointment or same-day support.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Website button
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(capsUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open CAPS website'),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                // 🔹 Social media row
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(capsInstagramUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'CAPS on Instagram',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(capsFacebookUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.facebook,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'CAPS on Facebook',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(capsLinktreeUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.link,
+                                        size: 24,
+                                      ),
+                                      tooltip: 'CAPS Linktree (all links)',
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1034,23 +1314,48 @@ class _ResourcesPageState extends State<ResourcesPage> {
                           ),
                         ),
 
-                        //When Accesiblity card is open
+                        //When card is open
                         if (groupcounselingOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(groupcounselingUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                groupcounselingUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Group counseling offers a supportive space to connect with other students '
+                                  'around shared experiences and topics.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'How groups work:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Groups may require a brief screening with a CAPS counselor. '
+                                  'The website lists current groups, times, and how to join.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _openLink(groupcounselingUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.peopleGroup,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'View Group Counseling',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1117,20 +1422,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Accesiblity card is open
                         if (crisisOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(crisisUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                crisisUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'This page lists crisis hotlines, after-hours counseling options, and emergency resources.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'If you are in crisis:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Use these resources for urgent mental health support. '
+                                  'For immediate, life-threatening emergencies, contact 911 or go to the nearest emergency room.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(crisisUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.phone,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'View Crisis Resources',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1296,20 +1624,73 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Needs card is open
                         if (needsOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(needsUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                needsUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Basic Needs supports students experiencing food, housing, or financial insecurity '
+                                  'through services like the Beach Pantry, emergency grants, and housing resources.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'Hours & contact:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Typical hours are Monday–Friday, 8 a.m.–5 p.m. '
+                                  'Check the website for updated hours and details on services.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Website button
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(needsUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Open Basic Needs site',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                // 🔹 Social media row
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(needsInstagramUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'Basic Needs on Instagram',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(needsLinktreeUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.link,
+                                        size: 24,
+                                      ),
+                                      tooltip: 'Basic Needs Linktree',
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1376,20 +1757,42 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Balance card is open
                         if (balanceOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(balanceUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                balanceUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Beach Balance promotes wellness through services like nutrition education, '
+                                  'stress management, and wellness coaching.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Hours & services:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Program hours and offerings vary by semester. '
+                                  'Check the site for current workshops, appointments, and events.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(balanceUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.handSparkles,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open Beach Balance'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1456,20 +1859,41 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Wellness card is open
                         if (wellnessOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(wellnessUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                wellnessUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Beach Wellness connects students to health promotion programs, '
+                                  'mental health resources, and campus wellness events.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Explore topics like:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Sleep, stress, substance use, sexual health, and overall wellbeing.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(wellnessUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.heartPulse,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Visit Beach Wellness'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1536,20 +1960,61 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Rec Center card is open
                         if (centerOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(centerUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                centerUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The Student Recreation & Wellness Center (SRWC) offers fitness equipment, '
+                                  'courts, a pool, fitness classes, and more.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'Hours & info:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Building hours, group fitness schedules, and membership information are posted on the SRWC website.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Website button
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(centerUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open SRWC website'),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                // 🔹 Social media row
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(centerInstagramUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'SRWC on Instagram',
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1616,20 +2081,73 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Rising Tide card is open
                         if (oceanOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(oceanUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                oceanUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Rising Tides / Project OCEAN provides peer-led programs that promote mental health, '
+                                  'connection, and suicide prevention.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'How to get involved:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Check the webpage and social media for current workshops, events, and ways to connect '
+                                  'with peer educators.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Website button
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(oceanUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Open Rising Tides page',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                // 🔹 Social media row
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(oceanInstagramUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'Project OCEAN on Instagram',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(oceanLinktreeUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.link,
+                                        size: 24,
+                                      ),
+                                      tooltip: 'Project OCEAN Linktree',
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1801,20 +2319,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Career Development card is open
                         if (careerOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(careerUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                careerUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'The Career Development Center supports career exploration, resumes, '
+                                  'interviews, and job or internship searches.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Events & services:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Check for career fairs, employer info sessions, and workshops on the website.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(careerUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.briefcase,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Open Career Center site',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1824,6 +2365,181 @@ class _ResourcesPageState extends State<ResourcesPage> {
 
                 //Closes the card and adds the spacing
                 if (showCareer) const SizedBox(height: 8),
+
+                // -------------------- Clubs & Organizations -------------------------------------------
+                if (showClubs)
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              clubsOpen = !clubsOpen;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  clubsOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Clubs & Organizations',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Expanded content
+                        if (clubsOpen) ...[
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Description
+                                Text(
+                                  'Explore student clubs and organizations at CSULB to build community, '
+                                  'develop leadership skills, and connect with people who share your interests.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'How to get started:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  'Use the Student Life & Development website to learn about involvement opportunities. '
+                                  'Then browse BeachSync to find specific clubs and organizations to join.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+
+                                // ASI Description
+                                Text(
+                                  'Associated Students, Inc. (ASI) is the student government and primary hub '
+                                  'for campus involvement. Many clubs operate through ASI and use their resources '
+                                  'for events, funding, and student engagement.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // ASI Website Button
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(asiWebsiteUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text('ASI Main Website'),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                // ASI Social Media Icons
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(asiInstagramUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.instagram,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'ASI on Instagram',
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _openLink(asiFacebookUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.facebook,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'ASI on Facebook',
+                                    ),
+                                    IconButton(
+                                      onPressed: () => _openLink(asiTwitterUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.twitter,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'ASI on X / Twitter',
+                                    ),
+                                    IconButton(
+                                      onPressed: () => _openLink(asiTikTokUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.tiktok,
+                                        size: 26,
+                                      ),
+                                      tooltip: 'ASI on TikTok',
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Buttons
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(clubsMainUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.globe,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Student Life Website'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _openLink(clubsDirectoryUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.listUl,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Find Clubs (BeachSync)',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                if (showClubs) const SizedBox(height: 8),
 
                 // -------------------- Internship Opportunities -------------------------------------------
                 if (showInternship)
@@ -1881,20 +2597,40 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Internship Opportunties card is open
                         if (internshipOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(internshipUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                internshipUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'This page explains how to find and apply for internships related to your major or interests.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Getting started:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'You can search postings, learn about academic credit, and see tips for strong applications.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(internshipUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.idBadge,
+                                        size: 18,
+                                      ),
+                                      label: const Text('View Internship info'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1904,86 +2640,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
 
                 //Closes the card and adds the spacing
                 if (showInternship) const SizedBox(height: 8),
-
-                //  -------------------- Research Programs -------------------------------------------
-                if (researchOpen)
-                  //Card Details
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    child: Column(
-                      children: [
-                        InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            setState(() {
-                              //Allows Research Program to be opened
-                              researchOpen = !researchOpen;
-                            });
-                          },
-
-                          //Layering
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  //Add icon(Open) and subtract(Close)
-                                  researchOpen ? Icons.remove : Icons.add,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 12),
-
-                                //Title for sub card
-                                const Expanded(
-                                  child: Text(
-                                    'Research Opportunities',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-
-                                //External link icon
-                                const Icon(Icons.open_in_new, size: 18),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        //When Research Program Opportunities card is open
-                        if (researchOpen) ...[
-                          const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(researchUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                researchUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                //Closes the card and adds the spacing
-                if (showResearch) const SizedBox(height: 8),
 
                 // -------------------- Mentoring Program -------------------------------------------
                 if (showMentor)
@@ -2041,20 +2697,41 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Mentoring Program card is open
                         if (mentorOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(mentorUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                mentorUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Mentoring programs connect students with peers, staff, alumni, or professionals '
+                                  'for guidance and support.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'How to join:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'The website explains active mentoring programs, eligibility, and application steps.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(mentorUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.userGroup,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Open Mentoring info'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -2121,20 +2798,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Research Program card is open
                         if (researchOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(researchUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                researchUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Student research opportunities let you work with faculty on projects, '
+                                  'gain experience, and prepare for grad school or careers.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'How to get involved:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'The site lists programs, funding opportunities, and ways to contact research mentors.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(researchUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.flask,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'View Research Opportunities',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -2201,20 +2901,43 @@ class _ResourcesPageState extends State<ResourcesPage> {
                         //When Graduate Program card is open
                         if (graduateOpen) ...[
                           const Divider(height: 1),
-                          InkWell(
-                            //Shows the link and allows it to be opened
-                            onTap: () => _openLink(graduateUrl),
-
-                            //Layering
-                            child: const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text(
-                                graduateUrl,
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Graduate Studies provides information about master’s and doctoral programs, '
+                                  'admissions, and advising.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Next steps:',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Explore programs, check application deadlines, and find contacts for program advisors.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _openLink(graduateUrl),
+                                      icon: const FaIcon(
+                                        FontAwesomeIcons.graduationCap,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Explore Graduate Programs',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -2230,7 +2953,8 @@ class _ResourcesPageState extends State<ResourcesPage> {
                     !showInternship &&
                     !showMentor &&
                     !showResearch &&
-                    !showGraduate)
+                    !showGraduate &&
+                    !showClubs)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
