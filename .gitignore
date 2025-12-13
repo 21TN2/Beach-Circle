@@ -210,3 +210,11 @@ __marimo__/
 test_beach_circle_key.json
 
 beachcircle_venv
+
+# Flutter / Dart
+.dart_tool/
+.pub/
+build/
+*.iml
+.idea/
+.vscode/
