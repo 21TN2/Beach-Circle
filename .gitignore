@@ -214,3 +214,1085 @@ __marimo__/
 test_beach_circle_key.json
 
 beachcircle_venv
+*.ldb
+*.pb
+*.json
+*.db
+*.py
+*.sh
+*.properties
+*.json
+*.xcconfig
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+*.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Account Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database
+beach_circle_flutter/.dart_tool/chrome-device/Default/Affiliation Database-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/BrowsingTopicsState
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/BudgetDatabase/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/chrome_cart_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/ClientCertificates/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/DIPS
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discount_infos_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/discounts_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons
+beach_circle_flutter/.dart_tool/chrome-device/Default/Favicons-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/History
+beach_circle_flutter/.dart_tool/chrome-device/Default/History-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_50996.indexeddb.leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data For Account-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Login Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Action Predictor-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Network Persistent State
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/PreferredApps
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL
+beach_circle_flutter/.dart_tool/chrome-device/Default/Reporting and NEL-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies
+beach_circle_flutter/.dart_tool/chrome-device/Default/Safe Browsing Cookies-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Secure Preferences
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate
+beach_circle_flutter/.dart_tool/chrome-device/Default/ServerCertificate-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Session_13410073317070915
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sessions/Tabs_13410073403268091
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/SharedStorage
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts
+beach_circle_flutter/.dart_tool/chrome-device/Default/Shortcuts-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG
+beach_circle_flutter/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites
+beach_circle_flutter/.dart_tool/chrome-device/Default/Top Sites-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/TransportSecurity
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens
+beach_circle_flutter/.dart_tool/chrome-device/Default/Trust Tokens-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data
+beach_circle_flutter/.dart_tool/chrome-device/Default/Web Data-journal
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager
+beach_circle_flutter/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal
+beach_circle_flutter/.dart_tool/dartpad/web_plugin_registrant.dart
+beach_circle_flutter/.dart_tool/package_config.json
+beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter/ios/Flutter/ephemeral/flutter_lldbinit
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.h
+beach_circle_flutter/ios/Runner/GeneratedPluginRegistrant.m
+beach_circle_flutter/lib/main.dart
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/cloud_firestore
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_auth
+beach_circle_flutter/windows/flutter/ephemeral/.plugin_symlinks/firebase_core
+flutter/web/index.html
