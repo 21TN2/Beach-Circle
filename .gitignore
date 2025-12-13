@@ -1,9 +1,7 @@
-<<<<<<< HEAD
 # -----------------------
 # SENSITIVE / SECRETS
 # -----------------------
 # Your service key (Critical)
-=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -213,9 +211,17 @@ marimo/_lsp/
 __marimo__/
 
 #test json key thing
->>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9
 test_beach_circle_key.json
 
+beachcircle_venv
+
+# Flutter / Dart
+.dart_tool/
+.pub/
+build/
+*.iml
+.idea/
+.vscode/
 # Firebase Config (Critical)
 **/google-services.json
 **/GoogleService-Info.plist

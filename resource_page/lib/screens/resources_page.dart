@@ -39,6 +39,14 @@ class _ResourcesPageState extends State<ResourcesPage> {
   bool centerOpen = false;
   bool oceanOpen = false;
 
+  // Student Development & Success
+  bool developmentExpanded = false;
+  bool careerOpen = false;
+  bool internshipOpen = false;
+  bool mentorOpen = false;
+  bool researchOpen = false;
+  bool graduateOpen = false;
+
   //This is the current text in the search query
   String _searchQuery = '';
 
@@ -99,6 +107,18 @@ class _ResourcesPageState extends State<ResourcesPage> {
     const oceanUrl =
         'https://www.csulb.edu/student-affairs/counseling-and-psychological-services/rising-tides';
 
+    // Success & Development
+    const careerUrl =
+        'https://www.csulb.edu/career-development-center/employers/employer-career-events';
+    const internshipUrl =
+        'https://www.csulb.edu/career-development-center/students/internships';
+    const mentorUrl =
+        'https://www.csulb.edu/student-affairs/mentoring-at-the-beach';
+    const researchUrl =
+        'https://www.csulb.edu/office-of-research-and-economic-development/student-research-opportunities';
+    const graduateUrl =
+        'https://www.csulb.edu/graduate-studies/graduate-programs-and-academic-advisors';
+
     // ---------- SEARCH MATCHES -------------------------------------
     //Check which sub-resources match the query, this is to search the resources
     //Academic Section
@@ -125,10 +145,22 @@ class _ResourcesPageState extends State<ResourcesPage> {
     );
     final showOcean = _matchesQuery('Project Ocean', oceanUrl);
 
+    // Success & Development
+    final showCareer = _matchesQuery('Career Opportunities', careerUrl);
+    final showInternship = _matchesQuery(
+      'Internship Opportunities',
+      internshipUrl,
+    );
+    final showMentor = _matchesQuery('Mentorship Program', mentorUrl);
+    final showResearch = _matchesQuery('Research Opportunities', researchUrl);
+    final showGraduate = _matchesQuery('Graduate Programs', graduateUrl);
+
     // Auto-expand Resource Title when searching
     final showAcademicsExpanded = academicsExpanded || _searchQuery.isNotEmpty;
     final showMentalExpanded = mentalExpanded || _searchQuery.isNotEmpty;
     final showCareExpanded = careExpanded || _searchQuery.isNotEmpty;
+    final showDevelopmentExpanded =
+        developmentExpanded || _searchQuery.isNotEmpty;
     //------------------------------------------------------------------
 
     //Page Set up
@@ -166,6 +198,18 @@ class _ResourcesPageState extends State<ResourcesPage> {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // Image of CSULB
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  'https://raw.githubusercontent.com/21TN2/Beach-Circle/resourcepage/Bob%20Cole%20Conservatory%20of%20Music%20@%20CSULB.jpeg',
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Search bar
               TextField(
@@ -1192,7 +1236,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
 
               //     //-------------------------------Sub Section Starting----------------------------------
 
-              //               //Shows the sub-section of Academics(Tutoring, Calendar, etc.)
+              //               //Shows the sub-section of Wellness(Basic Needs, Beach Balnce, etc.)
               if (showCareExpanded) ...[
                 const SizedBox(height: 4),
 
@@ -1612,7 +1656,591 @@ class _ResourcesPageState extends State<ResourcesPage> {
                     ),
                   ),
               ],
-              // //==================================Template============================================================
+
+              //================================== Success & Development Section  ===========================================================
+
+              // // ============================ Success & Development ===========================
+
+              //     //------------------Main Card------------------
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 3,
+
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    setState(() {
+                      //Allows the Card to expand
+                      developmentExpanded = !developmentExpanded;
+                    });
+                  },
+
+                  //Layering Card
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.shade100,
+                            shape: BoxShape.circle,
+                          ),
+
+                          //Custom Icon
+                          child: const Icon(
+                            Icons.diversity_3,
+                            color: Colors.black,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        // Success & Development Card Title
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Success & Development',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+
+                              // Development description
+                              Text(
+                                'Career Development, Internship Opportunities, Mentoring, and more !',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        //Shows the arrow icon going up(opening) and going down(closing)
+                        Icon(
+                          showDevelopmentExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              //------------------ Development card ends here-----------------------------
+              const SizedBox(height: 8),
+
+              //     //-------------------------------Sub Section Starting----------------------------------
+
+              //               //Shows the sub-section of Development(Career, Internship, etc.)
+              if (showDevelopmentExpanded) ...[
+                const SizedBox(height: 4),
+
+                //         // -------------------- Career Development -------------------------------------------
+                if (showCareer)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Career Development to be opened
+                              careerOpen = !careerOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  careerOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Career Development',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Career Development card is open
+                        if (careerOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(careerUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                careerUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showCareer) const SizedBox(height: 8),
+
+                // -------------------- Internship Opportunities -------------------------------------------
+                if (showInternship)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Career Development to be opened
+                              internshipOpen = !internshipOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  internshipOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Internship Opportunities',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Internship Opportunties card is open
+                        if (internshipOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(internshipUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                internshipUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showInternship) const SizedBox(height: 8),
+
+                //  -------------------- Research Programs -------------------------------------------
+                if (researchOpen)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Research Program to be opened
+                              researchOpen = !researchOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  researchOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Research Opportunities',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Research Program Opportunities card is open
+                        if (researchOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(researchUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                researchUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showResearch) const SizedBox(height: 8),
+
+                // -------------------- Mentoring Program -------------------------------------------
+                if (showMentor)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Mentoring Program to be opened
+                              mentorOpen = !mentorOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  mentorOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Mentoring Program',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Mentoring Program card is open
+                        if (mentorOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(mentorUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                mentorUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showMentor) const SizedBox(height: 8),
+
+                // -------------------- Research Opportunities -------------------------------------------
+                if (showResearch)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Research Program to be opened
+                              researchOpen = !researchOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  researchOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Research Opportunities',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Research Program card is open
+                        if (researchOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(researchUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                researchUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showResearch) const SizedBox(height: 8),
+
+                //  -------------------- Graduate Studies -------------------------------------------
+                if (showGraduate)
+                  //Card Details
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            setState(() {
+                              //Allows Graduate Studies to be opened
+                              graduateOpen = !graduateOpen;
+                            });
+                          },
+
+                          //Layering
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  //Add icon(Open) and subtract(Close)
+                                  graduateOpen ? Icons.remove : Icons.add,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+
+                                //Title for sub card
+                                const Expanded(
+                                  child: Text(
+                                    'Graduate Programs @ the Beach',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+
+                                //External link icon
+                                const Icon(Icons.open_in_new, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //When Graduate Program card is open
+                        if (graduateOpen) ...[
+                          const Divider(height: 1),
+                          InkWell(
+                            //Shows the link and allows it to be opened
+                            onTap: () => _openLink(graduateUrl),
+
+                            //Layering
+                            child: const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text(
+                                graduateUrl,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                //Closes the card and adds the spacing
+                if (showGraduate) const SizedBox(height: 8),
+
+                //-------If resources don't show up in the search bar -------------------------------
+                if (!showCareer &&
+                    !showInternship &&
+                    !showMentor &&
+                    !showResearch &&
+                    !showGraduate)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'No Development & Success resources match your search.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
