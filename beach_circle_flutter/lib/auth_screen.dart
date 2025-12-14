@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'signup_screen.dart'; // Import your SignUpScreen here
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -11,28 +12,20 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLogin = true; // Toggle between Login and Signup
   bool _isLoading = false;
 
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
-      if (_isLogin) {
-        // Log In
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-      } else {
-        // Sign Up
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-      }
+      // Log In
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      // Navigate to your main/home screen after login if needed
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Authentication failed')),
+        SnackBar(content: Text(e.message ?? 'Login failed')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -42,40 +35,54 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isLogin ? 'Log In' : 'Create Account')),
+      appBar: AppBar(title: const Text('Log In')),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Email Field
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
+            // Password Field
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
             const SizedBox(height: 20),
+            // Login Button
             if (_isLoading)
               const CircularProgressIndicator()
             else
-              ElevatedButton(
-                onPressed: _submit,
-                child: Text(_isLogin ? 'Log In' : 'Sign Up'),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Log In'),
+                ),
               ),
+            const SizedBox(height: 12),
+            // Navigate to Sign Up
             TextButton(
               onPressed: () {
-                setState(() {
-                  _isLogin = !_isLogin;
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SignUpScreen(),
+                  ),
+                );
               },
-              child: Text(_isLogin
-                  ? 'Need an account? Sign Up'
-                  : 'Have an account? Log In'),
+              child: const Text(
+                'Need an account? Sign Up',
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           ],
         ),
