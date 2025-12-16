@@ -276,8 +276,3 @@ __pycache__/
 # -----------------------
 .DS_Store
 Thumbs.db
-beach_circle_flutter/.flutter-plugins-dependencies
-beach_circle_flutter/.dart_tool/package_config.json
-beach_circle_flutter/.dart_tool/package_graph.json
-beach_circle_flutter/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
-beach_circle_flutter/lib/main.dart
