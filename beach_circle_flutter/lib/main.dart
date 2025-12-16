@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_screen.dart'; // Make sure this matches your file name
+import 'package:flutter/foundation.dart';
+import 'auth_screen.dart'; 
+import 'signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        //insert stuff here 
+      ),
+    );
+  } else {
+    // ANDROID/iOS: Use the file (google-services.json) automatically
+    await Firebase.initializeApp();
+  }
+  // 🔥 FIX ENDS HERE 🔥
+
   runApp(const MyApp());
 }
 
@@ -19,7 +33,7 @@ class MyApp extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // If user is logged in, show a placeholder Home Screen
+          //If user is logged in, show a placeholder Home Screen
           if (snapshot.hasData) {
             return Scaffold(
               appBar: AppBar(title: const Text('Home')),
@@ -31,7 +45,7 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          // Otherwise, show Auth Screen
+          //Otherwise, show Auth Screen
           return const AuthScreen();
         },
       ),
