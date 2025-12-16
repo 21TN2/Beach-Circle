@@ -11,7 +11,7 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        //insert stuff here
+        //insert stuff here 
       ),
     );
   } else {
