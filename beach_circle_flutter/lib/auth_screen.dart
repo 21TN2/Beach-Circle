@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';  
-import 'signup_screen.dart'; // Import your SignUpScreen here
+import 'signup_screen.dart'; 
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -192,9 +192,15 @@ class _AuthScreenState extends State<AuthScreen> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          setState(() {
-                            _isLogin = !_isLogin;
-                          });
+                          // setState(() {
+                          //   _isLogin = !_isLogin;
+                          // });
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpScreen(),
+                            ),
+                          );
                         },
                         child: Text(
                           _isLogin ? 'Click Here to Sign Up' : 'Have an account? Log In',

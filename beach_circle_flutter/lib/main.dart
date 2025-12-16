@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; // <--- Added this for kIsWeb check
+import 'package:flutter/foundation.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 THE FIX FOR THE WHITE SCREEN STARTS HERE 🔥
   if (kIsWeb) {
-    // WEB: Use manual keys (Copy these from Firebase Console)
     await Firebase.initializeApp(
       options: const FirebaseOptions(
         apiKey: "AIzaSyDHtKLDBgYN3ocI8zPOf8jPtE9cxHe0cnE", 
