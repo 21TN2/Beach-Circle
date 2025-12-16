@@ -47,3 +47,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-analytics-ktx:22.1.2")
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.9.3")
+    }
+}
