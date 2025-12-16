@@ -11,12 +11,7 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyDHtKLDBgYN3ocI8zPOf8jPtE9cxHe0cnE", 
-        authDomain: "test-beach-circle.firebaseapp.com",
-        projectId: "test-beach-circle",
-        storageBucket: "test-beach-circle.firebasestorage.app",
-        messagingSenderId: "680938438818",
-        appId: "1:680938438818:web:8bd12ddd9688890dcd17fb",
+        //insert stuff here
       ),
     );
   } else {
