@@ -276,3 +276,5 @@ __pycache__/
 # -----------------------
 .DS_Store
 Thumbs.db
+
+beach_circle_flutter\lib\main.dart
