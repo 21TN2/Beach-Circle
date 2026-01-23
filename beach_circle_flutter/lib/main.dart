@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
+import 'map_screen.dart';
 import 'dashboard_screen.dart';
 
 void main() async {
