@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'auth_screen.dart'; 
+import 'auth_screen.dart';
 import 'signup_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -10,9 +10,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    await Firebase.initializeApp(
-      //insert stuff here
-    );
+    await Firebase.initializeApp();
+    // delete after
   } else {
     // ANDROID/iOS: Use the file (google-services.json) automatically
     await Firebase.initializeApp();
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-             return const DashboardScreen();
+            return const DashboardScreen();
           }
           //Otherwise, show Auth Screen
           return const AuthScreen();
