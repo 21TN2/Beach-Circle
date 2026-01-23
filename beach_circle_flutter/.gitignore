@@ -58,3 +58,5 @@ __pycache__/
 # -----------------------
 .DS_Store
 Thumbs.db
+
+lib\main.dart
