@@ -18,7 +18,6 @@ void main() async {
     // ANDROID/iOS: Use the file (google-services.json) automatically
     await Firebase.initializeApp();
   }
-  // 🔥 FIX ENDS HERE 🔥
 
   runApp(const MyApp());
 }

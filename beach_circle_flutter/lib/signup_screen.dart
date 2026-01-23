@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'auth_screen.dart'; 
 
-
 //to do list:
 //- when unselect options in major, interests, and year, etc, does not actually unselect
 //- can add on interests, not just choose 1
