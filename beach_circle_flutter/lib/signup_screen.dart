@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'auth_screen.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 //to do list:
 //- when unselect options in major, interests, and year, etc, does not actually unselect
@@ -81,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget yearField() {
     return inputBox(
       child: DropdownButtonFormField<String>(
-        value: selectedYear,
+        initialValue: selectedYear,
         decoration: const InputDecoration(
           hintText: 'Year',
           border: InputBorder.none,

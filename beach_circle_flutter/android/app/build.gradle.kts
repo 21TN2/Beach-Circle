@@ -39,10 +39,14 @@ flutter {
     source = "../.."
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Force the app to use a version compatible with API 35
+        force("androidx.activity:activity:1.9.3")
+    }
+}
+
 dependencies {
-    // 🔥 BRUTE FORCE FIX: We are giving specific versions manually
-    // This bypasses the "BoM" entirely so Gradle can't get confused.
-    
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-analytics-ktx:22.1.2")

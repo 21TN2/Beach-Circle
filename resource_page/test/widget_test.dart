@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:beach_circle_flutter/main.dart';
 ========
 import 'package:resource_page/main.dart';
->>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/test/widget_test.dart
+>>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/test/void widget_test.dart
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

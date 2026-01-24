@@ -14,6 +14,8 @@ class DashboardScreen extends StatelessWidget {
     return Container(
       width: 110,
       height: 100,
+      // Add a margin to the right so buttons don't stick together when scrolling
+      margin: const EdgeInsets.only(right: 16), 
       decoration: BoxDecoration(
         color: const Color(0xFFD7EBFF),
         borderRadius: BorderRadius.circular(14),
@@ -33,12 +35,23 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  // Helper widget to create a scrolling row
+  Widget _scrollingRow(List<Widget> children) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      // Add padding so the first item isn't glued to the edge
+      padding: const EdgeInsets.symmetric(horizontal: 4), 
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    final name =
-        user?.email ??
-        "User"; // in the future change this to fetching a username from Firestore (need to change up signup requirements)
+    final name = user?.email ?? "User"; 
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -46,7 +59,6 @@ class DashboardScreen extends StatelessWidget {
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          // log out button
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log Out',
@@ -61,7 +73,6 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // note: might replace image to match the prototype but im just testing with the image we alr have
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
@@ -69,6 +80,14 @@ class DashboardScreen extends StatelessWidget {
                 height: 220,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                // Add error builder in case image fails to load
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 220, 
+                    color: Colors.grey[300], 
+                    child: const Center(child: Icon(Icons.broken_image, size: 50))
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
@@ -96,27 +115,19 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // ----- DASHBOARD TILES -----
-            // to do: make navigation path
-            // to do: also want to include interaction with the tiles, such as when you hover over them
-            // to do: figure out the spacing of the tiles
-            // to do: make it better lol
             const Text(
               'Map Features',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _tile(Icons.local_pizza, 'Food Alert'),
-                const SizedBox(width: 30),
-                _tile(Icons.directions_car, 'Parking'),
-                const SizedBox(width: 30),
-                _tile(Icons.power, 'Outlets'),
-                const SizedBox(width: 30),
-                _tile(Icons.family_restroom, 'Restrooms'),
-              ],
-            ),
+            
+            // Replaced standard Row with _scrollingRow helper
+            _scrollingRow([
+              _tile(Icons.local_pizza, 'Food Alert'),
+              _tile(Icons.directions_car, 'Parking'),
+              _tile(Icons.power, 'Outlets'),
+              _tile(Icons.family_restroom, 'Restrooms'),
+            ]),
 
             const SizedBox(height: 24),
 
@@ -126,16 +137,12 @@ class DashboardScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _tile(Icons.event, 'Events'),
-                const SizedBox(width: 30),
-                _tile(Icons.forum, 'Misc Forums'),
-                const SizedBox(width: 30),
-                _tile(Icons.apartment, 'Dorm Life'),
-              ],
-            ),
+            
+            _scrollingRow([
+               _tile(Icons.event, 'Events'),
+               _tile(Icons.forum, 'Misc Forums'),
+               _tile(Icons.apartment, 'Dorm Life'),
+            ]),
 
             const SizedBox(height: 24),
 
@@ -145,16 +152,15 @@ class DashboardScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _tile(Icons.access_time, 'Hours & Capacity'),
-                const SizedBox(width: 30),
-                _tile(Icons.menu_book, 'Additional Resources'),
-                const SizedBox(width: 30),
-                _tile(Icons.edit_note, 'Feedback & Analytics'),
-              ],
-            ),
+            
+            _scrollingRow([
+              _tile(Icons.access_time, 'Hours & Capacity'),
+              _tile(Icons.menu_book, 'Additional Resources'),
+              _tile(Icons.edit_note, 'Feedback & Analytics'),
+            ]),
+            
+            // Add some extra space at bottom so navigation bar doesn't cover content
+            const SizedBox(height: 20),
           ],
         ),
       ),
