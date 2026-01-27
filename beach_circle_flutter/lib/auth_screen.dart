@@ -13,7 +13,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLogin = true;
+  final bool _isLogin = true;
   bool _isLoading = false;
 
 // TO HIDE CERTAIN SYSTEM UI OVERLAYS LIKE THE NAVIGATION BAR
