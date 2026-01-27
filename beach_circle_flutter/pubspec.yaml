@@ -15,8 +15,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   url_launcher: ^6.3.0 #For the url links add this
   font_awesome_flutter: ^10.7.0
+
   # Firebase packages
-  firebase_core: ^3.0.0
+  firebase_core: ^4.4.0
   firebase_auth: ^5.0.0
   cloud_firestore: ^5.0.0
 
