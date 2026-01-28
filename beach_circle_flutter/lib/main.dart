@@ -15,6 +15,7 @@ import 'addres_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'screens/resources_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
