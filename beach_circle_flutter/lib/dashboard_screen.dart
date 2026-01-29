@@ -1,10 +1,7 @@
 import 'package:beach_circle_flutter/addres_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// importing the screens
-// note: not all dart pages have been created yet
-// missing: outlet, restroom, food alert, parking, studyhall, resource
+import 'notification_test_screen.dart'; 
 import 'dormlife_screen.dart';
 import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
@@ -93,6 +90,20 @@ class DashboardScreen extends StatelessWidget {
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
+          // --- SECRET ADMIN BUTTON START ---
+          if (user?.email == 'reytest@gmail.com') 
+            IconButton(
+              icon: const Icon(Icons.bug_report, color: Colors.red), 
+              tooltip: 'Secret Admin Test',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationTestScreen()),
+                );
+              },
+            ),
+          // --- SECRET ADMIN BUTTON END ---
+
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log Out',
@@ -106,7 +117,7 @@ class DashboardScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          // Welcoming the user with their name, note: email name might not properly describe user?
+          // Welcoming the user with their name
           children: [
             Text(
               'Hello, $name',
@@ -127,8 +138,6 @@ class DashboardScreen extends StatelessWidget {
                 height: 220,
                 width: double.infinity,
                 fit: BoxFit.cover,
-
-                // Add error builder in case image fails to load
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     height: 220,
@@ -151,36 +160,26 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // note: screens are just the dart pages available as of rn
             _scrollingRow([
-              // Food Alert
               _tile(
                 context,
                 Icons.local_pizza,
                 'Food Alert',
                 const MapScreen(),
               ),
-
-              // Parking Difficulty Indicator
               _tile(
                 context,
                 Icons.directions_car,
                 'Parking',
                 const MapScreen(),
               ),
-
-              // Outlets
               _tile(context, Icons.power, 'Outlets', const MapScreen()),
-
-              // Bathroom Finder
               _tile(
                 context,
                 Icons.family_restroom,
                 'Bathrooms',
                 const MapScreen(),
               ),
-
-              // Study Hall
               _tile(
                 context,
                 Icons.auto_stories,
@@ -199,13 +198,8 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             _scrollingRow([
-              // Event Board
               _tile(context, Icons.event, 'Events', const EventsScreen()),
-
-              // Student Misc Forum
               _tile(context, Icons.forum, 'Misc Forums', const MiscScreen()),
-
-              // Dorm Life
               _tile(
                 context,
                 Icons.apartment,
@@ -224,23 +218,18 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             _scrollingRow([
-              // Hours & Capacity
               _tile(
                 context,
                 Icons.access_time,
                 'Hours & Capacity',
                 const HourscapScreen(),
               ),
-
-              // Additional Resources
               _tile(
                 context,
                 Icons.menu_book,
                 'Additional Resources',
                 const AddresScreen(),
               ),
-
-              // Feedback & Analytics
               _tile(
                 context,
                 Icons.edit_note,
@@ -249,7 +238,6 @@ class DashboardScreen extends StatelessWidget {
               ),
             ]),
 
-            // Add some extra space at bottom so navigation bar doesn't cover content
             const SizedBox(height: 20),
           ],
         ),
@@ -259,20 +247,16 @@ class DashboardScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-
-        // navigating the different pages from the bar
         onTap: (index) {
           if (index == 0) return; // to dashboard
 
           if (index == 1) {
-            // redirects to map page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const MapScreen()),
             );
           }
           if (index == 2) {
-            // redirects to resource page NOTE: REPLACE IT WITH THE RIGHT SCREEN SINCE WE DONT HAVE IT ATM
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddresScreen()),
@@ -280,14 +264,12 @@ class DashboardScreen extends StatelessWidget {
           }
 
           if (index == 3) {
-            // redirects to settings page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
             );
           }
         },
-
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
