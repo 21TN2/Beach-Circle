@@ -21,7 +21,7 @@ void main() async {
 
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-    FirebaseOptions? firebaseConfigWeb;
+    //FirebaseOptions? firebaseConfigWeb;
     await Firebase.initializeApp(
       options: firebaseConfigWeb, 
     );

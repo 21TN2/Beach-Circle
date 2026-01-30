@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.0.4
+  mapbox_maps_flutter: ^2.3.0
 
   #Resource page Packages
   cupertino_icons: ^1.0.8
@@ -30,3 +31,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+    - assets/.env/.env.public.dev
+
+# flutter:
+#   assets:
+#     - assets/.env/.env.public.dev
