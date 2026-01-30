@@ -15,13 +15,14 @@ import 'addres_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'screens/resources_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-    FirebaseOptions? firebaseConfigWeb;
+
     await Firebase.initializeApp(
       options: firebaseConfigWeb, 
     );
@@ -54,7 +55,6 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-//<<<<<<< HEAD
 }
 
 
@@ -107,5 +107,3 @@ class MyApp extends StatelessWidget {
 //     );
 //   }
 // }
-//=======
-//>>>>>>> 98e4db3fc56fc17b8a64d9cfff48495c4dbb707b
