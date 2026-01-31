@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// to do: change off-campus resource image
+
 class MiscScreen extends StatefulWidget {
   const MiscScreen({super.key});
 
@@ -18,10 +20,10 @@ class _MiscScreenState extends State<MiscScreen> {
     _Category("Clubs", "assets/forum/clubs.jpg"),
     _Category("Concerns", "assets/forum/concerns.jpg"),
     _Category("Community\nChat", "assets/forum/community_chat.jpg"),
-    _Category("Major\nQ&A", "assets/forum/engineering_qa.jpg"),
+    _Category("Major\nQ&A", "assets/forum/major_qa.jpg"),
     _Category("Help", "assets/forum/help.jpg"),
     _Category("Campus\nResources", "assets/forum/campus_resources.jpg"),
-    _Category("Off-Campus\nActivities", "assets/forum/off_campus.jpg"),
+    _Category("Off-Campus\nActivities", "assets/forum/longbeach.jpg"),
   ];
 
   late List<bool> starred;
@@ -241,6 +243,7 @@ class _CategoryCard extends StatelessWidget {
   final bool isStarred;
   final VoidCallback onStarTap;
 
+  // image & text cover
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -258,7 +261,7 @@ class _CategoryCard extends StatelessWidget {
 
           // Dark overlay so text pops
           Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.25)),
+            child: Container(color: Colors.black.withOpacity(0.45)),
           ),
 
           // Star icon
@@ -279,7 +282,18 @@ class _CategoryCard extends StatelessWidget {
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    blurRadius: 6,
+                    color: Colors.black,
+                    offset: Offset(1, 1),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
