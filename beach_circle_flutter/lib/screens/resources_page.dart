@@ -209,7 +209,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
           gradient: LinearGradient(
             colors: [
               theme.colorScheme.surface,
-              theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              theme.colorScheme.surfaceVariant.withOpacity(0.3),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
