@@ -126,7 +126,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
               
               // Map style - you can change this to different styles
-              styleUri: MapboxStyles.MAPBOX_STREETS,
+              styleUri: "mapbox://styles/theresa2/cmlbykdmm000s01su4z139emu",
               
               textureView: true, // Better for web/Android
               onMapCreated: _onMapCreated,
