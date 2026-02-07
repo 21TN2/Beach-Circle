@@ -11,27 +11,63 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   MapboxMap? mapboxMap;
   PointAnnotationManager? pointAnnotationManager;
-  
-  // Default location (San Francisco)
-  static const double _centerLat = 37.7749;
-  static const double _centerLng = -122.4194;
+ 
+  // Default location (CSULB)
+  static const double _centerLat = 33.7820;
+  static const double _centerLng = -118.1126;
+
+
+  static final campusBounds = CoordinateBounds(
+      southwest: Point(
+        coordinates: Position(-118.1218, 33.7755),
+      ),
+      northeast: Point(
+        coordinates: Position(-118.10769, 33.7888),
+      ),
+      infiniteBounds: false,
+    );
+
 
   void _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
-    
+
+
+    //Set camera
+    await mapboxMap!.setCamera(
+      CameraOptions(
+        center: Point(
+          coordinates: Position(
+            _centerLng,
+            _centerLat,
+          ),
+        ),
+        zoom: 15.0,
+      ),
+    );
+
+
+    await mapboxMap!.setBounds(
+      CameraBoundsOptions(
+        bounds: campusBounds,
+        minZoom: 13.0,
+        maxZoom: 20.0,
+      ),
+    );
+   
     // Add a marker at the center location
     await mapboxMap?.annotations.createPointAnnotationManager().then((manager) async {
       pointAnnotationManager = manager;
-      
+     
       final pointAnnotationOptions = PointAnnotationOptions(
         geometry: Point(coordinates: Position(_centerLng, _centerLat)),
         iconSize: 1.5,
         iconImage: "marker", // Built-in marker icon
       );
-      
+     
       pointAnnotationManager?.create(pointAnnotationOptions);
     });
   }
+
 
   void _zoomIn() async {
     final cameraState = await mapboxMap?.getCameraState();
@@ -61,7 +97,7 @@ class _MapScreenState extends State<MapScreen> {
     mapboxMap?.flyTo(
       CameraOptions(
         center: Point(coordinates: Position(_centerLng, _centerLat)),
-        zoom: 12.0,
+        zoom: 15.0,
         pitch: 0.0,
         bearing: 0.0,
       ),

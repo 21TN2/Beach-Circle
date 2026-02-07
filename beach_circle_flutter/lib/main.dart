@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'mapbox.dart';
 import 'firebase_options.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
@@ -18,7 +20,7 @@ import 'dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  MapboxOptions.setAccessToken(mapboxAccessToken);
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
     //FirebaseOptions? firebaseConfigWeb;
