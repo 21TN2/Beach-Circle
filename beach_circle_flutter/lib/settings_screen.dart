@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile_screen.dart'; // Ensure this import exists
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,7 +10,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // --- State Variables to track your settings ---
+  // --- State Variables ---
   bool _notificationsEnabled = true;
   bool _eventReminders = true;
   bool _foodAlerts = true;
@@ -21,11 +22,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Log out function
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
-    // Usually, auth state changes will handle navigation, but strictly popping can help too
     if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
-  // Helper widget to build the section titles
+  // Helper widget for headers
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Helper widget to build the toggle buttons
+  // Helper widget for toggle buttons
   Widget _buildToggleOption(String label, bool value, VoidCallback onToggle) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -59,13 +59,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onToggle, // This triggers the switch
+          onTap: onToggle,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Text changes based on the boolean value
                 Text(
                   "$label: ${value ? 'ON' : 'OFF'}",
                   style: const TextStyle(
@@ -82,7 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Helper for non-toggle buttons (like Pin Color)
+  // Helper for static buttons
   Widget _buildStaticOption(String text, {Widget? trailing}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -121,11 +120,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        // This makes the back button appear to go back to Dashboard
-        automaticallyImplyLeading: true, 
+        automaticallyImplyLeading: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(), // Exit to Dashboard
+          onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: const Color(0xFFFFD700),
         elevation: 0,
@@ -162,13 +160,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const SizedBox(height: 20),
 
-            // Profile Settings Button
+            // ----- Profile Settings Button (UPDATED) -----
             Center(
               child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.92,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  // 1. ADDED NAVIGATION LOGIC HERE
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD700),
                     foregroundColor: Colors.black,
@@ -208,7 +212,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildToggleOption('Show Building Labels', _showBuildingLabels, () {
               setState(() => _showBuildingLabels = !_showBuildingLabels);
             }),
-            // Static option (doesn't toggle ON/OFF in the text)
             _buildStaticOption(
               'Pin Color: Default',
               trailing: Container(
@@ -223,7 +226,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ----- Weather Section -----
             _buildSectionHeader('Weather and Enviroment'),
-            // Static option
             _buildStaticOption('Temperature Units: Fahrenheit'),
             _buildToggleOption('Weather Alerts', _weatherAlerts, () {
               setState(() => _weatherAlerts = !_weatherAlerts);
