@@ -31,10 +31,17 @@ class _MapScreenState extends State<MapScreen> {
   void _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
 
+    await mapboxMap!.gestures.updateSettings(
+      GesturesSettings(
+        rotateEnabled: false,
+        pitchEnabled: false,
+      ),
+    );
 
     //Set camera
     await mapboxMap!.setCamera(
       CameraOptions(
+        bearing: 0,
         center: Point(
           coordinates: Position(
             _centerLng,
@@ -120,12 +127,12 @@ class _MapScreenState extends State<MapScreen> {
               // Get one for free at https://account.mapbox.com/access-tokens/
               key: const ValueKey("mapWidget"),
               
-              cameraOptions: CameraOptions(
-                center: Point(coordinates: Position(_centerLng, _centerLat)),
-                zoom: 12.0,
-              ),
+              // cameraOptions: CameraOptions(
+              //   center: Point(coordinates: Position(_centerLng, _centerLat)),
+              //   zoom: 12.0,
+              // ),
               
-              // Map style - you can change this to different styles
+              // Map style 
               styleUri: "mapbox://styles/theresa2/cmlbykdmm000s01su4z139emu",
               
               textureView: true, // Better for web/Android
