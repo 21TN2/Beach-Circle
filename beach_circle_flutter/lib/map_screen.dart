@@ -19,10 +19,10 @@ class _MapScreenState extends State<MapScreen> {
 
   static final campusBounds = CoordinateBounds(
       southwest: Point(
-        coordinates: Position(-118.1218, 33.7755),
+        coordinates: Position(-118.1225, 33.77387), //long, lat
       ),
       northeast: Point(
-        coordinates: Position(-118.10769, 33.7888),
+        coordinates: Position(-118.1070, 33.78988),
       ),
       infiniteBounds: false,
     );
