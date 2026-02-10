@@ -1,15 +1,21 @@
-import 'package:beach_circle_flutter/addres_screen.dart';
+// dashboard home page
+import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'dormlife_screen.dart';
-import 'events_screen.dart';
-import 'feedbackanalytics_screen.dart';
-import 'hourscap_screen.dart';
+// dashboard screens
 import 'map_screen.dart';
 import 'misc_screen.dart';
-import 'settings_screen.dart';
 import 'screens/resources_page.dart';
+import 'settings_screen.dart';
+
+import 'events_screen.dart';
+import 'dormlife_screen.dart';
+import 'hourscap_screen.dart';
+import 'feedbackanalytics_screen.dart';
+
+// Create Forum page (real one)
+import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_post_pg.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,18 +28,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // 0 = Dashboard, 1 = Map, 2 = Forum, 3 = Resources, 4 = Settings
   int _currentIndex = 0;
 
-  // Log out button
+  // Tab 0: dashboard
+  String _homePage = "home"; // home | events | dormlife | hourscap | feedback
+
+  // Tab 2: forum
+  String _forumPage = "forum"; // forum | createForum
+
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
   }
 
-  // grid pushes to a page
-  Widget _tile(
-    BuildContext context,
-    IconData icon,
-    String label,
-    Widget destination,
-  ) {
+  // ----------  dashboard tiles  ----------
+  Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
       child: Material(
@@ -43,12 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(14),
           hoverColor: Colors.blue.withOpacity(0.25),
           splashColor: Colors.blue.withOpacity(0.25),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => destination),
-            );
-          },
+          onTap: onTap,
           child: Ink(
             width: 110,
             height: 100,
@@ -74,44 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Tile that SWITCHES tabs for bottom navigator
-  Widget _tileTab(IconData icon, String label, int tabIndex) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          hoverColor: Colors.blue.withOpacity(0.25),
-          splashColor: Colors.blue.withOpacity(0.25),
-          onTap: () => setState(() => _currentIndex = tabIndex),
-          child: Ink(
-            width: 110,
-            height: 100,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD7EBFF),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 30),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Helper widget to create a scrolling row
   Widget _scrollingRow(List<Widget> children) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -123,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Dashboard Body
+  // ---------- Dashboard layout --------------
   Widget _dashboardBody(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.email?.split('@').first ?? "User";
@@ -144,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // CSULB Image
+          // CSULB Image (same as yours)
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
@@ -174,21 +137,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 15),
 
           _scrollingRow([
-            _tile(context, Icons.local_pizza, 'Food Alert', const MapScreen()),
-            _tile(context, Icons.directions_car, 'Parking', const MapScreen()),
-            _tile(context, Icons.power, 'Outlets', const MapScreen()),
-            _tile(
-              context,
-              Icons.family_restroom,
-              'Bathrooms',
-              const MapScreen(),
-            ),
-            _tile(
-              context,
-              Icons.auto_stories,
-              'Study Halls',
-              const MapScreen(),
-            ),
+            _tileOpen(Icons.local_pizza, 'Food Alert', () {
+              setState(() => _currentIndex = 1);
+            }),
+            _tileOpen(Icons.directions_car, 'Parking', () {
+              setState(() => _currentIndex = 1);
+            }),
+            _tileOpen(Icons.power, 'Outlets', () {
+              setState(() => _currentIndex = 1);
+            }),
+            _tileOpen(Icons.family_restroom, 'Bathrooms', () {
+              setState(() => _currentIndex = 1);
+            }),
+            _tileOpen(Icons.auto_stories, 'Study Halls', () {
+              setState(() => _currentIndex = 1);
+            }),
           ]),
 
           const SizedBox(height: 24),
@@ -200,17 +163,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            _tile(context, Icons.event, 'Events', const EventsScreen()),
+            // Events = dashboard sub-page (bottom nav stays)
+            _tileOpen(Icons.event, 'Events', () {
+              setState(() {
+                _currentIndex = 0;
+                _homePage = "events";
+              });
+            }),
 
-            // ✅ IMPORTANT: switch to Forum tab so nav bar stays visible
-            _tileTab(Icons.forum, 'Misc Forums', 2),
+            // Misc Forums
+            _tileOpen(Icons.forum, 'Misc Forums', () {
+              setState(() {
+                _currentIndex = 2;
+                _forumPage = "forum";
+              });
+            }),
 
-            _tile(
-              context,
-              Icons.apartment,
-              'Dorm Life',
-              const DormlifeScreen(),
-            ),
+            // Dorm Life
+            _tileOpen(Icons.apartment, 'Dorm Life', () {
+              setState(() {
+                _currentIndex = 0;
+                _homePage = "dormlife";
+              });
+            }),
           ]),
 
           const SizedBox(height: 24),
@@ -222,24 +197,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            _tile(
-              context,
-              Icons.access_time,
-              'Hours & Capacity',
-              const HourscapScreen(),
-            ),
-            _tile(
-              context,
-              Icons.menu_book,
-              'Additional Resources',
-              const ResourcesPage(),
-            ),
-            _tile(
-              context,
-              Icons.edit_note,
-              'Feedback & Analytics',
-              const FeedbackanalyticsScreen(),
-            ),
+            // Hours & Capacity = dashboard sub-page
+            _tileOpen(Icons.access_time, 'Hours & Capacity', () {
+              setState(() {
+                _currentIndex = 0;
+                _homePage = "hourscap";
+              });
+            }),
+
+            // Additional Resources
+            _tileOpen(Icons.menu_book, 'Additional Resources', () {
+              setState(() => _currentIndex = 3);
+            }),
+
+            // Feedback & Analytics
+            _tileOpen(Icons.edit_note, 'Feedback & Analytics', () {
+              setState(() {
+                _currentIndex = 0;
+                _homePage = "feedback";
+              });
+            }),
           ]),
 
           const SizedBox(height: 20),
@@ -248,58 +225,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // ---------- Body switcher ------------
+  Widget _buildBody(BuildContext context) {
+    // TAB 0 dashboard homepage
+    if (_currentIndex == 0) {
+      switch (_homePage) {
+        case "events":
+          return const EventsScreen();
+        case "dormlife":
+          return const DormlifeScreen();
+        case "hourscap":
+          return const HourscapScreen();
+        case "feedback":
+          return const FeedbackanalyticsScreen();
+        case "home":
+        default:
+          return _dashboardBody(context);
+      }
+    }
+
+    // TAB 1 campus map
+    if (_currentIndex == 1) return const MapScreen();
+
+    // TAB 2 student misc forum
+    if (_currentIndex == 2) {
+      if (_forumPage == "createForum") {
+        return CreateForumPostPage(
+          onClose: () => setState(() => _forumPage = "forum"),
+          onSubmitted: () => setState(() => _forumPage = "forum"),
+        );
+      }
+      return const MiscScreen();
+    }
+
+    // TAB 3 resource page
+    if (_currentIndex == 3) return const ResourcesPage();
+
+    // TAB 4 settings
+    return const SettingsScreen();
+  }
+
+  // ---------- AppBar  ------------
+  PreferredSizeWidget? _buildAppBar() {
+    if (_currentIndex == 0 && _homePage == "home") {
+      return AppBar(
+        title: const Text('Dashboard'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Log Out',
+            onPressed: _logOut,
+          ),
+        ],
+      );
+    }
+
+    // show a back button for dashboard pages
+    if (_currentIndex == 0 && _homePage != "home") {
+      String title = "Back";
+      if (_homePage == "events") title = "Events";
+      if (_homePage == "dormlife") title = "Dorm Life";
+      if (_homePage == "hourscap") title = "Hours & Capacity";
+      if (_homePage == "feedback") title = "Feedback & Analytics";
+
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => setState(() => _homePage = "home"),
+        ),
+        title: Text(title),
+        centerTitle: true,
+      );
+    }
+
+    // no appbar for other tabs yet
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Tab pages
-    final pages = <Widget>[
-      // Tab 0: Dashboard
-      Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Dashboard'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Log Out',
-              onPressed: _logOut,
-            ),
-          ],
-        ),
-        body: _dashboardBody(context),
-      ),
-
-      const MapScreen(),
-      const MiscScreen(),
-      const ResourcesPage(),
-      const SettingsScreen(),
-    ];
-
     return Scaffold(
-      body: pages[_currentIndex],
+      appBar: _buildAppBar(),
+      body: _buildBody(context),
 
-      // Student Misc Forum: for pencil icon to appear
+      // Pencil icon ONLY on forum tab
       floatingActionButton:
-          _currentIndex == 2
+          (_currentIndex == 2 && _forumPage == "forum")
               ? FloatingActionButton(
                 backgroundColor: const Color(0xFFFFD500),
                 foregroundColor: Colors.black,
                 elevation: 3,
                 onPressed: () {
-                  // TODO: later navigate to "create post"
+                  setState(() {
+                    _forumPage = "createForum";
+                  });
                 },
                 child: const Icon(Icons.edit),
               )
               : null,
 
-      // location of the pencil icon
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
-      // bottom navigation bar
+      // Bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap:
+            (index) => setState(() {
+              _currentIndex = index;
+
+              // reset sub-pages when switching tabs
+              if (index != 0) _homePage = "home";
+              if (index != 2) _forumPage = "forum";
+            }),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),

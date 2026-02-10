@@ -1,8 +1,9 @@
+// student misc forum home page
+// TO DO: create a main page for each category ?
+// imports
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-// to do: change off-campus resource image
 
 class MiscScreen extends StatefulWidget {
   const MiscScreen({super.key});
@@ -14,19 +15,52 @@ class MiscScreen extends StatefulWidget {
 class _MiscScreenState extends State<MiscScreen> {
   bool isInterested = false;
 
-  // forum categories
-  final List<_Category> categories = const [
-    _Category("Lost & Found", "assets/forum/lost_found.jpg"),
-    _Category("Clubs", "assets/forum/clubs.jpg"),
-    _Category("Concerns", "assets/forum/concerns.jpg"),
-    _Category("Community\nChat", "assets/forum/community_chat.jpg"),
-    _Category("Major\nQ&A", "assets/forum/major_qa.jpg"),
-    _Category("Help", "assets/forum/help.jpg"),
-    _Category("Campus\nResources", "assets/forum/campus_resources.jpg"),
-    _Category("Off-Campus\nActivities", "assets/forum/longbeach.jpg"),
-  ];
+  // starred category set up
+  Set<String> starredCategoryIds = {};
 
-  late List<bool> starred;
+  // default built-in forum categories
+  final List<_CategoryItem> builtInCategories = const [
+    _CategoryItem(
+      id: "builtin:Lost & Found",
+      title: "Lost & Found",
+      imagePath: "assets/forum/lost_found.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Clubs",
+      title: "Clubs",
+      imagePath: "assets/forum/clubs.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Concerns",
+      title: "Concerns",
+      imagePath: "assets/forum/concerns.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Community Chat",
+      title: "Community\nChat",
+      imagePath: "assets/forum/community_chat.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Major Q&A",
+      title: "Major\nQ&A",
+      imagePath: "assets/forum/major_qa.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Help",
+      title: "Help",
+      imagePath: "assets/forum/help.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Campus Resources",
+      title: "Campus\nResources",
+      imagePath: "assets/forum/campus_resources.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Off-Campus Activities",
+      title: "Off-Campus\nActivities",
+      imagePath: "assets/forum/longbeach.jpg",
+    ),
+  ];
 
   // firebase storage
   DocumentReference<Map<String, dynamic>> _prefsRef() {
@@ -38,66 +72,110 @@ class _MiscScreenState extends State<MiscScreen> {
         .doc('misc');
   }
 
-  // loads the saved interested
+  // loading user categories pref
   @override
   void initState() {
     super.initState();
-    starred = List<bool>.filled(categories.length, false);
     _loadPrefs();
   }
 
-  // for starred categories
+  // firebase saved starred state
   Future<void> _loadPrefs() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     final snap = await _prefsRef().get();
     if (!snap.exists) return;
 
     final data = snap.data()!;
     final savedInterested = data['interested'];
-    final savedStars = data['starredCategories'];
+    final savedStarIds = data['starredCategoryIds'];
 
+    //  setting state for starred categories
     setState(() {
       if (savedInterested is bool) isInterested = savedInterested;
 
-      if (savedStars is List) {
-        // converts dynamic list into bool list
-        final list = savedStars.map((e) => e == true).toList();
+      if (savedStarIds is List) {
+        starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
+      }
 
-        // checking if it matches the number of categories
-        starred = List<bool>.generate(
-          categories.length,
-          (i) => i < list.length ? list[i] : false,
-        );
+      //
+      if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
+        final oldList =
+            (data['starredCategories'] as List).map((e) => e == true).toList();
+
+        for (int i = 0; i < builtInCategories.length; i++) {
+          final isStar = i < oldList.length ? oldList[i] : false;
+          if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+        }
       }
     });
   }
 
+  // firebase stroage for interested categories
   Future<void> _savePrefs() async {
     await _prefsRef().set({
       'interested': isInterested,
-      'starredCategories': starred,
+      'starredCategoryIds': starredCategoryIds.toList(),
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 
-  // list based on users starred as interested
-  List<int> _visibleCategoryIndexes() {
-    if (!isInterested) {
-      // show everything
-      return List<int>.generate(categories.length, (i) => i);
+  // what to do now user clicks on interested
+  void _toggleStar(String categoryId) async {
+    setState(() {
+      if (starredCategoryIds.contains(categoryId)) {
+        starredCategoryIds.remove(categoryId);
+      } else {
+        starredCategoryIds.add(categoryId);
+      }
+    });
+    await _savePrefs();
+  }
+
+  // interested filter
+  List<_CategoryItem> _visibleCategories(List<_CategoryItem> all) {
+    if (!isInterested) return all;
+    return all.where((c) => starredCategoryIds.contains(c.id)).toList();
+  }
+
+  // empty grid
+  Widget _buildGrid(List<_CategoryItem> visible) {
+    if (visible.isEmpty) {
+      return const Center(
+        child: Text(
+          "No starred categories yet.\nStar a category first",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
     }
 
-    // show only starred
-    final onlyStarred = <int>[];
-    for (int i = 0; i < starred.length; i++) {
-      if (starred[i]) onlyStarred.add(i);
-    }
-    return onlyStarred;
+    // building category grid
+    return GridView.builder(
+      itemCount: visible.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.05,
+      ),
+      itemBuilder: (context, index) {
+        final cat = visible[index];
+        final isStarred = starredCategoryIds.contains(cat.id);
+
+        return _CategoryCard(
+          title: cat.title,
+          imagePath: cat.imagePath,
+          isStarred: isStarred,
+          onStarTap: () => _toggleStar(cat.id),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final visibleIndexes = _visibleCategoryIndexes();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -115,9 +193,7 @@ class _MiscScreenState extends State<MiscScreen> {
                   // Interested button
                   GestureDetector(
                     onTap: () async {
-                      setState(() {
-                        isInterested = !isInterested;
-                      });
+                      setState(() => isInterested = !isInterested);
                       await _savePrefs();
                     },
                     child: Container(
@@ -152,46 +228,56 @@ class _MiscScreenState extends State<MiscScreen> {
               ),
             ),
 
-            // Grid
+            // category grid
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child:
-                    visibleIndexes.isEmpty
-                        ? const Center(
-                          // case: if there's no starred categories yet
-                          child: Text(
-                            "No starred categories yet.\nStar a category first ",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        )
-                        : GridView.builder(
-                          itemCount: visibleIndexes.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 1.05,
-                              ),
-                          itemBuilder: (context, gridIndex) {
-                            final categoryIndex = visibleIndexes[gridIndex];
+                child: StreamBuilder<QuerySnapshot>(
+                  stream:
+                      FirebaseFirestore.instance
+                          .collection("forum_requests")
+                          .where("status", isEqualTo: "approved")
+                          .orderBy("createdAt", descending: false)
+                          .snapshots(),
+                  builder: (context, snapshot) {
+                    // to still show default categories
+                    if (snapshot.hasError || !snapshot.hasData) {
+                      final all = builtInCategories;
+                      final visible = _visibleCategories(all);
+                      return _buildGrid(visible);
+                    }
 
-                            return _CategoryCard(
-                              title: categories[categoryIndex].title,
-                              imagePath: categories[categoryIndex].imagePath,
-                              isStarred: starred[categoryIndex],
-                              onStarTap: () async {
-                                setState(() {
-                                  starred[categoryIndex] =
-                                      !starred[categoryIndex];
-                                });
-                                await _savePrefs();
-                              },
-                            );
-                          },
-                        ),
+                    // approved categories set up
+                    final approvedDocs = snapshot.data!.docs;
+
+                    final approvedCategories =
+                        approvedDocs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+
+                          final title = (data["title"] ?? "").toString();
+
+                          // TO DO: WE CAN EDIT THE IMAGE PATH BUT FOR RN, ITS ON THIS IMAFE PATH
+                          final imagePath =
+                              (data["imagePath"] ??
+                                      "assets/forum/campus_resources.jpg")
+                                  .toString();
+
+                          return _CategoryItem(
+                            id: "request:${doc.id}",
+                            title: title,
+                            imagePath: imagePath,
+                          );
+                        }).toList();
+
+                    final allCategories = [
+                      ...builtInCategories,
+                      ...approvedCategories,
+                    ];
+                    final visible = _visibleCategories(allCategories);
+
+                    return _buildGrid(visible);
+                  },
+                ),
               ),
             ),
           ],
@@ -243,7 +329,6 @@ class _CategoryCard extends StatelessWidget {
   final bool isStarred;
   final VoidCallback onStarTap;
 
-  // image & text cover
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -272,7 +357,7 @@ class _CategoryCard extends StatelessWidget {
               onTap: onStarTap,
               child: Icon(
                 isStarred ? Icons.star : Icons.star_border,
-                color: Colors.black,
+                color: Colors.yellow,
               ),
             ),
           ),
@@ -302,8 +387,14 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
-class _Category {
+// Category model w/ IDs
+class _CategoryItem {
+  final String id;
   final String title;
   final String imagePath;
-  const _Category(this.title, this.imagePath);
+  const _CategoryItem({
+    required this.id,
+    required this.title,
+    required this.imagePath,
+  });
 }
