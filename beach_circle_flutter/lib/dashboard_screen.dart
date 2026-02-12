@@ -14,7 +14,7 @@ import 'dormlife_screen.dart';
 import 'hourscap_screen.dart';
 import 'feedbackanalytics_screen.dart';
 
-// Create Forum page (real one)
+// Create Forum page
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_post_pg.dart';
 
 class DashboardScreen extends StatefulWidget {
