@@ -9,7 +9,7 @@ class ForumThreadPg extends StatefulWidget {
   final ForumPost post;
   final ForumService forumService;
 
-  const ForumThreadPg({
+  ForumThreadPg({
     super.key,
     required this.category,
     required this.post,
