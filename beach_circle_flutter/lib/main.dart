@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:cloud_firestore/cloud_firestore.dart'; 
-import 'firebase_options.dart';
+
+import 'firebase_options.dart'; 
+
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
 import 'map_screen.dart';
@@ -20,8 +22,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    // WEB: Use the keys from the separate file
-    FirebaseOptions? firebaseConfigWeb;
+    // WEB: Use the variable directly from firebase_options.dart
     await Firebase.initializeApp(
       options: firebaseConfigWeb, 
     );
@@ -54,8 +55,9 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-//<<<<<<< HEAD
 }
+//<<<<<<< HEAD
+
 
 
 // import 'package:flutter/material.dart';
