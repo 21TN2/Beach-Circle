@@ -17,7 +17,7 @@ class ForumPost {
     required this.createdAt,
   });
 
-  /// Firestore -> ForumPost
+  // FIRESTORE -> FORUMPOST
   factory ForumPost.fromMap(String id, Map<String, dynamic> data) {
     final ts = data['createdAt'];
 
@@ -42,11 +42,7 @@ class ForumPost {
     );
   }
 
-  /// ForumPost -> Firestore
-  ///
-  /// IMPORTANT:
-  /// - Do NOT store DateTime as a string.
-  /// - Use serverTimestamp() so ordering works correctly.
+  // FORUMPOST -> FIRESTORE
   Map<String, dynamic> toMap() => {
         'categoryId': categoryId,
         'title': title,
@@ -55,7 +51,7 @@ class ForumPost {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-  /// Optional helper if you ever want to duplicate a post with modifications.
+  // DUPLICATE A POST W MODS
   ForumPost copyWith({
     String? id,
     String? categoryId,

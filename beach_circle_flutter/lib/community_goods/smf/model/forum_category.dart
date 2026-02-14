@@ -1,3 +1,5 @@
+// FORUM CATEGORY
+
 class ForumCategory {
   final String id;
   final String title;
@@ -7,6 +9,7 @@ class ForumCategory {
     required this.title,
   });
 
+// CREATES A FORUMCATEGORY FROM MAP
   factory ForumCategory.fromMap(String id, Map<String, dynamic> data) {
     return ForumCategory(
       id: id,

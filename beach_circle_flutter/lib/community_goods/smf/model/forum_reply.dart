@@ -1,3 +1,5 @@
+// REPLY TO FORUM POST
+
 class ForumReply {
   final String id;
   final String postId;
@@ -13,6 +15,8 @@ class ForumReply {
     required this.createdAt,
   });
 
+
+// CREATES FORUMREPLY FROM MAP
   factory ForumReply.fromMap(String id, Map<String, dynamic> data) {
     final ts = data['createdAt'];
     DateTime created =
@@ -27,6 +31,8 @@ class ForumReply {
     );
   }
 
+
+// CONVERST FORUMREPLY INTO MAP
   Map<String, dynamic> toMap() => {
         'postId': postId,
         'body': body,

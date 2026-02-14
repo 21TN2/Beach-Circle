@@ -1,3 +1,5 @@
+// DISPLAYS ALL POSTS 
+
 import 'package:flutter/material.dart';
 import '../model/forum_category.dart';
 import '../model/forum_post.dart';
@@ -33,6 +35,7 @@ class ForumCategoryPg extends StatelessWidget {
             return const Center(child: Text('No posts yet. Be the first!'));
           }
 
+          // DISPLAY LIST OF POSTS
           return ListView.separated(
             padding: const EdgeInsets.all(12),
             itemCount: posts.length,
@@ -44,9 +47,11 @@ class ForumCategoryPg extends StatelessWidget {
                   color: const Color(0xFFEFEFEF),
                   borderRadius: BorderRadius.circular(14),
                 ),
+                // DISPLAY TAPPABLE LISTTILE  
                 child: ListTile(
                   title: Text(p.title, style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text(p.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  // NAVIGATE TO THREAD PAGE WHEN TAPPED
                   onTap: () {
                     Navigator.push(
                       context,

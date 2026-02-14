@@ -1,3 +1,5 @@
+// REUSABLE FORUM POST TILE WIDGET
+
 import 'package:flutter/material.dart';
 import 'interested_button.dart';
 import 'report_button.dart';
@@ -23,22 +25,27 @@ class ForumPostTile extends StatefulWidget {
 }
 
 class _ForumPostTileState extends State<ForumPostTile> {
+  // EXPANDED OR COLLAPSED
   bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      // VERTICAL SPACING
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(12),
+
       decoration: BoxDecoration(
         color: Colors.grey.shade300,
         borderRadius: BorderRadius.circular(12),
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              // EXPAND/COLLAPSE BUTTON
               IconButton(
                 icon: Icon(isExpanded ? Icons.remove : Icons.add),
                 onPressed: () {
@@ -47,6 +54,8 @@ class _ForumPostTileState extends State<ForumPostTile> {
                   });
                 },
               ),
+
+              // POST TITLE
               Expanded(
                 child: Text(
                   widget.title,
@@ -56,13 +65,21 @@ class _ForumPostTileState extends State<ForumPostTile> {
                   ),
                 ),
               ),
+
+              // INTERESTED BUTTON
               InterestedButton(
                 isInterested: widget.isInterested,
                 onPressed: widget.onInterestedTap,
               ),
-              ReportButton(onPressed: widget.onReportTap),
+
+              // REPORT BUTTON
+              ReportButton(
+                onPressed: widget.onReportTap,
+              ),
             ],
           ),
+
+          // POST DESCRIPTION WHEN EXPANDED
           if (isExpanded)
             Padding(
               padding: const EdgeInsets.only(left: 40, top: 8),

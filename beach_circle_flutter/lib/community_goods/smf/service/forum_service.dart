@@ -1,3 +1,5 @@
+// SERVICE LAYER
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/forum_category.dart';
 import '../model/forum_post.dart';
@@ -9,7 +11,7 @@ class ForumService {
 
   final FirebaseFirestore _db;
 
-  // Categories
+  // CATEGORIES
   Stream<List<ForumCategory>> streamCategories() {
     return _db.collection('forumCategories').orderBy('title').snapshots().map(
           (snap) => snap.docs
@@ -18,7 +20,7 @@ class ForumService {
         );
   }
 
-  // Posts in a category
+  // POSTS IN CATEGORY
   Stream<List<ForumPost>> streamPosts(String categoryId) {
     return _db
         .collection('forumPosts')
@@ -32,6 +34,7 @@ class ForumService {
         );
   }
 
+// NEW FORUM POST
   Future<String> createPost({
     required String categoryId,
     required String title,
@@ -50,7 +53,7 @@ class ForumService {
     return doc.id;
   }
 
-  // Replies in a post
+  // RREPLIES IN A POST
   Stream<List<ForumReply>> streamReplies(String postId) {
     return _db
         .collection('forumPosts')
@@ -65,6 +68,7 @@ class ForumService {
         );
   }
 
+// ADDS REPLY TO 'REPLIES' SECTION
   Future<void> addReply({
     required String postId,
     required String body,
@@ -76,7 +80,7 @@ class ForumService {
       'authorId': authorId,
       'authorName': authorName,
       'createdAt': FieldValue.serverTimestamp(),
-      'postId': postId, // optional, but your model supports it
+      'postId': postId, 
     });
   }
 }
