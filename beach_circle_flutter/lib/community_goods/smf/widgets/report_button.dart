@@ -1,3 +1,6 @@
+// REUSABLE REPORT BUTTON WIDGET
+
+
 import 'package:flutter/material.dart';
 
 class ReportButton extends StatelessWidget {
@@ -11,6 +14,7 @@ class ReportButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      // FLAG ICON --> REPORT
       icon: const Icon(Icons.flag),
       color: Colors.black,
       onPressed: onPressed,

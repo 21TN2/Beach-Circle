@@ -1,3 +1,6 @@
+// REUSABLE STAR ICON WIDGET
+
+
 import 'package:flutter/material.dart';
 
 class InterestedButton extends StatelessWidget {
@@ -13,10 +16,12 @@ class InterestedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      // DISPLAY FILLED OR OUTLINED STAR DEPENDING ON STATE
       icon: Icon(
         isInterested ? Icons.star : Icons.star_border,
         color: Colors.amber,
       ),
+      // TAP HANDLING
       onPressed: onPressed,
     );
   }
