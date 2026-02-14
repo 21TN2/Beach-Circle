@@ -9,6 +9,7 @@ import 'hourscap_screen.dart';
 import 'map_screen.dart';
 import 'misc_screen.dart';
 import 'settings_screen.dart';
+import 'bathroom_finder.dart'; 
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -174,12 +175,15 @@ class DashboardScreen extends StatelessWidget {
                 const MapScreen(),
               ),
               _tile(context, Icons.power, 'Outlets', const MapScreen()),
+              
+              // 2. BATHROOM TILE UPDATED HERE
               _tile(
                 context,
                 Icons.family_restroom,
                 'Bathrooms',
-                const MapScreen(),
+                const BathroomFinder(), // Changed from MapScreen()
               ),
+              
               _tile(
                 context,
                 Icons.auto_stories,
