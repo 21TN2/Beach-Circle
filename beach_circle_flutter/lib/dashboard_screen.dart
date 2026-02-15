@@ -92,7 +92,7 @@ class DashboardScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           // --- SECRET ADMIN BUTTON START ---
-          if (user?.email == 'reytest@gmail.com') 
+          if (user?.email == 'teef@gmail.com') 
             IconButton(
               icon: const Icon(Icons.bug_report, color: Colors.red), 
               tooltip: 'Secret Admin Test',
