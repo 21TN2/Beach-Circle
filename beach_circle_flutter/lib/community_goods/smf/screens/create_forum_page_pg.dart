@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class CreateForumPostPage extends StatefulWidget {
-  const CreateForumPostPage({
+class CreateForumPage extends StatefulWidget {
+  const CreateForumPage{
     super.key,
     required this.onClose,
     required this.onSubmitted,
@@ -15,10 +15,11 @@ class CreateForumPostPage extends StatefulWidget {
   final VoidCallback onSubmitted;
 
   @override
-  State<CreateForumPostPage> createState() => _CreateForumPostPageState();
+  State<CreateForumPage> createState() => _CreateForumPageState();
 }
 
-class _CreateForumPostPageState extends State<CreateForumPostPage> {
+// firebase
+class _CreateForumPostPageState extends State<CreateForumPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -73,9 +74,9 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
     } on FirebaseException catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Submit failed: ${e.code}")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Submit failed: ${e.code}")),
+      ); // error handling
       debugPrint("Firestore error: ${e.code} - ${e.message}");
     } catch (e) {
       if (!mounted) return;
@@ -92,13 +93,13 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // Top yellow bar like your screenshot
+      // Top yellow bar
       appBar: AppBar(
         backgroundColor: const Color(0xFFF2D21B),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: widget.onClose, // ✅ no Navigator.pop
+          onPressed: widget.onClose, //
         ),
         centerTitle: true,
         title: Container(
@@ -143,6 +144,7 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
           ),
           const SizedBox(height: 18),
 
+          // creating the forum title
           const Text(
             "Forum Title",
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -162,12 +164,14 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
               ),
             ),
             validator: (v) {
+              // user input required
               if (v == null || v.trim().isEmpty) return "Title is required.";
               return null;
             },
           ),
           const SizedBox(height: 14),
 
+          // creating forum description
           const Text(
             "Forum Description",
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -189,7 +193,7 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return "Description is required.";
+                return "Description is required."; // user input required
               }
               return null;
             },
@@ -202,7 +206,7 @@ class _CreateForumPostPageState extends State<CreateForumPostPage> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _isSubmitting ? null : widget.onClose, // ✅
+                  onPressed: _isSubmitting ? null : widget.onClose,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

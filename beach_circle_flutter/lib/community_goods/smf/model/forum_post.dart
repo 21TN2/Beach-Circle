@@ -5,31 +5,37 @@ class ForumPost {
   final String categoryId;
   final String title;
   final String body;
-  final String author;
+  final String authorId;
+  final String authorName;
   final DateTime createdAt;
+
+  final String? mediaUrl;
+  final String? mediaType;
 
   const ForumPost({
     required this.id,
     required this.categoryId,
     required this.title,
     required this.body,
-    required this.author,
+    required this.authorId,
+    required this.authorName,
     required this.createdAt,
+    required this.mediaUrl,
+    required this.mediaType,
   });
 
-  /// Firestore -> ForumPost
   factory ForumPost.fromMap(String id, Map<String, dynamic> data) {
     final ts = data['createdAt'];
 
-    DateTime createdAt;
+    DateTime created;
     if (ts is Timestamp) {
-      createdAt = ts.toDate();
+      created = ts.toDate();
     } else if (ts is DateTime) {
-      createdAt = ts;
+      created = ts;
     } else if (ts is String) {
-      createdAt = DateTime.tryParse(ts) ?? DateTime.now();
+      created = DateTime.tryParse(ts) ?? DateTime.now();
     } else {
-      createdAt = DateTime.now();
+      created = DateTime.now();
     }
 
     return ForumPost(
@@ -37,40 +43,12 @@ class ForumPost {
       categoryId: (data['categoryId'] ?? '') as String,
       title: (data['title'] ?? '') as String,
       body: (data['body'] ?? '') as String,
-      author: (data['author'] ?? 'Anonymous') as String,
-      createdAt: createdAt,
-    );
-  }
-
-  /// ForumPost -> Firestore
-  ///
-  /// IMPORTANT:
-  /// - Do NOT store DateTime as a string.
-  /// - Use serverTimestamp() so ordering works correctly.
-  Map<String, dynamic> toMap() => {
-        'categoryId': categoryId,
-        'title': title,
-        'body': body,
-        'author': author,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
-
-  /// Optional helper if you ever want to duplicate a post with modifications.
-  ForumPost copyWith({
-    String? id,
-    String? categoryId,
-    String? title,
-    String? body,
-    String? author,
-    DateTime? createdAt,
-  }) {
-    return ForumPost(
-      id: id ?? this.id,
-      categoryId: categoryId ?? this.categoryId,
-      title: title ?? this.title,
-      body: body ?? this.body,
-      author: author ?? this.author,
-      createdAt: createdAt ?? this.createdAt,
+      authorId: (data['authorId'] ?? '') as String,
+      // KEY LINE
+      authorName: (data['authorName'] ?? 'Anonymous') as String,
+      createdAt: created,
+      mediaUrl: data['mediaUrl'] as String?,
+      mediaType: data['mediaType'] as String?,
     );
   }
 }

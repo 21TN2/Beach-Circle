@@ -70,12 +70,18 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.post.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(
+                  widget.post.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(widget.post.body),
                 const SizedBox(height: 10),
                 Text(
-                  'Posted by ${widget.post.author}',
+                  'Posted by ${widget.post.authorId}',
                   style: const TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ],
@@ -96,7 +102,9 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
 
                 final replies = snapshot.data!;
                 if (replies.isEmpty) {
-                  return const Center(child: Text('No replies yet. Say something!'));
+                  return const Center(
+                    child: Text('No replies yet. Say something!'),
+                  );
                 }
 
                 return ListView.separated(
@@ -114,7 +122,10 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r.author, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          Text(
+                            r.author,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
                           const SizedBox(height: 6),
                           Text(r.body),
                         ],
@@ -150,9 +161,14 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: _sending
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.send),
+                    icon:
+                        _sending
+                            ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Icon(Icons.send),
                     onPressed: _sending ? null : _sendReply,
                   ),
                 ],

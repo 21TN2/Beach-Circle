@@ -1,5 +1,4 @@
 // dashboard home page
-import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -14,8 +13,8 @@ import 'dormlife_screen.dart';
 import 'hourscap_screen.dart';
 import 'feedbackanalytics_screen.dart';
 
-// Create Forum page
-import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_post_pg.dart';
+// Forum request page (the “add forum request” screen)
+import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -32,7 +31,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _homePage = "home"; // home | events | dormlife | hourscap | feedback
 
   // Tab 2: forum
-  String _forumPage = "forum"; // forum | createForum
+  String _forumPage = "forum"; // forum | createForumRequest
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -107,7 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // CSULB Image (same as yours)
+          // CSULB Image
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
@@ -129,7 +128,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // -------- DASHBOARD TILES --------------
           const Text(
             'Map Features',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -163,23 +161,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            // Events = dashboard sub-page (bottom nav stays)
             _tileOpen(Icons.event, 'Events', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "events";
               });
             }),
-
-            // Misc Forums
             _tileOpen(Icons.forum, 'Misc Forums', () {
               setState(() {
                 _currentIndex = 2;
                 _forumPage = "forum";
               });
             }),
-
-            // Dorm Life
             _tileOpen(Icons.apartment, 'Dorm Life', () {
               setState(() {
                 _currentIndex = 0;
@@ -197,20 +190,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            // Hours & Capacity = dashboard sub-page
             _tileOpen(Icons.access_time, 'Hours & Capacity', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "hourscap";
               });
             }),
-
-            // Additional Resources
             _tileOpen(Icons.menu_book, 'Additional Resources', () {
               setState(() => _currentIndex = 3);
             }),
-
-            // Feedback & Analytics
             _tileOpen(Icons.edit_note, 'Feedback & Analytics', () {
               setState(() {
                 _currentIndex = 0;
@@ -249,8 +237,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // TAB 2 student misc forum
     if (_currentIndex == 2) {
-      if (_forumPage == "createForum") {
-        return CreateForumPostPage(
+      if (_forumPage == "createForumRequest") {
+        return CreateForumPage(
           onClose: () => setState(() => _forumPage = "forum"),
           onSubmitted: () => setState(() => _forumPage = "forum"),
         );
@@ -309,7 +297,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: _buildAppBar(),
       body: _buildBody(context),
 
-      // Pencil icon ONLY on forum tab
+      //(request a forum/category)
       floatingActionButton:
           (_currentIndex == 2 && _forumPage == "forum")
               ? FloatingActionButton(
@@ -318,7 +306,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 elevation: 3,
                 onPressed: () {
                   setState(() {
-                    _forumPage = "createForum";
+                    _forumPage = "createForumRequest";
                   });
                 },
                 child: const Icon(Icons.edit),

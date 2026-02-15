@@ -5,16 +5,21 @@ import '../model/forum_reply.dart';
 
 class ForumService {
   ForumService({FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _db;
 
   // Categories
   Stream<List<ForumCategory>> streamCategories() {
-    return _db.collection('forumCategories').orderBy('title').snapshots().map(
-          (snap) => snap.docs
-              .map((d) => ForumCategory.fromMap(d.id, d.data()))
-              .toList(),
+    return _db
+        .collection('forumCategories')
+        .orderBy('title')
+        .snapshots()
+        .map(
+          (snap) =>
+              snap.docs
+                  .map((d) => ForumCategory.fromMap(d.id, d.data()))
+                  .toList(),
         );
   }
 
@@ -26,18 +31,20 @@ class ForumService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
-          (snap) => snap.docs
-              .map((d) => ForumPost.fromMap(d.id, d.data()))
-              .toList(),
+          (snap) =>
+              snap.docs.map((d) => ForumPost.fromMap(d.id, d.data())).toList(),
         );
   }
 
+  // creating a post
   Future<String> createPost({
     required String categoryId,
     required String title,
     required String body,
     required String authorId,
     required String authorName,
+    String? mediaUrl,
+    String? mediaType, // e.g. "image"
   }) async {
     final doc = await _db.collection('forumPosts').add({
       'categoryId': categoryId,
@@ -46,6 +53,8 @@ class ForumService {
       'authorId': authorId,
       'authorName': authorName,
       'createdAt': FieldValue.serverTimestamp(),
+      if (mediaUrl != null) 'mediaUrl': mediaUrl,
+      if (mediaType != null) 'mediaType': mediaType,
     });
     return doc.id;
   }
@@ -59,9 +68,8 @@ class ForumService {
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map(
-          (snap) => snap.docs
-              .map((d) => ForumReply.fromMap(d.id, d.data()))
-              .toList(),
+          (snap) =>
+              snap.docs.map((d) => ForumReply.fromMap(d.id, d.data())).toList(),
         );
   }
 
@@ -72,11 +80,27 @@ class ForumService {
     required String authorName,
   }) async {
     await _db.collection('forumPosts').doc(postId).collection('replies').add({
+      'postId': postId,
       'body': body,
       'authorId': authorId,
-      'authorName': authorName,
+
+      // includes username in reply
+      'author': authorName,
+
+      // timestamp when reply was sent
       'createdAt': FieldValue.serverTimestamp(),
-      'postId': postId, // optional, but your model supports it
+      'postId': postId,
+    });
+  }
+
+  Future<void> attachMediaToPost({
+    required String postId,
+    required String mediaUrl,
+    required String mediaType,
+  }) async {
+    await _db.collection('forumPosts').doc(postId).update({
+      'mediaUrl': mediaUrl,
+      'mediaType': mediaType,
     });
   }
 }

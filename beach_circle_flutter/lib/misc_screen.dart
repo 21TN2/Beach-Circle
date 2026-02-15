@@ -1,9 +1,12 @@
 // student misc forum home page
-// TO DO: create a main page for each category ?
-// imports
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+// ✅ forum posts pages
+import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
+import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 
 class MiscScreen extends StatefulWidget {
   const MiscScreen({super.key});
@@ -18,7 +21,9 @@ class _MiscScreenState extends State<MiscScreen> {
   // starred category set up
   Set<String> starredCategoryIds = {};
 
-  // default built-in forum categories
+  final ForumService _forumService = ForumService();
+
+  // ✅ your original default built-in categories
   final List<_CategoryItem> builtInCategories = const [
     _CategoryItem(
       id: "builtin:Lost & Found",
@@ -41,9 +46,9 @@ class _MiscScreenState extends State<MiscScreen> {
       imagePath: "assets/forum/community_chat.jpg",
     ),
     _CategoryItem(
-      id: "builtin:Major Q&A",
-      title: "Major\nQ&A",
-      imagePath: "assets/forum/major_qa.jpg",
+      id: "builtin:Engineering Q&A",
+      title: "Engineering\nQ&A",
+      imagePath: "assets/forum/engineering_qa.jpg",
     ),
     _CategoryItem(
       id: "builtin:Help",
@@ -72,14 +77,12 @@ class _MiscScreenState extends State<MiscScreen> {
         .doc('misc');
   }
 
-  // loading user categories pref
   @override
   void initState() {
     super.initState();
     _loadPrefs();
   }
 
-  // firebase saved starred state
   Future<void> _loadPrefs() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -91,7 +94,6 @@ class _MiscScreenState extends State<MiscScreen> {
     final savedInterested = data['interested'];
     final savedStarIds = data['starredCategoryIds'];
 
-    //  setting state for starred categories
     setState(() {
       if (savedInterested is bool) isInterested = savedInterested;
 
@@ -99,7 +101,6 @@ class _MiscScreenState extends State<MiscScreen> {
         starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
       }
 
-      //
       if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
         final oldList =
             (data['starredCategories'] as List).map((e) => e == true).toList();
@@ -112,7 +113,6 @@ class _MiscScreenState extends State<MiscScreen> {
     });
   }
 
-  // firebase stroage for interested categories
   Future<void> _savePrefs() async {
     await _prefsRef().set({
       'interested': isInterested,
@@ -121,7 +121,6 @@ class _MiscScreenState extends State<MiscScreen> {
     }, SetOptions(merge: true));
   }
 
-  // what to do now user clicks on interested
   void _toggleStar(String categoryId) async {
     setState(() {
       if (starredCategoryIds.contains(categoryId)) {
@@ -133,13 +132,29 @@ class _MiscScreenState extends State<MiscScreen> {
     await _savePrefs();
   }
 
-  // interested filter
   List<_CategoryItem> _visibleCategories(List<_CategoryItem> all) {
     if (!isInterested) return all;
     return all.where((c) => starredCategoryIds.contains(c.id)).toList();
   }
 
-  // empty grid
+  void _openCategory(_CategoryItem cat) {
+    final category = ForumCategory(
+      id: cat.id,
+      title: cat.title.replaceAll('\n', ' '),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => ForumCategoryPg(
+              category: category,
+              forumService: _forumService,
+            ),
+      ),
+    );
+  }
+
   Widget _buildGrid(List<_CategoryItem> visible) {
     if (visible.isEmpty) {
       return const Center(
@@ -151,7 +166,6 @@ class _MiscScreenState extends State<MiscScreen> {
       );
     }
 
-    // building category grid
     return GridView.builder(
       itemCount: visible.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -169,6 +183,7 @@ class _MiscScreenState extends State<MiscScreen> {
           imagePath: cat.imagePath,
           isStarred: isStarred,
           onStarTap: () => _toggleStar(cat.id),
+          onTap: () => _openCategory(cat), // ✅ NEW: open category posts
         );
       },
     );
@@ -190,7 +205,7 @@ class _MiscScreenState extends State<MiscScreen> {
                   const Expanded(child: _HeaderPill()),
                   const SizedBox(width: 10),
 
-                  // Interested button
+                  // Interested button (unchanged)
                   GestureDetector(
                     onTap: () async {
                       setState(() => isInterested = !isInterested);
@@ -240,23 +255,18 @@ class _MiscScreenState extends State<MiscScreen> {
                           .orderBy("createdAt", descending: false)
                           .snapshots(),
                   builder: (context, snapshot) {
-                    // to still show default categories
                     if (snapshot.hasError || !snapshot.hasData) {
-                      final all = builtInCategories;
-                      final visible = _visibleCategories(all);
+                      final visible = _visibleCategories(builtInCategories);
                       return _buildGrid(visible);
                     }
 
-                    // approved categories set up
                     final approvedDocs = snapshot.data!.docs;
 
                     final approvedCategories =
                         approvedDocs.map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
-
                           final title = (data["title"] ?? "").toString();
 
-                          // TO DO: WE CAN EDIT THE IMAGE PATH BUT FOR RN, ITS ON THIS IMAFE PATH
                           final imagePath =
                               (data["imagePath"] ??
                                       "assets/forum/campus_resources.jpg")
@@ -273,8 +283,8 @@ class _MiscScreenState extends State<MiscScreen> {
                       ...builtInCategories,
                       ...approvedCategories,
                     ];
-                    final visible = _visibleCategories(allCategories);
 
+                    final visible = _visibleCategories(allCategories);
                     return _buildGrid(visible);
                   },
                 ),
@@ -322,12 +332,14 @@ class _CategoryCard extends StatelessWidget {
     required this.imagePath,
     required this.isStarred,
     required this.onStarTap,
+    required this.onTap,
   });
 
   final String title;
   final String imagePath;
   final bool isStarred;
   final VoidCallback onStarTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -344,12 +356,19 @@ class _CategoryCard extends StatelessWidget {
             ),
           ),
 
-          // Dark overlay so text pops
           Positioned.fill(
             child: Container(color: Colors.black.withOpacity(0.45)),
           ),
 
-          // Star icon
+          // ✅ Category tap (opens posts)
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(onTap: onTap),
+            ),
+          ),
+
+          // Star icon (favorites)
           Positioned(
             top: 8,
             right: 8,
@@ -362,7 +381,6 @@ class _CategoryCard extends StatelessWidget {
             ),
           ),
 
-          // Center text
           Center(
             child: Text(
               title,

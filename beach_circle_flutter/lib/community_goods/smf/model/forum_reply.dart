@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ForumReply {
   final String id;
   final String postId;
@@ -15,8 +17,17 @@ class ForumReply {
 
   factory ForumReply.fromMap(String id, Map<String, dynamic> data) {
     final ts = data['createdAt'];
-    DateTime created =
-        ts is DateTime ? ts : DateTime.tryParse((ts ?? '').toString()) ?? DateTime.now();
+
+    DateTime created;
+    if (ts is Timestamp) {
+      created = ts.toDate();
+    } else if (ts is DateTime) {
+      created = ts;
+    } else if (ts is String) {
+      created = DateTime.tryParse(ts) ?? DateTime.now();
+    } else {
+      created = DateTime.now();
+    }
 
     return ForumReply(
       id: id,
@@ -27,10 +38,14 @@ class ForumReply {
     );
   }
 
+  // Convenience getter
+  String get authorName => author;
+
   Map<String, dynamic> toMap() => {
-        'postId': postId,
-        'body': body,
-        'author': author,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'postId': postId,
+    'body': body,
+    'author': author,
+    // Prefer Timestamp in Firestore writes
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 }
