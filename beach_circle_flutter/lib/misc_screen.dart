@@ -1,15 +1,21 @@
+// TO DO: TROUBLESHOOT BACK ARROW FOR CREATE POST PAGE
 // student misc forum home page
+import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-// ✅ forum posts pages
+// forum posts pages
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 
 class MiscScreen extends StatefulWidget {
-  const MiscScreen({super.key});
+  const MiscScreen({
+    super.key,
+    required ForumService forumService,
+    required Null Function(ForumCategory c) onOpenCategory,
+  });
 
   @override
   State<MiscScreen> createState() => _MiscScreenState();
@@ -18,12 +24,11 @@ class MiscScreen extends StatefulWidget {
 class _MiscScreenState extends State<MiscScreen> {
   bool isInterested = false;
 
-  // starred category set up
   Set<String> starredCategoryIds = {};
 
   final ForumService _forumService = ForumService();
 
-  // ✅ your original default built-in categories
+  // built-in categories
   final List<_CategoryItem> builtInCategories = const [
     _CategoryItem(
       id: "builtin:Lost & Found",
@@ -46,9 +51,9 @@ class _MiscScreenState extends State<MiscScreen> {
       imagePath: "assets/forum/community_chat.jpg",
     ),
     _CategoryItem(
-      id: "builtin:Engineering Q&A",
-      title: "Engineering\nQ&A",
-      imagePath: "assets/forum/engineering_qa.jpg",
+      id: "builtin:Major Q&A",
+      title: "Major\nQ&A",
+      imagePath: "assets/forum/major_qa.jpg",
     ),
     _CategoryItem(
       id: "builtin:Help",
@@ -67,7 +72,6 @@ class _MiscScreenState extends State<MiscScreen> {
     ),
   ];
 
-  // firebase storage
   DocumentReference<Map<String, dynamic>> _prefsRef() {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     return FirebaseFirestore.instance
@@ -161,7 +165,6 @@ class _MiscScreenState extends State<MiscScreen> {
         child: Text(
           "No starred categories yet.\nStar a category first",
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
         ),
       );
     }
@@ -183,7 +186,7 @@ class _MiscScreenState extends State<MiscScreen> {
           imagePath: cat.imagePath,
           isStarred: isStarred,
           onStarTap: () => _toggleStar(cat.id),
-          onTap: () => _openCategory(cat), // ✅ NEW: open category posts
+          onTap: () => _openCategory(cat),
         );
       },
     );
@@ -193,10 +196,30 @@ class _MiscScreenState extends State<MiscScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // pencil icon to go to add forum
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFF2C200),
+        child: const Icon(Icons.edit, color: Colors.black),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (_) => CreateForumPage(
+                    onClose: () => Navigator.pop(context),
+                    onSubmitted: () => Navigator.pop(context),
+                  ),
+            ),
+          );
+        },
+      ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Container(
               color: const Color(0xFFFFD500),
               padding: const EdgeInsets.all(12),
@@ -204,8 +227,6 @@ class _MiscScreenState extends State<MiscScreen> {
                 children: [
                   const Expanded(child: _HeaderPill()),
                   const SizedBox(width: 10),
-
-                  // Interested button (unchanged)
                   GestureDetector(
                     onTap: () async {
                       setState(() => isInterested = !isInterested);
@@ -227,14 +248,10 @@ class _MiscScreenState extends State<MiscScreen> {
                         children: [
                           Icon(
                             isInterested ? Icons.star : Icons.star_border,
-                            size: 18,
-                            color: Colors.black,
+                            size: 20,
                           ),
                           const SizedBox(width: 6),
-                          const Text(
-                            "Interested",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                          const Text("Interested"),
                         ],
                       ),
                     ),
@@ -243,7 +260,6 @@ class _MiscScreenState extends State<MiscScreen> {
               ),
             ),
 
-            // category grid
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -252,39 +268,9 @@ class _MiscScreenState extends State<MiscScreen> {
                       FirebaseFirestore.instance
                           .collection("forum_requests")
                           .where("status", isEqualTo: "approved")
-                          .orderBy("createdAt", descending: false)
                           .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.hasError || !snapshot.hasData) {
-                      final visible = _visibleCategories(builtInCategories);
-                      return _buildGrid(visible);
-                    }
-
-                    final approvedDocs = snapshot.data!.docs;
-
-                    final approvedCategories =
-                        approvedDocs.map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          final title = (data["title"] ?? "").toString();
-
-                          final imagePath =
-                              (data["imagePath"] ??
-                                      "assets/forum/campus_resources.jpg")
-                                  .toString();
-
-                          return _CategoryItem(
-                            id: "request:${doc.id}",
-                            title: title,
-                            imagePath: imagePath,
-                          );
-                        }).toList();
-
-                    final allCategories = [
-                      ...builtInCategories,
-                      ...approvedCategories,
-                    ];
-
-                    final visible = _visibleCategories(allCategories);
+                    final visible = _visibleCategories(builtInCategories);
                     return _buildGrid(visible);
                   },
                 ),
@@ -297,35 +283,46 @@ class _MiscScreenState extends State<MiscScreen> {
   }
 }
 
-// ------- header -----------
 class _HeaderPill extends StatelessWidget {
   const _HeaderPill();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.85),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: const Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Expanded(
+          // centered text
+          const Center(
             child: Text(
               "Student Miscellaneous Forum",
-              style: TextStyle(fontWeight: FontWeight.w600),
-              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                color: Colors.black54,
+              ),
             ),
           ),
-          Icon(Icons.chevron_right),
+
+          // chevron on right
+          const Positioned(
+            right: 0,
+            child: Icon(Icons.chevron_right, color: Colors.black54),
+          ),
         ],
       ),
     );
   }
 }
 
-// ---------- forum categories ----------
+// CATEGORY CARD WITH DARK OVERLAY
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.title,
@@ -347,20 +344,13 @@ class _CategoryCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder:
-                  (_, __, ___) => Container(color: const Color(0xFFE0E0E0)),
-            ),
-          ),
+          Positioned.fill(child: Image.asset(imagePath, fit: BoxFit.cover)),
 
+          // DARK OVERLAY FIXED
           Positioned.fill(
             child: Container(color: Colors.black.withOpacity(0.45)),
           ),
 
-          // ✅ Category tap (opens posts)
           Positioned.fill(
             child: Material(
               color: Colors.transparent,
@@ -368,7 +358,6 @@ class _CategoryCard extends StatelessWidget {
             ),
           ),
 
-          // Star icon (favorites)
           Positioned(
             top: 8,
             right: 8,
@@ -384,18 +373,10 @@ class _CategoryCard extends StatelessWidget {
           Center(
             child: Text(
               title,
-              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 6,
-                    color: Colors.black,
-                    offset: Offset(1, 1),
-                  ),
-                ],
               ),
             ),
           ),
@@ -405,11 +386,11 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
-// Category model w/ IDs
 class _CategoryItem {
   final String id;
   final String title;
   final String imagePath;
+
   const _CategoryItem({
     required this.id,
     required this.title,

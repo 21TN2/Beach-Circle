@@ -25,6 +25,8 @@ class CreateForumPostPg extends StatefulWidget {
     required this.forumService,
   });
 
+  VoidCallback? get onClose => null;
+
   @override
   State<CreateForumPostPg> createState() => _CreateForumPostPgState();
 }
@@ -78,9 +80,10 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
   // Compress + resize to be tiny BEFORE uploading
   Future<Uint8List> _compressToTinyBytes(XFile image) async {
-    final Uint8List originalBytes = kIsWeb
-        ? (_webPreviewBytes ?? await image.readAsBytes())
-        : await File(image.path).readAsBytes();
+    final Uint8List originalBytes =
+        kIsWeb
+            ? (_webPreviewBytes ?? await image.readAsBytes())
+            : await File(image.path).readAsBytes();
 
     // image fits within these bounds
     final Uint8List compressed = await FlutterImageCompress.compressWithList(
@@ -194,7 +197,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          onPressed: widget.onClose, //
         ),
         centerTitle: true,
         title: Container(
@@ -206,7 +209,11 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
           ),
           child: const Text(
             "Student Miscellaneous Forum",
-            style: TextStyle(color: Colors.black54, fontSize: 16),
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -334,19 +341,20 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                       color: Colors.black12,
                       height: 180,
                       width: double.infinity,
-                      child: kIsWeb
-                          ? (_webPreviewBytes == null
-                                ? const Center(
+                      child:
+                          kIsWeb
+                              ? (_webPreviewBytes == null
+                                  ? const Center(
                                     child: Text("Preview unavailable"),
                                   )
-                                : Image.memory(
+                                  : Image.memory(
                                     _webPreviewBytes!,
                                     fit: BoxFit.cover,
                                   ))
-                          : Image.file(
-                              File(_pickedImage!.path),
-                              fit: BoxFit.cover,
-                            ),
+                              : Image.file(
+                                File(_pickedImage!.path),
+                                fit: BoxFit.cover,
+                              ),
                     ),
                   ),
                 ],
@@ -357,9 +365,8 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _isSubmitting
-                            ? null
-                            : () => Navigator.pop(context),
+                        onPressed:
+                            _isSubmitting ? null : () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -384,19 +391,20 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                        child:
+                            _isSubmitting
+                                ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                                : const Text(
+                                  "Post",
+                                  style: TextStyle(color: Colors.black),
                                 ),
-                              )
-                            : const Text(
-                                "Post",
-                                style: TextStyle(color: Colors.black),
-                              ),
                       ),
                     ),
                   ],

@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CreateForumPage extends StatefulWidget {
-  const CreateForumPage{
+  const CreateForumPage({
     super.key,
     required this.onClose,
     required this.onSubmitted,
@@ -19,7 +19,7 @@ class CreateForumPage extends StatefulWidget {
 }
 
 // firebase
-class _CreateForumPostPageState extends State<CreateForumPage> {
+class _CreateForumPageState extends State<CreateForumPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -111,7 +111,11 @@ class _CreateForumPostPageState extends State<CreateForumPage> {
           ),
           child: const Text(
             "Student Miscellaneous Forum",
-            style: TextStyle(color: Colors.black54, fontSize: 16),
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
