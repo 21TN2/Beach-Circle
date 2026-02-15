@@ -12,6 +12,7 @@ import 'hourscap_screen.dart';
 import 'map/map_screen.dart';
 import 'misc_screen.dart';
 import 'settings_screen.dart';
+import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -237,7 +238,7 @@ class DashboardScreen extends StatelessWidget {
                 context,
                 Icons.menu_book,
                 'Additional Resources',
-                const AddresScreen(),
+                const ResourcesPage(),
               ),
 
               // Feedback & Analytics
