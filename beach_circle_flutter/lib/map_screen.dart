@@ -12,11 +12,11 @@ class _MapScreenState extends State<MapScreen> {
   MapboxMap? mapboxMap;
   PointAnnotationManager? pointAnnotationManager;
  
-  // Default location (CSULB)
+  // Default location. Coordinates to CSULB
   static const double _centerLat = 33.7820;
   static const double _centerLng = -118.1126;
 
-
+  //coordinates for map boundaries
   static final campusBounds = CoordinateBounds(
       southwest: Point(
         coordinates: Position(-118.1225, 33.77387), //long, lat
@@ -26,7 +26,6 @@ class _MapScreenState extends State<MapScreen> {
       ),
       infiniteBounds: false,
     );
-
 
   void _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
@@ -52,7 +51,7 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
 
-
+    //setting map boundaries
     await mapboxMap!.setBounds(
       CameraBoundsOptions(
         bounds: campusBounds,
@@ -68,14 +67,14 @@ class _MapScreenState extends State<MapScreen> {
       final pointAnnotationOptions = PointAnnotationOptions(
         geometry: Point(coordinates: Position(_centerLng, _centerLat)),
         iconSize: 1.5,
-        iconImage: "marker", // Built-in marker icon
+        iconImage: "marker", 
       );
      
       pointAnnotationManager?.create(pointAnnotationOptions);
     });
   }
 
-
+  //zoom into map
   void _zoomIn() async {
     final cameraState = await mapboxMap?.getCameraState();
     final currentZoom = cameraState?.zoom ?? 12.0;
@@ -88,6 +87,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // zoom out of map
   void _zoomOut() async {
     final cameraState = await mapboxMap?.getCameraState();
     final currentZoom = cameraState?.zoom ?? 12.0;
@@ -100,6 +100,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  //refreshing to center view
   void _resetView() {
     mapboxMap?.flyTo(
       CameraOptions(
@@ -122,8 +123,6 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           MapWidget(
-              // IMPORTANT: Replace this with your own Mapbox access token
-              // Get one for free at https://account.mapbox.com/access-tokens/
               key: const ValueKey("mapWidget"),
               
               // cameraOptions: CameraOptions(
@@ -138,6 +137,7 @@ class _MapScreenState extends State<MapScreen> {
               onMapCreated: _onMapCreated,
           ),
           
+          //bottom left positioning buttons
           Positioned(
             bottom: 40,
             left: 15,
@@ -198,44 +198,3 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-
-// class MapScreen extends StatelessWidget {
-//   const MapScreen({super.key});
-
-//   //log out button
-//   void _logOut() async {
-//     await FirebaseAuth.instance.signOut();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final user = FirebaseAuth.instance.currentUser;
-//     final name = user?.email ?? "User"; //in the future change this to fetching a username from Firestore (need to change signup requirements)
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       appBar: AppBar(
-//         title: const Text('Map'),
-//         actions: [
-//           //log out button
-//           IconButton(
-//             icon: const Icon(Icons.logout),
-//             tooltip: 'Log Out',
-//             onPressed: _logOut,
-//           ),
-//         ],
-//       ),
-//       body: Center(
-//         child: Text(
-//           'Hello $name',
-//           style: TextStyle(
-//             fontSize: 24,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
