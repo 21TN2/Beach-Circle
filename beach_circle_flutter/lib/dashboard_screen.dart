@@ -229,7 +229,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------- Forum Tab Navigator (NEW) ----------
+  // ---------- Forum Tab Navigator  ----------
   Widget _buildForumTab() {
     return Navigator(
       key: _forumNavKey,
@@ -324,8 +324,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ---------- AppBar ------------
   PreferredSizeWidget? _buildAppBar() {
-    // ONLY show dashboard AppBar on the real dashboard home screen.
-    // This prevents double headers when other pages already have their own AppBar.
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
         title: const Text('Dashboard'),
@@ -343,7 +341,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return null;
   }
 
-  // ---------- FloatingActionButton (NEW logic) ----------
+  // ---------- FloatingActionButton for pencil icon ----------
   Widget? _buildFab() {
     // Only show pencil on Forum HOME to open CreateForumPage
     if (_currentIndex == 2) {

@@ -9,8 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 
 import '../model/forum_category.dart';
 import '../service/forum_service.dart';
@@ -84,34 +83,9 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
         kIsWeb
             ? (_webPreviewBytes ?? await image.readAsBytes())
             : await File(image.path).readAsBytes();
+  
 
-    // image fits within these bounds
-    final Uint8List compressed = await FlutterImageCompress.compressWithList(
-      originalBytes,
-      quality: 60,
-      minWidth: 900,
-      minHeight: 900,
-      format: CompressFormat.jpeg,
-    );
-
-    return compressed;
-  }
-
-  Future<String> _uploadTinyImage({
-    required String postId,
-    required XFile image,
-  }) async {
-    final ref = FirebaseStorage.instance.ref().child(
-      'forumPosts/$postId/${DateTime.now().millisecondsSinceEpoch}.jpg',
-    );
-
-    final bytes = await _compressToTinyBytes(image);
-
-    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
-
-    return ref.getDownloadURL();
-  }
-
+// authenticatng 
   Future<void> _submit() async {
     if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
@@ -126,7 +100,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
     }
 
     final authorName =
-        user.displayName ?? user.email?.split('@').first ?? "Anonymous";
+        user.displayName ?? user.email?.split('@').first ?? "Anonymous"; // user name 
 
     setState(() => _isSubmitting = true);
 
@@ -140,7 +114,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
         authorName: authorName,
       );
 
-      // 2) Upload optional media (timeout so it never hangs)
+      // 2) Upload optional media 
       if (_pickedImage != null) {
         try {
           final url = await _uploadTinyImage(
@@ -277,6 +251,8 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     return null;
                   },
                 ),
+
+                // creating post forum body : title & description
                 const SizedBox(height: 14),
 
                 const Text(
@@ -288,7 +264,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   controller: _bodyCtrl,
                   maxLines: 5,
                   decoration: InputDecoration(
-                    hintText: "Enter Post Details",
+                    hintText: "Enter Post Details",  // post detail box
                     hintStyle: const TextStyle(color: Colors.black26),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -300,7 +276,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty)
-                      return "Body is required.";
+                      return "Body is required."; // user requirement
                     return null;
                   },
                 ),
@@ -308,7 +284,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 const SizedBox(height: 16),
 
                 OutlinedButton.icon(
-                  onPressed: _isSubmitting ? null : _pickImage,
+                  onPressed: _isSubmitting ? null : _pickImage, // setting up image attachment
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       vertical: 14,
@@ -320,7 +296,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     side: const BorderSide(color: Colors.black26),
                   ),
                   icon: const Icon(Icons.attachment, color: Colors.black),
-                  label: Text(
+                  label: Text(  // image attachment body 
                     _pickedImage == null
                         ? "Attach Image"
                         : "Add Image (Optional)",
@@ -331,7 +307,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 if (_pickedImage != null) ...[
                   const SizedBox(height: 10),
                   Text(
-                    "Selected: ${_pickedImage!.name}",
+                    "Selected: ${_pickedImage!.name}", // when image is selected
                     style: const TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 10),
@@ -361,7 +337,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
                 const SizedBox(height: 28),
 
-                Row(
+                Row(  // creating submit/ cancel button
                   children: [
                     Expanded(
                       child: OutlinedButton(
@@ -386,7 +362,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                         onPressed: _isSubmitting ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFB7B40E),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14), // colors & layout
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
