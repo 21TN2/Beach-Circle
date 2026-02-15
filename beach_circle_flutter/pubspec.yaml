@@ -10,8 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.0.4
-  firebase_storage: ^12.1.0
-  flutter_image_compress: ^2.1.0
+  mapbox_maps_flutter: ^2.12.0
 
   #Resource page Packages
   cupertino_icons: ^1.0.8
@@ -32,4 +31,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/forum/
+    - assets/.env/.env.public.dev
+
+# flutter:
+#   assets:
+#     - assets/.env/.env.public.dev
