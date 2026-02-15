@@ -9,7 +9,7 @@ import 'dormlife_screen.dart';
 import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
-import 'map_screen.dart';
+import 'map/map_screen.dart';
 import 'misc_screen.dart';
 import 'settings_screen.dart';
 

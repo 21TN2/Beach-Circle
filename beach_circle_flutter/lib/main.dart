@@ -8,7 +8,7 @@ import 'mapbox.dart';
 import 'firebase_options.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
-import 'map_screen.dart';
+import 'map/map_screen.dart';
 import 'events_screen.dart';
 import 'misc_screen.dart';
 import 'dormlife_screen.dart';
