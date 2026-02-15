@@ -287,4 +287,5 @@ beach_circle_flutter/linux/flutter/generated_plugins.cmake
 beach_circle_flutter/macos/Flutter/GeneratedPluginRegistrant.swift
 beach_circle_flutter/windows/flutter/generated_plugin_registrant.cc
 beach_circle_flutter/windows/flutter/generated_plugins.cmake
+beach_circle_flutter/lib/mapbox.dart
 beach_circle_flutter/.flutter-plugins-dependencies

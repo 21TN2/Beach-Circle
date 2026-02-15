@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'mapbox.dart';
 import 'firebase_options.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
@@ -15,13 +17,14 @@ import 'addres_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'screens/resources_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  MapboxOptions.setAccessToken(mapboxAccessToken);
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-    // FirebaseOptions? firebaseConfigWeb;
+
     await Firebase.initializeApp(
       options: firebaseConfigWeb, 
     );
@@ -54,7 +57,6 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-//<<<<<<< HEAD
 }
 
 
@@ -107,5 +109,3 @@ class MyApp extends StatelessWidget {
 //     );
 //   }
 // }
-//=======
-//>>>>>>> 98e4db3fc56fc17b8a64d9cfff48495c4dbb707b
