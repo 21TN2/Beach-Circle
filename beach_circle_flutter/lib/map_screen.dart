@@ -119,10 +119,9 @@ class _MapScreenState extends State<MapScreen> {
         title: const Text('Mapbox Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: MapWidget(
+          MapWidget(
               // IMPORTANT: Replace this with your own Mapbox access token
               // Get one for free at https://account.mapbox.com/access-tokens/
               key: const ValueKey("mapWidget"),
@@ -137,33 +136,63 @@ class _MapScreenState extends State<MapScreen> {
               
               textureView: true, // Better for web/Android
               onMapCreated: _onMapCreated,
-            ),
           ),
           
-          // Control buttons
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Positioned(
+            bottom: 40,
+            left: 15,
+            child: Column(
               children: [
-                ElevatedButton.icon(
+                //Zoom in button
+                RawMaterialButton(
                   onPressed: _zoomIn,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Zoom In'),
+                  fillColor: Colors.grey.shade300,
+                  shape: CircleBorder(),
+                  constraints: BoxConstraints.tightFor(
+                    width: 46,
+                    height: 46,
+                  ),
+                  elevation: 10,
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.black,
+                  ),
                 ),
-                ElevatedButton.icon(
+                SizedBox(height: 5),
+                //Zoom out button
+                RawMaterialButton(
                   onPressed: _zoomOut,
-                  icon: const Icon(Icons.remove),
-                  label: const Text('Zoom Out'),
+                  fillColor: Colors.grey.shade300,
+                  shape: CircleBorder(),
+                  constraints: BoxConstraints.tightFor(
+                    width: 46,
+                    height: 46,
+                  ),
+                  elevation: 10,
+                  child: Icon(
+                    Icons.remove,
+                    color: Colors.black,
+                  ),
                 ),
-                ElevatedButton.icon(
+                SizedBox(height: 5),
+                //Center button
+                RawMaterialButton(
                   onPressed: _resetView,
-                  icon: const Icon(Icons.home),
-                  label: const Text('Reset'),
+                  fillColor: Colors.grey.shade300,
+                  shape: CircleBorder(),
+                  constraints: BoxConstraints.tightFor(
+                    width: 50,
+                    height: 50,
+                  ),
+                  elevation: 10,
+                  child: Icon(
+                    Icons.home,
+                    color: Colors.black,
+                  ),
                 ),
               ],
             ),
-          ),
+          )
         ],
       ),
     );
