@@ -1,3 +1,5 @@
+// FULL FORUM THREAD
+
 import 'package:flutter/material.dart';
 import '../model/forum_category.dart';
 import '../model/forum_post.dart';
@@ -24,7 +26,7 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
   final _controller = TextEditingController();
   bool _sending = false;
 
-  // TODO: wire these to your auth/user profile
+  // PLACEHOLDERS, TROUBLESHOOT ONLY
   final String _authorId = 'TODO-user-id';
   final String _authorName = 'Anonymous';
 
@@ -40,6 +42,7 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
         authorId: _authorId,
         authorName: _authorName,
       );
+      // CLEAR AFTER SENDING
       _controller.clear();
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -58,7 +61,7 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
       appBar: AppBar(title: Text(widget.category.title), centerTitle: true),
       body: Column(
         children: [
-          // Original post
+          // ORIGINAL POST
           Container(
             width: double.infinity,
             margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
@@ -88,7 +91,7 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
             ),
           ),
 
-          // Replies (live)
+          // REPLIES
           Expanded(
             child: StreamBuilder<List<ForumReply>>(
               stream: widget.forumService.streamReplies(widget.post.id),
@@ -137,7 +140,7 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
             ),
           ),
 
-          // Reply input
+          // REPLY INPUT
           SafeArea(
             top: false,
             child: Container(

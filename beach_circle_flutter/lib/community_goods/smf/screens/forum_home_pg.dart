@@ -1,3 +1,5 @@
+// MAIN PAGE
+
 import 'package:flutter/material.dart';
 import '../model/forum_category.dart';
 import 'forum_category_pg.dart';
@@ -5,7 +7,7 @@ import 'forum_category_pg.dart';
 class ForumHomePg extends StatelessWidget {
   const ForumHomePg({super.key});
 
-  // TODO: Replace with your real fetch (Firestore/service).
+  // PLACEHOLDER VALUES, TROUBLESHOOTING ONLY   
   List<ForumCategory> _mockCategories() => const [
         ForumCategory(id: 'eng', title: 'Engineering Q&A'),
         ForumCategory(id: 'clubs', title: 'Clubs & Orgs'),
@@ -21,6 +23,7 @@ class ForumHomePg extends StatelessWidget {
         title: const Text('Student Miscellaneous Forum'),
         centerTitle: true,
       ),
+      // SCROLLABLE LIST
       body: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: cats.length,
