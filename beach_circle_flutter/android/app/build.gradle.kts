@@ -41,8 +41,11 @@ flutter {
 
 configurations.all {
     resolutionStrategy {
-        // Force the app to use a version compatible with API 35
         force("androidx.activity:activity:1.9.3")
+        
+        force("androidx.browser:browser:1.8.0")
+        force("androidx.core:core-ktx:1.15.0")
+        force("androidx.core:core:1.15.0")
     }
 }
 

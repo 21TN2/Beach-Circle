@@ -16,6 +16,7 @@
         "flutter_image_compress",
         "font_awesome_flutter",
         "image_picker",
+        "mapbox_maps_flutter",
         "url_launcher"
       ],
       "devDependencies": [
@@ -110,26 +111,14 @@
       "dependencies": []
     },
     {
-      "name": "flutter_image_compress",
-      "version": "2.4.0",
+      "name": "mapbox_maps_flutter",
+      "version": "2.18.0",
       "dependencies": [
         "flutter",
-        "flutter_image_compress_common",
-        "flutter_image_compress_macos",
-        "flutter_image_compress_ohos",
-        "flutter_image_compress_platform_interface",
-        "flutter_image_compress_web"
-      ]
-    },
-    {
-      "name": "firebase_storage",
-      "version": "12.4.10",
-      "dependencies": [
-        "firebase_core",
-        "firebase_core_platform_interface",
-        "firebase_storage_platform_interface",
-        "firebase_storage_web",
-        "flutter"
+        "flutter_plugin_android_lifecycle",
+        "meta",
+        "turf",
+        "typed_data"
       ]
     },
     {
@@ -379,74 +368,28 @@
       ]
     },
     {
-      "name": "flutter_image_compress_ohos",
-      "version": "0.0.3",
+      "name": "typed_data",
+      "version": "1.4.0",
       "dependencies": [
-        "flutter",
-        "flutter_image_compress_platform_interface"
+        "collection"
       ]
     },
     {
-      "name": "flutter_image_compress_macos",
-      "version": "1.0.3",
+      "name": "turf",
+      "version": "0.0.10",
       "dependencies": [
-        "flutter",
-        "flutter_image_compress_platform_interface"
+        "geotypes",
+        "rbush",
+        "sweepline_intersections",
+        "turf_equality",
+        "turf_pip"
       ]
     },
     {
-      "name": "flutter_image_compress_web",
-      "version": "0.1.5",
+      "name": "flutter_plugin_android_lifecycle",
+      "version": "2.0.33",
       "dependencies": [
-        "flutter",
-        "flutter_image_compress_platform_interface",
-        "flutter_web_plugins",
-        "web"
-      ]
-    },
-    {
-      "name": "flutter_image_compress_common",
-      "version": "1.0.6",
-      "dependencies": [
-        "flutter",
-        "flutter_image_compress_platform_interface"
-      ]
-    },
-    {
-      "name": "flutter_image_compress_platform_interface",
-      "version": "1.0.5",
-      "dependencies": [
-        "cross_file",
-        "flutter",
-        "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "firebase_storage_web",
-      "version": "3.10.17",
-      "dependencies": [
-        "_flutterfire_internals",
-        "async",
-        "firebase_core",
-        "firebase_core_web",
-        "firebase_storage_platform_interface",
-        "flutter",
-        "flutter_web_plugins",
-        "http",
-        "meta",
-        "web"
-      ]
-    },
-    {
-      "name": "firebase_storage_platform_interface",
-      "version": "5.2.10",
-      "dependencies": [
-        "_flutterfire_internals",
-        "collection",
-        "firebase_core",
-        "flutter",
-        "meta",
-        "plugin_platform_interface"
+        "flutter"
       ]
     },
     {
@@ -632,21 +575,39 @@
       ]
     },
     {
-      "name": "cross_file",
-      "version": "0.3.5+1",
+      "name": "sweepline_intersections",
+      "version": "0.0.4",
       "dependencies": [
-        "meta",
-        "web"
+        "benchmark",
+        "collection",
+        "dart_sort_queue",
+        "turf"
       ]
     },
     {
-      "name": "http",
-      "version": "1.6.0",
+      "name": "rbush",
+      "version": "1.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "turf_pip",
+      "version": "0.0.2",
       "dependencies": [
-        "async",
-        "http_parser",
-        "meta",
-        "web"
+        "turf"
+      ]
+    },
+    {
+      "name": "turf_equality",
+      "version": "0.1.0",
+      "dependencies": [
+        "geotypes"
+      ]
+    },
+    {
+      "name": "geotypes",
+      "version": "0.0.2",
+      "dependencies": [
+        "json_annotation"
       ]
     },
     {
@@ -692,23 +653,36 @@
       "dependencies": []
     },
     {
-      "name": "flutter_plugin_android_lifecycle",
-      "version": "2.0.33",
-      "dependencies": [
-        "flutter"
-      ]
-    },
-    {
       "name": "vm_service",
       "version": "15.0.2",
       "dependencies": []
     },
     {
-      "name": "typed_data",
-      "version": "1.4.0",
+      "name": "benchmark",
+      "version": "0.3.0",
+      "dependencies": [
+        "args",
+        "meta"
+      ]
+    },
+    {
+      "name": "dart_sort_queue",
+      "version": "0.0.2+3",
       "dependencies": [
         "collection"
       ]
+    },
+    {
+      "name": "json_annotation",
+      "version": "4.10.0",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "args",
+      "version": "2.7.0",
+      "dependencies": []
     }
   ],
   "configVersion": 1
