@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; // For kIsWeb
-import 'package:cloud_firestore/cloud_firestore.dart'; 
-
-import 'firebase_options.dart'; 
-
-import 'auth_screen.dart'; 
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'mapbox.dart';
+import 'firebase_options.dart';
+import 'auth_screen.dart';
 import 'signup_screen.dart';
-import 'map_screen.dart';
+import 'map/map_screen.dart';
 import 'events_screen.dart';
 import 'misc_screen.dart';
 import 'dormlife_screen.dart';
@@ -17,17 +17,19 @@ import 'addres_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'screens/resources_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   if (kIsWeb) {
-    // WEB: Use the variable directly from firebase_options.dart
+    // WEB: Use the keys from the separate file
+    FirebaseOptions? firebaseConfigWeb;
     await Firebase.initializeApp(
       options: firebaseConfigWeb, 
     );
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
+    MapboxOptions.setAccessToken(mapboxAccessToken);
     await Firebase.initializeApp();
   }
 
@@ -47,7 +49,7 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           // If the user is logged in, send them to Dashboard
           if (snapshot.hasData) {
-             return const DashboardScreen();
+            return const DashboardScreen();
           }
           // Otherwise, show the Login/Auth Screen
           return const AuthScreen();
@@ -56,8 +58,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-//<<<<<<< HEAD
-
 
 
 // import 'package:flutter/material.dart';
@@ -109,5 +109,3 @@ class MyApp extends StatelessWidget {
 //     );
 //   }
 // }
-//=======
-//>>>>>>> 98e4db3fc56fc17b8a64d9cfff48495c4dbb707b

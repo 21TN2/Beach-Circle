@@ -1,106 +1,233 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// TO DO: TROUBLESHOOT BACK ARROW FOR CREATE POST PAGE
+// student misc forum home page
+import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+// forum posts pages
+import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
+import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 
 class MiscScreen extends StatefulWidget {
-  const MiscScreen({super.key});
+  const MiscScreen({
+    super.key,
+    required ForumService forumService,
+    required Null Function(ForumCategory c) onOpenCategory,
+  });
 
   @override
   State<MiscScreen> createState() => _MiscScreenState();
 }
 
 class _MiscScreenState extends State<MiscScreen> {
-  final TextEditingController _postController = TextEditingController();
+  bool isInterested = false;
 
-  // Function to add a post
-  void _postMessage() async {
-    if (_postController.text.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('student_misc').add({
-        'message': _postController.text,
-        'user_email': FirebaseAuth.instance.currentUser?.email ?? 'Anonymous',
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      _postController.clear(); // Clear the text box after posting
+  Set<String> starredCategoryIds = {};
+
+  final ForumService _forumService = ForumService();
+
+  // built-in categories
+  final List<_CategoryItem> builtInCategories = const [
+    _CategoryItem(
+      id: "builtin:Lost & Found",
+      title: "Lost & Found",
+      imagePath: "assets/forum/lost_found.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Clubs",
+      title: "Clubs",
+      imagePath: "assets/forum/clubs.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Concerns",
+      title: "Concerns",
+      imagePath: "assets/forum/concerns.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Community Chat",
+      title: "Community\nChat",
+      imagePath: "assets/forum/community_chat.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Major Q&A",
+      title: "Major\nQ&A",
+      imagePath: "assets/forum/major_qa.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Help",
+      title: "Help",
+      imagePath: "assets/forum/help.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Campus Resources",
+      title: "Campus\nResources",
+      imagePath: "assets/forum/campus_resources.jpg",
+    ),
+    _CategoryItem(
+      id: "builtin:Off-Campus Activities",
+      title: "Off-Campus\nActivities",
+      imagePath: "assets/forum/longbeach.jpg",
+    ),
+  ];
+
+  DocumentReference<Map<String, dynamic>> _prefsRef() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('forum')
+        .doc('misc');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snap = await _prefsRef().get();
+    if (!snap.exists) return;
+
+    final data = snap.data()!;
+    final savedInterested = data['interested'];
+    final savedStarIds = data['starredCategoryIds'];
+
+    setState(() {
+      if (savedInterested is bool) isInterested = savedInterested;
+
+      if (savedStarIds is List) {
+        starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
+      }
+
+      if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
+        final oldList =
+            (data['starredCategories'] as List).map((e) => e == true).toList();
+
+        for (int i = 0; i < builtInCategories.length; i++) {
+          final isStar = i < oldList.length ? oldList[i] : false;
+          if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+        }
+      }
+    });
+  }
+
+  Future<void> _savePrefs() async {
+    await _prefsRef().set({
+      'interested': isInterested,
+      'starredCategoryIds': starredCategoryIds.toList(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  void _toggleStar(String categoryId) async {
+    setState(() {
+      if (starredCategoryIds.contains(categoryId)) {
+        starredCategoryIds.remove(categoryId);
+      } else {
+        starredCategoryIds.add(categoryId);
+      }
+    });
+    await _savePrefs();
+  }
+
+  List<_CategoryItem> _visibleCategories(List<_CategoryItem> all) {
+    if (!isInterested) return all;
+    return all.where((c) => starredCategoryIds.contains(c.id)).toList();
+  }
+
+  void _openCategory(_CategoryItem cat) {
+    final category = ForumCategory(
+      id: cat.id,
+      title: cat.title.replaceAll('\n', ' '),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => ForumCategoryPg(
+              category: category,
+              forumService: _forumService,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildGrid(List<_CategoryItem> visible) {
+    if (visible.isEmpty) {
+      return const Center(
+        child: Text(
+          "No starred categories yet.\nStar a category first",
+          textAlign: TextAlign.center,
+        ),
+      );
     }
+
+    return GridView.builder(
+      itemCount: visible.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.05,
+      ),
+      itemBuilder: (context, index) {
+        final cat = visible[index];
+        final isStarred = starredCategoryIds.contains(cat.id);
+
+        return _CategoryCard(
+          title: cat.title,
+          imagePath: cat.imagePath,
+          isStarred: isStarred,
+          onStarTap: () => _toggleStar(cat.id),
+          onTap: () => _openCategory(cat),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Student Misc Forum'),
-        backgroundColor: const Color(0xFFD7EBFF),
-      ),
-      body: Column(
-        children: [
-          // 1. THE LIST OF POSTS (Live Feed)
-          Expanded(
-            child: StreamBuilder(
-              // Listen to the collection, ordered by newest first
-              stream: FirebaseFirestore.instance
-                  .collection('student_misc')
-                  .orderBy('timestamp', descending: true)
-                  .snapshots(),
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                // If no posts exist yet
-                if (snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No posts yet. Be the first!"));
-                }
-
-                return ListView.builder(
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    var post = snapshot.data!.docs[index];
-                    // Handle cases where data might be missing safely
-                    var email = (post.data() as Map)['user_email'] ?? 'Anonymous';
-                    var message = (post.data() as Map)['message'] ?? '';
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.person)),
-                        title: Text(email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        subtitle: Text(
-                          message, 
-                          style: const TextStyle(color: Colors.black87, fontSize: 16),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-
-          // 2. THE INPUT FIELD
-          Container(
-            padding: const EdgeInsets.all(10),
-            color: Colors.white,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _postController,
-                    decoration: const InputDecoration(
-                      hintText: 'Ask or share something...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Colors.blue),
-                  onPressed: _postMessage,
-                ),
-              ],
-            ),
+        title: const Text('Student MISC Forums'),
+        actions: [
+          //log out button
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Log Out',
+            onPressed: _logOut,
           ),
         ],
       ),
+      body: Center(
+        child: Text(
+          'Hello $name',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
+}
+
+class _CategoryItem {
+  final String id;
+  final String title;
+  final String imagePath;
+
+  const _CategoryItem({
+    required this.id,
+    required this.title,
+    required this.imagePath,
+  });
 }
