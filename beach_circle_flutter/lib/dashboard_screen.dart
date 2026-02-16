@@ -342,10 +342,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ---------- Weather Bar  ------------
-  final _weatherService = WeatherServices('d947beb08a254433a6949b94bf6dccc1'); //API key
+  final _weatherService = WeatherServices(
+    'd947beb08a254433a6949b94bf6dccc1',
+  ); //API key
   Weather? _weather;
 
-  double convertToFahrenheit(double celsius) => (celsius * 9 / 5) + 32; //Celcuis to Fahrenheit
+  double convertToFahrenheit(double celsius) =>
+      (celsius * 9 / 5) + 32; //Celcuis to Fahrenheit
 
   //Displays city name and weather condition
   Future<void> _fetchWeather() async {
@@ -369,53 +372,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   //Displays weather background
   List<Color> _getBackgroundColors() {
-    if (_weather == null)
-      return [const Color(0xFF9DB7D5), const Color(0xFFBBD7F0)];
-
-    switch (_weather!.mainCondition.toLowerCase()) {
-      case 'thunderstorm':
-        return [Colors.deepPurple.shade800, Colors.black87];
-      case 'rain':
-      case 'drizzle':
-        return [Colors.blueGrey.shade700, Colors.blueGrey.shade400];
-      case 'snow':
-        return [Colors.lightBlue.shade100, Colors.white70];
-      case 'mist':
-      case 'smoke':
-      case 'haze':
-      case 'dust':
-      case 'fog':
-        return [Colors.grey.shade600, Colors.grey.shade400];
-      case 'clouds':
-        return [Colors.blueGrey.shade600, Colors.blueGrey.shade300];
-      case 'clear':
-      default:
-        return [Colors.lightBlue.shade400, Colors.orange.shade300];
+    if (_weather == null) {
+      return [Colors.lightBlue.shade400, Colors.orange.shade300];
     }
+
+    final condition = _weather!.mainCondition.toLowerCase();
+    final isNight = _weather!.icon.contains("n");
+
+    if (condition == "clear") {
+      return isNight
+          ? [Colors.indigo.shade900, Colors.black]
+          : [Colors.orange.shade300, Colors.lightBlue.shade400];
+    }
+
+    if (condition == "clouds") {
+      return isNight
+          ? [Colors.blueGrey.shade900, Colors.black54]
+          : [Colors.blueGrey.shade400, Colors.grey.shade300];
+    }
+
+    if (condition == "rain" || condition == "drizzle") {
+      return [Colors.indigo.shade700, Colors.blueGrey.shade500];
+    }
+
+    if (condition == "thunderstorm") {
+      return [Colors.deepPurple.shade800, Colors.black];
+    }
+
+    if (condition == "snow") {
+      return [Colors.lightBlueAccent.shade100, Colors.white];
+    }
+
+    if (condition == "mist" || condition == "fog" || condition == "haze") {
+      return [Colors.grey.shade600, Colors.grey.shade400];
+    }
+
+    return [Colors.lightBlue, Colors.orange];
   }
 
   //Displays weather icons to match weather conditions
   String _getWeatherAnimation() {
     if (_weather == null) return "assets/weather/sunny.json";
 
-    switch (_weather!.mainCondition.toLowerCase()) {
-      case 'clouds':
-        return "assets/weather/sunny.json";
-      case 'rain':
-      case 'drizzle':
-        return "assets/weather/sunny.json";
-      case 'thunderstorm':
-        return "assets/weather/sunny.json";
-      case 'snow':
-        return "assets/weather/sunny.json";
-      case 'mist':
-      case 'fog':
-      case 'haze':
-        return "assets/weather/sunny.json";
-      case 'clear':
-      default:
-        return "assets/weather/sunny.json";
+    final condition = _weather!.mainCondition.toLowerCase();
+    final isNight = _weather!.icon.contains("n");
+
+    //Clear day or clear night
+    if (condition == "clear") {
+      return isNight
+          ? "assets/weather/night.json"
+          : "assets/weather/sunny.json";
     }
+
+    //Cloudy
+    if (condition == "clouds") {
+      return isNight
+          ? "assets/weather/night.json"
+          : "assets/weather/cloudy.json";
+    }
+
+    //Rainy or drizzling
+    if (condition == "rain" || condition == "drizzle") {
+      return "assets/weather/rain.json";
+    }
+
+    //Thunderstorm
+    if (condition == "thunderstorm") {
+      return "assets/weather/storm.json";
+    }
+
+    //Snow
+    if (condition == "snow") {
+      return "assets/weather/snowy.json";
+    }
+
+    //Misty/foggy
+    if (condition == "mist" ||
+        condition == "smoke" ||
+        condition == "haze" ||
+        condition == "dust" ||
+        condition == "fog") {
+      return "assets/weather/mist.json";
+    }
+
+    return "assets/weather/sunny.json";
   }
 
   //Display weather information onto the dashboard
