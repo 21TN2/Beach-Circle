@@ -21,7 +21,6 @@ import 'screens/resources_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MapboxOptions.setAccessToken(mapboxAccessToken);
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
 
@@ -30,6 +29,7 @@ void main() async {
     );
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
+    MapboxOptions.setAccessToken(mapboxAccessToken);
     await Firebase.initializeApp();
   }
 
