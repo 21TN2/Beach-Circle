@@ -31,7 +31,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/.env/.env.public.dev
+    - assets/forum/
 
 # flutter:
 #   assets:
