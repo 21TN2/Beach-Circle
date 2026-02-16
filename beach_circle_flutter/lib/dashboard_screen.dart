@@ -1,10 +1,7 @@
 // dashboard home page
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// importing the screens
-// note: not all dart pages have been created yet
-// missing: outlet, restroom, food alert, parking, studyhall, resource
+import 'notification_test_screen.dart'; 
 import 'dormlife_screen.dart';
 import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
@@ -14,6 +11,7 @@ import 'map/map_screen.dart';
 import 'misc_screen.dart';
 import 'screens/resources_page.dart';
 import 'settings_screen.dart';
+import 'bathroom_finder.dart'; 
 
 import 'events_screen.dart';
 import 'dormlife_screen.dart';
@@ -336,6 +334,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
+          // --- SECRET ADMIN BUTTON START ---
+          if (user?.email == 'teef@gmail.com') 
+            IconButton(
+              icon: const Icon(Icons.bug_report, color: Colors.red), 
+              tooltip: 'Secret Admin Test',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationTestScreen()),
+                );
+              },
+            ),
+          // --- SECRET ADMIN BUTTON END ---
+
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log Out',
@@ -345,19 +357,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    return null;
-  }
+      // Body
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          // Welcoming the user with their name
+          children: [
+            Text(
+              'Hello, $name',
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Welcome to Beach Circle !',
+              style: TextStyle(fontSize: 18, color: Colors.black54),
+            ),
+            const SizedBox(height: 12),
 
-  // ---------- FloatingActionButton for pencil icon ----------
-  Widget? _buildFab() {
-    // Only show pencil on Forum HOME to open CreateForumPage
-    if (_currentIndex == 2) {
-      final navState = _forumNavKey.currentState;
-
-      if (navState == null) return null;
-      final isForumRoot = !navState.canPop();
-      // final nav = _forumNavKey.currentState;
-      // final isForumRoot = nav == null ? true : !nav.canPop();
+            // CSULB Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                'https://raw.githubusercontent.com/21TN2/Beach-Circle/resourcepage/Bob%20Cole%20Conservatory%20of%20Music%20@%20CSULB.jpeg',
+                height: 220,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 220,
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(Icons.broken_image, size: 50),
+                    ),
+                  );
+                },
+              ),
+            ),
 
       if (isForumRoot) {
         return FloatingActionButton(
@@ -375,16 +411,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return null;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(context),
+            _scrollingRow([
+              _tile(
+                context,
+                Icons.local_pizza,
+                'Food Alert',
+                const MapScreen(),
+              ),
+              _tile(
+                context,
+                Icons.directions_car,
+                'Parking',
+                const MapScreen(),
+              ),
+              _tile(context, Icons.power, 'Outlets', const MapScreen()),
+              
+              // 2. BATHROOM TILE UPDATED HERE
+              _tile(
+                context,
+                Icons.family_restroom,
+                'Bathrooms',
+                const BathroomFinder(), // Changed from MapScreen()
+              ),
+              
+              _tile(
+                context,
+                Icons.auto_stories,
+                'Study Halls',
+                const MapScreen(),
+              ),
+            ]),
 
-      floatingActionButton: _buildFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+            const SizedBox(height: 24),
 
-      // Bottom navigation bar
+            // ----- Community Goods -----
+            const Text(
+              'Community Goods',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            _scrollingRow([
+              _tile(context, Icons.event, 'Events', const EventsScreen()),
+              _tile(context, Icons.forum, 'Misc Forums', const MiscScreen()),
+              _tile(
+                context,
+                Icons.apartment,
+                'Dorm Life',
+                const DormlifeScreen(),
+              ),
+            ]),
+
+            const SizedBox(height: 24),
+
+            // ----- Student Resources -----
+            const Text(
+              'Student Resources',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            _scrollingRow([
+              _tile(
+                context,
+                Icons.access_time,
+                'Hours & Capacity',
+                const HourscapScreen(),
+              ),
+              _tile(
+                context,
+                Icons.menu_book,
+                'Additional Resources',
+                const AddresScreen(),
+              ),
+              _tile(
+                context,
+                Icons.edit_note,
+                'Feedback & Analytics',
+                const FeedbackanalyticsScreen(),
+              ),
+            ]),
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+
+      //------ Navigation Bar ------------
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
@@ -392,19 +505,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentIndex = index;
 
-            // reset dashboard sub-pages when switching away
-            if (index != 0) _homePage = "home";
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MapScreen()),
+            );
+          }
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddresScreen()),
+            );
+          }
 
-            // if tapping Forum tab again, go back to forum home
-            if (index == 2) {
-              _forumNavKey.currentState?.popUntil((r) => r.isFirst);
-            }
-
-            // if tapping Home tab, go to dashboard home
-            if (index == 0) {
-              _homePage = "home";
-            }
-          });
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            );
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),

@@ -23,8 +23,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-
-    await Firebase.initializeApp(options: firebaseConfigWeb);
+    FirebaseOptions? firebaseConfigWeb;
+    await Firebase.initializeApp(
+      options: firebaseConfigWeb, 
+    );
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
     MapboxOptions.setAccessToken(mapboxAccessToken);
