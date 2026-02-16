@@ -18,7 +18,15 @@ import 'package:lottie/lottie.dart';
 import 'package:beach_circle_flutter/weather/models/weather_model.dart';
 import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 
-// Forum request page (the “add forum request” screen)
+// Weather packages
+import 'package:lottie/lottie.dart';
+import 'package:beach_circle_flutter/weather/models/weather_model.dart';
+import 'package:beach_circle_flutter/weather/services/weather_service.dart';
+
+// Forum imports
+import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
+import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -35,8 +43,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Tab 0: dashboard
   String _homePage = "home"; // home | events | dormlife | hourscap | feedback
 
-  // Tab 2: forum
-  String _forumPage = "forum"; // forum | createForumRequest
+  // ---------- Forum  ----------
+  final ForumService _forumService = ForumService();
+  final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -131,6 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
+          // -------- DASHBOARD TILES --------------
           const Text(
             'Map Features',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -164,18 +174,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
+            // Events = dashboard sub-page (bottom nav stays)
             _tileOpen(Icons.event, 'Events', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "events";
               });
             }),
+
+            // Misc Forums
             _tileOpen(Icons.forum, 'Misc Forums', () {
               setState(() {
                 _currentIndex = 2;
-                _forumPage = "forum";
+                // Reset forum navigator to home whenever coming from dashboard tile
+                _forumNavKey.currentState?.popUntil((r) => r.isFirst);
               });
             }),
+
+            // Dorm Life
             _tileOpen(Icons.apartment, 'Dorm Life', () {
               setState(() {
                 _currentIndex = 0;
@@ -193,15 +209,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
+            // Hours & Capacity
             _tileOpen(Icons.access_time, 'Hours & Capacity', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "hourscap";
               });
             }),
+
+            // Additional Resources
             _tileOpen(Icons.menu_book, 'Additional Resources', () {
               setState(() => _currentIndex = 3);
             }),
+
+            // Feedback & Analytics
             _tileOpen(Icons.edit_note, 'Feedback & Analytics', () {
               setState(() {
                 _currentIndex = 0;
@@ -213,6 +234,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  // ---------- Forum Tab Navigator  ----------
+  Widget _buildForumTab() {
+    return Navigator(
+      key: _forumNavKey,
+      onGenerateRoute: (settings) {
+        // Forum Home (category grid)
+        if (settings.name == '/' || settings.name == null) {
+          return MaterialPageRoute(
+            builder:
+                (_) => MiscScreen(
+                  forumService: _forumService,
+                  onOpenCategory: (ForumCategory c) {
+                    _forumNavKey.currentState?.pushNamed(
+                      '/category',
+                      arguments: c,
+                    );
+                  },
+                ),
+          );
+        }
+
+        // Category page
+        if (settings.name == '/category') {
+          final category = settings.arguments as ForumCategory;
+          return MaterialPageRoute(
+            builder:
+                (_) => ForumCategoryPg(
+                  category: category,
+                  forumService: _forumService,
+                ),
+          );
+        }
+
+        // Create Forum Request page
+        if (settings.name == '/createForum') {
+          return MaterialPageRoute(
+            builder:
+                (_) => CreateForumPage(
+                  onClose: () => _forumNavKey.currentState?.pop(),
+                  onSubmitted: () => _forumNavKey.currentState?.pop(),
+                ),
+          );
+        }
+
+        // fallback
+        return MaterialPageRoute(
+          builder:
+              (_) => MiscScreen(
+                forumService: _forumService,
+                onOpenCategory: (ForumCategory c) {
+                  _forumNavKey.currentState?.pushNamed(
+                    '/category',
+                    arguments: c,
+                  );
+                },
+              ),
+        );
+      },
     );
   }
 
@@ -238,16 +320,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // TAB 1 campus map
     if (_currentIndex == 1) return const MapScreen();
 
-    // TAB 2 student misc forum
-    if (_currentIndex == 2) {
-      if (_forumPage == "createForumRequest") {
-        return CreateForumPage(
-          onClose: () => setState(() => _forumPage = "forum"),
-          onSubmitted: () => setState(() => _forumPage = "forum"),
-        );
-      }
-      return const MiscScreen();
-    }
+    // TAB 2 student misc forum (NEW: nested navigator)
+    if (_currentIndex == 2) return _buildForumTab();
 
     // TAB 3 resource page
     if (_currentIndex == 3) return const ResourcesPage();
@@ -256,7 +330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SettingsScreen();
   }
 
-  // ---------- AppBar  ------------
+  // ---------- AppBar ------------
   PreferredSizeWidget? _buildAppBar() {
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
@@ -272,25 +346,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    // show a back button for dashboard pages
-    if (_currentIndex == 0 && _homePage != "home") {
-      String title = "Back";
-      if (_homePage == "events") title = "Events";
-      if (_homePage == "dormlife") title = "Dorm Life";
-      if (_homePage == "hourscap") title = "Hours & Capacity";
-      if (_homePage == "feedback") title = "Feedback & Analytics";
+    return null;
+  }
 
-      return AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => setState(() => _homePage = "home"),
-        ),
-        title: Text(title),
-        centerTitle: true,
-      );
+  // ---------- FloatingActionButton for pencil icon ----------
+  Widget? _buildFab() {
+    // Only show pencil on Forum HOME to open CreateForumPage
+    if (_currentIndex == 2) {
+      final navState = _forumNavKey.currentState;
+
+      if (navState == null) return null;
+      final isForumRoot = !navState.canPop();
+      // final nav = _forumNavKey.currentState;
+      // final isForumRoot = nav == null ? true : !nav.canPop();
+
+      if (isForumRoot) {
+        return FloatingActionButton(
+          backgroundColor: const Color(0xFFFFD500),
+          foregroundColor: Colors.black,
+          elevation: 3,
+          onPressed: () {
+            _forumNavKey.currentState?.pushNamed('/createForum');
+          },
+          child: const Icon(Icons.edit),
+        );
+      }
     }
 
-    // no appbar for other tabs yet
     return null;
   }
 
@@ -300,36 +382,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: _buildAppBar(),
       body: _buildBody(context),
 
-      //(request a forum/category)
-      floatingActionButton:
-          (_currentIndex == 2 && _forumPage == "forum")
-              ? FloatingActionButton(
-                backgroundColor: const Color(0xFFFFD500),
-                foregroundColor: Colors.black,
-                elevation: 3,
-                onPressed: () {
-                  setState(() {
-                    _forumPage = "createForumRequest";
-                  });
-                },
-                child: const Icon(Icons.edit),
-              )
-              : null,
-
+      floatingActionButton: _buildFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       // Bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        onTap:
-            (index) => setState(() {
-              _currentIndex = index;
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
 
-              // reset sub-pages when switching tabs
-              if (index != 0) _homePage = "home";
-              if (index != 2) _forumPage = "forum";
-            }),
+            // reset dashboard sub-pages when switching away
+            if (index != 0) _homePage = "home";
+
+            // if tapping Forum tab again, go back to forum home
+            if (index == 2) {
+              _forumNavKey.currentState?.popUntil((r) => r.isFirst);
+            }
+
+            // if tapping Home tab, go to dashboard home
+            if (index == 0) {
+              _homePage = "home";
+            }
+          });
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
