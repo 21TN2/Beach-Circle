@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.beach_circle_flutter"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.beach_circle_flutter"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }

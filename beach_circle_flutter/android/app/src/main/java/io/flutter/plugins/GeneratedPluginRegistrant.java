@@ -31,19 +31,19 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin firebase_core, io.flutter.plugins.firebase.core.FlutterFirebaseCorePlugin", e);
     }
     try {
-      flutterEngine.getPlugins().add(new io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin());
-    } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin firebase_storage, io.flutter.plugins.firebase.storage.FlutterFirebaseStoragePlugin", e);
-    }
-    try {
-      flutterEngine.getPlugins().add(new com.fluttercandies.flutter_image_compress.ImageCompressPlugin());
-    } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin flutter_image_compress_common, com.fluttercandies.flutter_image_compress.ImageCompressPlugin", e);
-    }
-    try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_plugin_android_lifecycle, io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.baseflow.geocoding.GeocodingPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin geocoding_android, com.baseflow.geocoding.GeocodingPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.baseflow.geolocator.GeolocatorPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin geolocator_android, com.baseflow.geolocator.GeolocatorPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.imagepicker.ImagePickerPlugin());
@@ -54,6 +54,11 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new com.mapbox.maps.mapbox_maps.MapboxMapsPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin mapbox_maps_flutter, com.mapbox.maps.mapbox_maps.MapboxMapsPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new dev.fluttercommunity.plus.packageinfo.PackageInfoPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin package_info_plus, dev.fluttercommunity.plus.packageinfo.PackageInfoPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.urllauncher.UrlLauncherPlugin());

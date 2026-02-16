@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';  
-import 'signup_screen.dart'; 
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'signup_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -16,18 +17,21 @@ class _AuthScreenState extends State<AuthScreen> {
   final bool _isLogin = true;
   bool _isLoading = false;
 
-// TO HIDE CERTAIN SYSTEM UI OVERLAYS LIKE THE NAVIGATION BAR
+  // TO HIDE CERTAIN SYSTEM UI OVERLAYS LIKE THE NAVIGATION BAR
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
-    ),
-  );
-}
+
+    if (!kIsWeb) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+        ),
+      );
+    }
+  }
 
   Future<void> _submit() async {
     setState(() => _isLoading = true);
@@ -46,9 +50,9 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Login failed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? 'Login failed')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -77,23 +81,19 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             ),
-            
+
             // CONTENT
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 children: [
                   const SizedBox(height: 1),
-                  
+
                   // BEACH CIRCLE LOGO
-                  Image.asset(
-                    'assets/logo.png',
-                    width: 400,
-                    height: 400,
-                  ),
-                  
+                  Image.asset('assets/logo.png', width: 400, height: 400),
+
                   const SizedBox(height: 1),
-                  
+
                   // LOG IN WITH EMAIL & CREATE ACCOUNT TEXT
                   Text(
                     _isLogin ? 'Log in with email' : 'Create an account',
@@ -103,9 +103,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 30),
-                  
+
                   // EMAIL
                   Container(
                     decoration: BoxDecoration(
@@ -126,9 +126,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 15),
-                  
+
                   // PASSWORD
                   Container(
                     decoration: BoxDecoration(
@@ -149,9 +149,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 25),
-                  
+
                   // LOGIN BUTTON
                   SizedBox(
                     width: double.infinity,
@@ -164,28 +164,29 @@ class _AuthScreenState extends State<AuthScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                _isLogin ? 'Login' : 'Sign Up',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
-                            )
-                          : Text(
-                              _isLogin ? 'Login' : 'Sign Up',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 25),
-                  
+
                   // BOTTOM LINKS (TEXT FOR NOW)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -203,7 +204,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           );
                         },
                         child: Text(
-                          _isLogin ? 'Click Here to Sign Up' : 'Have an account? Log In',
+                          _isLogin
+                              ? 'Click Here to Sign Up'
+                              : 'Have an account? Log In',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -223,7 +226,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 40),
                 ],
               ),
