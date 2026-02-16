@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'mapbox.dart';
 import 'firebase_options.dart';
-import 'auth_screen.dart'; 
+import 'auth_screen.dart';
 import 'signup_screen.dart';
 import 'map/map_screen.dart';
 import 'events_screen.dart';
@@ -25,9 +25,7 @@ void main() async {
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
 
-    await Firebase.initializeApp(
-      options: firebaseConfigWeb, 
-    );
+    await Firebase.initializeApp(options: firebaseConfigWeb);
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
     await Firebase.initializeApp();
@@ -49,7 +47,7 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           // If the user is logged in, send them to Dashboard
           if (snapshot.hasData) {
-             return const DashboardScreen();
+            return const DashboardScreen();
           }
           // Otherwise, show the Login/Auth Screen
           return const AuthScreen();
