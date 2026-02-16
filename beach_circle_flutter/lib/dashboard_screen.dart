@@ -13,6 +13,16 @@ import 'dormlife_screen.dart';
 import 'hourscap_screen.dart';
 import 'feedbackanalytics_screen.dart';
 
+// Weather packages
+import 'package:lottie/lottie.dart';
+import 'package:beach_circle_flutter/weather/models/weather_model.dart';
+import 'package:beach_circle_flutter/weather/services/weather_service.dart';
+
+// Weather packages
+import 'package:lottie/lottie.dart';
+import 'package:beach_circle_flutter/weather/models/weather_model.dart';
+import 'package:beach_circle_flutter/weather/services/weather_service.dart';
+
 // Forum imports
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
@@ -99,11 +109,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Hello, $name',
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-          ),
+          _weatherHeader(name),
           const SizedBox(height: 12),
+
           const Text(
             'Welcome to Beach Circle !',
             style: TextStyle(fontSize: 18, color: Colors.black54),
@@ -407,6 +415,193 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
         ],
       ),
+    );
+  }
+
+  // ---------- Weather Bar  ------------
+  final _weatherService = WeatherServices(
+    'd947beb08a254433a6949b94bf6dccc1',
+  ); //API key
+  Weather? _weather;
+
+  double convertToFahrenheit(double celsius) =>
+      (celsius * 9 / 5) + 32; //Celcuis to Fahrenheit
+
+  //Displays city name and weather condition
+  Future<void> _fetchWeather() async {
+    try {
+      final cityName = await _weatherService.getCurrentCity();
+      final weather = await _weatherService.getWeather(cityName);
+      if (!mounted) return;
+      setState(() => _weather = weather);
+    }
+    //raise error condition if issues occur
+    catch (e) {
+      print("Weather error: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeather();
+  }
+
+  //Displays weather background
+  List<Color> _getBackgroundColors() {
+    if (_weather == null) {
+      return [Colors.lightBlue.shade400, Colors.orange.shade300];
+    }
+
+    final condition = _weather!.mainCondition.toLowerCase();
+    final isNight = _weather!.icon.contains("n");
+
+    if (condition == "clear") {
+      return isNight
+          ? [Colors.indigo.shade900, Colors.black]
+          : [Colors.orange.shade300, Colors.lightBlue.shade400];
+    }
+
+    if (condition == "clouds") {
+      return isNight
+          ? [Colors.blueGrey.shade900, Colors.black54]
+          : [Colors.blueGrey.shade400, Colors.grey.shade300];
+    }
+
+    if (condition == "rain" || condition == "drizzle") {
+      return [Colors.indigo.shade700, Colors.blueGrey.shade500];
+    }
+
+    if (condition == "thunderstorm") {
+      return [Colors.deepPurple.shade800, Colors.black];
+    }
+
+    if (condition == "snow") {
+      return [Colors.lightBlueAccent.shade100, Colors.white];
+    }
+
+    if (condition == "mist" || condition == "fog" || condition == "haze") {
+      return [Colors.grey.shade600, Colors.grey.shade400];
+    }
+
+    return [Colors.lightBlue, Colors.orange];
+  }
+
+  //Displays weather icons to match weather conditions
+  String _getWeatherAnimation() {
+    if (_weather == null) return "assets/weather/sunny.json";
+
+    final condition = _weather!.mainCondition.toLowerCase();
+    final isNight = _weather!.icon.contains("n");
+
+    //Clear day or clear night
+    if (condition == "clear") {
+      return isNight
+          ? "assets/weather/night.json"
+          : "assets/weather/sunny.json";
+    }
+
+    //Cloudy
+    if (condition == "clouds") {
+      return isNight
+          ? "assets/weather/night.json"
+          : "assets/weather/cloudy.json";
+    }
+
+    //Rainy or drizzling
+    if (condition == "rain" || condition == "drizzle") {
+      return "assets/weather/rain.json";
+    }
+
+    //Thunderstorm
+    if (condition == "thunderstorm") {
+      return "assets/weather/storm.json";
+    }
+
+    //Snow
+    if (condition == "snow") {
+      return "assets/weather/snowy.json";
+    }
+
+    //Misty/foggy
+    if (condition == "mist" ||
+        condition == "smoke" ||
+        condition == "haze" ||
+        condition == "dust" ||
+        condition == "fog") {
+      return "assets/weather/mist.json";
+    }
+
+    return "assets/weather/sunny.json";
+  }
+
+  //Display weather information onto the dashboard
+  Widget _weatherHeader(String name) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _getBackgroundColors(),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child:
+          _weather == null
+              ? const SizedBox(
+                height: 120,
+                child: Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              )
+              : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // LEFT TEXT
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Hello, $name",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _weather!.cityName,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "${_weather!.temperature.round()}°C  •  ${convertToFahrenheit(_weather!.temperature).round()}°F",
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _weather!.mainCondition,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+
+                  // RIGHT ANIMATION
+                  Lottie.asset(
+                    _getWeatherAnimation(),
+                    width: 110,
+                    height: 110,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
     );
   }
 }
