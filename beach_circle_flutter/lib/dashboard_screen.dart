@@ -9,13 +9,7 @@ import 'misc_screen.dart';
 import 'addres_screen.dart'; 
 import 'settings_screen.dart';
 import 'bathroom_finder.dart'; 
-// Fixed map import
 import 'map/map_screen.dart'; 
-
-// Weather packages
-import 'package:lottie/lottie.dart';
-import 'package:beach_circle_flutter/weather/models/weather_model.dart';
-import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 
 // Weather packages
 import 'package:lottie/lottie.dart';
@@ -288,12 +282,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   PreferredSizeWidget? _buildAppBar() {
     final user = FirebaseAuth.instance.currentUser;
+    
+    // --- ADMIN LIST ---
+    // Add emails here to give them access to the debug button
+    final List<String> adminEmails = [
+      'teef@gmail.com',
+      'reytest@gmail.com',
+    ];
+
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          if (user?.email == 'teef@gmail.com') 
+          // Check if current user is in the admin list
+          if (user?.email != null && adminEmails.contains(user!.email)) 
             IconButton(
               icon: const Icon(Icons.bug_report, color: Colors.red), 
               onPressed: () {
@@ -310,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return null;
   }
 
-  // --- THE BUILD METHOD (This was missing!) ---
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -353,7 +356,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final weather = await _weatherService.getWeather(cityName);
       if (!mounted) return;
       setState(() => _weather = weather);
-    }
+    } 
     //raise error condition if issues occur
     catch (e) {
       print("Weather error: $e");
