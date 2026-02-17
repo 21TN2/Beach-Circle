@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.beach_circle_flutter"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }

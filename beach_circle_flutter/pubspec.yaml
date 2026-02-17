@@ -22,6 +22,13 @@ dependencies:
   firebase_auth: ^5.0.0
   cloud_firestore: ^5.0.0
 
+
+  #Weather Packages
+  http: ^1.6.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  lottie: ^3.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -32,6 +39,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/forum/
+    - assets/weather/
 
 # flutter:
 #   assets:
