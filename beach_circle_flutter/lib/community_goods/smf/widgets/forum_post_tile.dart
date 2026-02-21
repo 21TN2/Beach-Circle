@@ -122,7 +122,7 @@ class _ForumPostTileState extends State<ForumPostTile> {
             ],
           ),
 
-          /// POST AUTHOR HEADER (NEW)
+          /// POST AUTHOR HEADER
           if (isExpanded)
             Padding(
               padding: const EdgeInsets.only(left: 40, top: 6),
