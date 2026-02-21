@@ -1,4 +1,5 @@
 // forum_category_pg.dart
+import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -7,6 +8,7 @@ import '../model/forum_post.dart';
 import '../service/forum_service.dart';
 import '../widgets/forum_post_tile.dart';
 import 'create_forum_post_pg.dart';
+import '../screens/report_issue_pg.dart';
 
 class ForumCategoryPg extends StatelessWidget {
   final ForumCategory category;
@@ -156,7 +158,18 @@ class ForumCategoryPg extends StatelessWidget {
                       mediaType: p.mediaType,
                       isInterested: false,
                       onInterestedTap: () {},
-                      onReportTap: () {},
+                      onReportTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => ReportIssuePage(
+                                  postId: p.id,
+                                  postAuthorId: p.authorId,
+                                ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );

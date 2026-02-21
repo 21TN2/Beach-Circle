@@ -3,6 +3,7 @@ import '../model/forum_reply.dart';
 import '../service/forum_service.dart';
 import 'interested_button.dart';
 import 'report_button.dart';
+import '../screens/report_issue_pg.dart';
 
 class ForumPostTile extends StatefulWidget {
   final String postId;
