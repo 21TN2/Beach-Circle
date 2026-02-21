@@ -1,22 +1,18 @@
-// dashboard home page
+import 'package:beach_circle_flutter/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// dashboard screens
-import 'map_screen.dart';
-import 'misc_screen.dart';
-import 'screens/resources_page.dart';
-import 'settings_screen.dart';
-
-import 'events_screen.dart';
+import 'notification_test_screen.dart';
 import 'dormlife_screen.dart';
-import 'hourscap_screen.dart';
+import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
+import 'hourscap_screen.dart';
+import 'misc_screen.dart';
+import 'addres_screen.dart';
+import 'settings_screen.dart';
+import 'screens/resources_page.dart';
 
-// Weather packages
-import 'package:lottie/lottie.dart';
-import 'package:beach_circle_flutter/weather/models/weather_model.dart';
-import 'package:beach_circle_flutter/weather/services/weather_service.dart';
+//import 'bathroom_finder.dart';
+//import 'map/map_screen.dart';
 
 // Weather packages
 import 'package:lottie/lottie.dart';
@@ -37,13 +33,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // 0 = Dashboard, 1 = Map, 2 = Forum, 3 = Resources, 4 = Settings
   int _currentIndex = 0;
+  String _homePage = "home";
 
-  // Tab 0: dashboard
-  String _homePage = "home"; // home | events | dormlife | hourscap | feedback
-
-  // ---------- Forum  ----------
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
 
@@ -51,7 +43,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
-  // ----------  dashboard tiles  ----------
+  // --- HELPER METHODS ---
+
   Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
@@ -60,8 +53,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          hoverColor: Colors.blue.withOpacity(0.25),
-          splashColor: Colors.blue.withOpacity(0.25),
+          // Fixed deprecation warning
+          hoverColor: Colors.blue.withValues(alpha: 0.25),
+          splashColor: Colors.blue.withValues(alpha: 0.25),
           onTap: onTap,
           child: Ink(
             width: 110,
@@ -99,7 +93,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------- Dashboard layout --------------
   Widget _dashboardBody(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.email?.split('@').first ?? "User";
@@ -157,9 +150,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _tileOpen(Icons.power, 'Outlets', () {
               setState(() => _currentIndex = 1);
             }),
+            // Bathroom Tile
             _tileOpen(Icons.family_restroom, 'Bathrooms', () {
               setState(() => _currentIndex = 1);
             }),
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (_) => const BathroomFinder()),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
               setState(() => _currentIndex = 1);
             }),
@@ -174,24 +171,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            // Events = dashboard sub-page (bottom nav stays)
             _tileOpen(Icons.event, 'Events', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "events";
               });
             }),
-
-            // Misc Forums
             _tileOpen(Icons.forum, 'Misc Forums', () {
               setState(() {
                 _currentIndex = 2;
-                // Reset forum navigator to home whenever coming from dashboard tile
                 _forumNavKey.currentState?.popUntil((r) => r.isFirst);
               });
             }),
-
-            // Dorm Life
             _tileOpen(Icons.apartment, 'Dorm Life', () {
               setState(() {
                 _currentIndex = 0;
@@ -209,20 +200,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 10),
 
           _scrollingRow([
-            // Hours & Capacity
             _tileOpen(Icons.access_time, 'Hours & Capacity', () {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "hourscap";
               });
             }),
-
-            // Additional Resources
             _tileOpen(Icons.menu_book, 'Additional Resources', () {
               setState(() => _currentIndex = 3);
             }),
-
-            // Feedback & Analytics
             _tileOpen(Icons.edit_note, 'Feedback & Analytics', () {
               setState(() {
                 _currentIndex = 0;
@@ -237,12 +223,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------- Forum Tab Navigator  ----------
   Widget _buildForumTab() {
     return Navigator(
       key: _forumNavKey,
       onGenerateRoute: (settings) {
-        // Forum Home (category grid)
         if (settings.name == '/' || settings.name == null) {
           return MaterialPageRoute(
             builder:
@@ -257,8 +241,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
           );
         }
-
-        // Category page
         if (settings.name == '/category') {
           final category = settings.arguments as ForumCategory;
           return MaterialPageRoute(
@@ -269,8 +251,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
           );
         }
-
-        // Create Forum Request page
         if (settings.name == '/createForum') {
           return MaterialPageRoute(
             builder:
@@ -280,8 +260,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
           );
         }
-
-        // fallback
         return MaterialPageRoute(
           builder:
               (_) => MiscScreen(
@@ -298,9 +276,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------- Body switcher ------------
   Widget _buildBody(BuildContext context) {
-    // TAB 0 dashboard homepage
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
@@ -316,95 +292,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return _dashboardBody(context);
       }
     }
-
-    // TAB 1 campus map
     if (_currentIndex == 1) return const MapScreen();
-
-    // TAB 2 student misc forum (NEW: nested navigator)
     if (_currentIndex == 2) return _buildForumTab();
-
-    // TAB 3 resource page
     if (_currentIndex == 3) return const ResourcesPage();
-
-    // TAB 4 settings
     return const SettingsScreen();
   }
 
-  // ---------- AppBar ------------
   PreferredSizeWidget? _buildAppBar() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // --- ADMIN LIST ---
+    // Add emails here to give them access to the debug button
+    final List<String> adminEmails = [
+      'teef@gmail.com',
+      'reytest@gmail.com',
+      'giselle1@gmail.com',
+    ];
+
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log Out',
-            onPressed: _logOut,
-          ),
+          // Check if current user is in the admin list
+          if (user?.email != null && adminEmails.contains(user!.email))
+            IconButton(
+              icon: const Icon(Icons.bug_report, color: Colors.red),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationTestScreen(),
+                  ),
+                );
+              },
+            ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logOut),
         ],
       );
     }
-
-    return null;
-  }
-
-  // ---------- FloatingActionButton for pencil icon ----------
-  Widget? _buildFab() {
-    // Only show pencil on Forum HOME to open CreateForumPage
-    if (_currentIndex == 2) {
-      final navState = _forumNavKey.currentState;
-
-      if (navState == null) return null;
-      final isForumRoot = !navState.canPop();
-      // final nav = _forumNavKey.currentState;
-      // final isForumRoot = nav == null ? true : !nav.canPop();
-
-      if (isForumRoot) {
-        return FloatingActionButton(
-          backgroundColor: const Color(0xFFFFD500),
-          foregroundColor: Colors.black,
-          elevation: 3,
-          onPressed: () {
-            _forumNavKey.currentState?.pushNamed('/createForum');
-          },
-          child: const Icon(Icons.edit),
-        );
-      }
-    }
-
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: _buildAppBar(),
       body: _buildBody(context),
-
-      floatingActionButton: _buildFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-
-      // Bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
-
-            // reset dashboard sub-pages when switching away
-            if (index != 0) _homePage = "home";
-
-            // if tapping Forum tab again, go back to forum home
-            if (index == 2) {
-              _forumNavKey.currentState?.popUntil((r) => r.isFirst);
-            }
-
-            // if tapping Home tab, go to dashboard home
-            if (index == 0) {
-              _homePage = "home";
-            }
+            if (index == 0) _homePage = "home";
           });
         },
         items: const [
