@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BathroomFinder extends StatefulWidget {
   const BathroomFinder({super.key});
@@ -10,7 +13,11 @@ class BathroomFinder extends StatefulWidget {
 class _BathroomFinderState extends State<BathroomFinder> {
   // --- STATE VARIABLES ---
   int _selectedRating = 0;
-  final TextEditingController _searchController = TextEditingController();
+  String _selectedBathroom = ""; 
+  bool _isLoading = false; 
+  
+  List<String> _bathroomOptions = []; // Will hold the auto-generated list
+  
   final TextEditingController _commentController = TextEditingController();
   
   // List of features to check
@@ -24,20 +31,137 @@ class _BathroomFinderState extends State<BathroomFinder> {
     'Menstrual Products': false,
   };
 
-  // Mock list for search suggestions
-  final List<String> _bathroomOptions = [
-    "ECS First Floor - Women's",
-    "ECS First Floor - Men's",
-    "HC - Gender Neutral",
-    "Library 2nd Floor - Women's",
-    "USU 1st Floor - Family",
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadBathroomsFromFile(); // Read and generate the list when screen opens
+  }
+
+  // --- HELPER: Converts numbers to 1st, 2nd, 3rd, 4th, etc. ---
+  String _getOrdinal(int number) {
+    if (number % 100 >= 11 && number % 100 <= 13) return '${number}th';
+    switch (number % 10) {
+      case 1: return '${number}st';
+      case 2: return '${number}nd';
+      case 3: return '${number}rd';
+      default: return '${number}th';
+    }
+  }
+
+  // --- READ & AUTO-GENERATE FROM TEXT FILE ---
+  Future<void> _loadBathroomsFromFile() async {
+    try {
+      final String fileText = await rootBundle.loadString('assets/bathrooms.txt');
+      final List<String> lines = fileText.split('\n');
+      
+      List<String> generatedList = [];
+      
+      for (String line in lines) {
+        if (line.trim().isEmpty) continue;
+        
+        // Split by comma: "ECS,6" -> ["ECS", "6"]
+        final parts = line.split(',');
+        
+        if (parts.length == 2) {
+          String building = parts[0].trim();
+          int? floors = int.tryParse(parts[1].trim());
+          
+          if (floors != null && floors > 0) {
+            // Auto-generate the floors AND the gender types
+            for (int i = 1; i <= floors; i++) {
+              String baseName = "$building - ${_getOrdinal(i)} Floor";
+              generatedList.add("$baseName - Men's");
+              generatedList.add("$baseName - Women's");
+              generatedList.add("$baseName - Gender Neutral");
+            }
+          } else {
+            // Fallback if the number isn't readable
+            generatedList.add("$building - Men's");
+            generatedList.add("$building - Women's");
+            generatedList.add("$building - Gender Neutral");
+          }
+        } else {
+          // If there is no comma (e.g., "The Outpost")
+          String building = line.trim();
+          generatedList.add("$building - Men's");
+          generatedList.add("$building - Women's");
+          generatedList.add("$building - Gender Neutral");
+        }
+      }
+      
+      setState(() {
+        _bathroomOptions = generatedList;
+      });
+    } catch (e) {
+      print("Error loading bathrooms.txt: $e");
+    }
+  }
+
+  // --- FIREBASE SUBMIT LOGIC ---
+  Future<void> _submitReview() async {
+    if (_selectedBathroom.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select or type a bathroom name.")),
+      );
+      return;
+    }
+    if (_selectedRating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a star rating.")),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final reviewData = {
+        'bathroomName': _selectedBathroom.trim(),
+        'rating': _selectedRating,
+        'features': _features,
+        'comments': _commentController.text.trim(),
+        'userId': user?.uid ?? 'anonymous', 
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+
+      await FirebaseFirestore.instance
+          .collection('bathroom_reviews')
+          .add(reviewData);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Review Submitted Successfully!")),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error submitting review: $e")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // Custom App Bar Area
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -76,19 +200,25 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
                   });
                 },
+                onSelected: (String selection) {
+                  _selectedBathroom = selection;
+                },
                 fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                  controller.addListener(() {
+                    _selectedBathroom = controller.text;
+                  });
                   return TextField(
                     controller: controller,
                     focusNode: focusNode,
                     decoration: InputDecoration(
-                      hintText: "Search",
+                      hintText: _bathroomOptions.isEmpty ? "Loading buildings..." : "Example: ECS - 1st Floor - Men's",
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.cancel, color: Colors.grey, size: 20),
                         onPressed: controller.clear,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25), // Rounded pill shape
+                        borderRadius: BorderRadius.circular(25), 
                         borderSide: BorderSide(color: Colors.blue.shade200),
                       ),
                       enabledBorder: OutlineInputBorder(
@@ -130,7 +260,6 @@ class _BathroomFinderState extends State<BathroomFinder> {
               const Text("Bathroom Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 10),
               
-              // Feature Chips Row (Optional Visual)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -151,9 +280,8 @@ class _BathroomFinderState extends State<BathroomFinder> {
               
               const SizedBox(height: 5),
 
-              // Scrollable Checkbox List Container
               Container(
-                height: 200, // Fixed height for scrolling
+                height: 200, 
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
@@ -169,10 +297,10 @@ class _BathroomFinderState extends State<BathroomFinder> {
                         value: _features[key],
                         controlAffinity: ListTileControlAffinity.leading,
                         dense: true,
-                        activeColor: Colors.purple, // Match your screenshot accent
+                        activeColor: Colors.purple,
                         onChanged: (bool? value) {
                           setState(() {
-                            _features[key] = value!;
+                            _features[key] = value ?? false;
                           });
                         },
                       );
@@ -188,8 +316,9 @@ class _BathroomFinderState extends State<BathroomFinder> {
               const SizedBox(height: 8),
               TextField(
                 controller: _commentController,
+                maxLines: 3, 
                 decoration: InputDecoration(
-                  hintText: "Example: Private Stalls",
+                  hintText: "Add any extra details... (e.g., Door lock is broken)",
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   contentPadding: const EdgeInsets.all(12),
                 ),
@@ -200,10 +329,9 @@ class _BathroomFinderState extends State<BathroomFinder> {
               // --- BUTTONS ---
               Row(
                 children: [
-                  // Cancel Button
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _isLoading ? null : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -212,22 +340,21 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  // Submit Button
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Handle Submit Logic Here
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Review Submitted!")),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onPressed: _isLoading ? null : _submitReview,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC4D600), // Yellow/Green from screenshot
+                        backgroundColor: const Color(0xFFC4D600), 
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text("Submit", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                      child: _isLoading 
+                          ? const SizedBox(
+                              height: 20, 
+                              width: 20, 
+                              child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
+                            )
+                          : const Text("Submit", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

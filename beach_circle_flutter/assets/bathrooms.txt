@@ -1,0 +1,48 @@
+Brotman Hall (BH),6
+Library (LIB) - Lower Level
+Library (LIB),5
+University Student Union (USU),3
+Student Success Center (SSC),2
+Student Health Services (SHS),2
+Horn Center (HC),1
+Bookstore (BKS),2
+ECS,6
+VEC,3
+EN2,2
+EN3,2
+EN4,2
+Hall of Science (HSCI),3
+Molecular & Life Sciences (MLSC),3
+Microbiology (MICRO),1
+Peterson Hall 1 (PH1),3
+Peterson Hall 2 (PH2),2
+LA1,3
+LA2,3
+LA3,3
+LA4,3
+LA5,5
+Psychology (PSY),4
+College of Business (CBA),2
+Education (EED),2
+Education 2 (ED2),2
+Student Rec & Wellness Center (SRWC),2
+Kinesiology (KIN),2
+Walter Pyramid (PYR),3
+Nursing (NURS),1
+Health Science & Design (HSD),2
+Fine Arts 1 (FA1),2
+Fine Arts 2 (FA2),2
+Fine Arts 3 (FA3),2
+Fine Arts 4 (FA4),2
+Design (DES),2
+Bob Cole Conservatory of Music (BCCM),2
+MacIntosh Building (MM),1
+University Theater Center (UTC),1
+Theater Arts (TA),1
+CPaCE / Foundation Building,2
+Faculty Offices 2 (FO2),1
+Faculty Offices 3 (FO3),1
+Faculty Offices 4 (FO4),1
+Faculty Offices 5 (FO5),1
+The Outpost
+The Nugget Grill & Pub
