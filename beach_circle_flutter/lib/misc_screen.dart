@@ -308,7 +308,7 @@ class _HeaderPill extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 24,
+                fontSize: 16,
                 color: Colors.black54,
               ),
             ),
