@@ -290,3 +290,6 @@ beach_circle_flutter/windows/flutter/generated_plugins.cmake
 beach_circle_flutter/lib/mapbox.dart
 beach_circle_flutter/.flutter-plugins-dependencies
 geojsonupload.dart
+
+
+geojsonupload.dart
