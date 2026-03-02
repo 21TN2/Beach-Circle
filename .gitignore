@@ -293,3 +293,5 @@ geojsonupload.dart
 
 
 geojsonupload.dart
+beach_circle_flutter/assets/csulb.geojson
+beach_circle_flutter/lib/scripts/add_building_ids.dart
