@@ -111,7 +111,11 @@ class _CreateForumPageState extends State<CreateForumPage> {
           ),
           child: const Text(
             "Student Miscellaneous Forum",
-            style: TextStyle(color: Colors.black54, fontSize: 16),
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
