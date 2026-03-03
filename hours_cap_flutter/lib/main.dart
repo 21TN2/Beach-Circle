@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
-class HourscapScreen extends StatelessWidget {
-  const HourscapScreen({super.key});
+void main() {
+  runApp(const CSULBApp());
+}
+
+class CSULBApp extends StatelessWidget {
+  const CSULBApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -211,6 +215,15 @@ class HoursCapacityPage extends StatelessWidget {
     ];
 
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFFFFC72C),
+        leading: const Icon(Icons.arrow_back, color: Colors.black),
+        title: const Text(
+          "Hours & Capacity",
+          style: TextStyle(color: Colors.black),
+        ),
+      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: buildings.length,

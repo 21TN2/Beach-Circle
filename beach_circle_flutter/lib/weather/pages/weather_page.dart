@@ -23,9 +23,8 @@ class _WeatherPageState extends State<WeatherPage> {
 
   //If any error occurs while trying to receive the data
   _fetchWeather() async {
-    String cityName = await _weatherService.getCurrentCity();
-
     try {
+      String cityName = await _weatherService.getCurrentCityWithState();
       final weather = await _weatherService.getWeather(cityName);
       setState(() {
         _weather = weather;
