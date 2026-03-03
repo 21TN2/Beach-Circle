@@ -1,5 +1,4 @@
 // Creates the Forum Posts
-// TO DO: Implement the image upload media
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -27,17 +26,26 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _bodyCtrl = TextEditingController();
+  final TextEditingController _imageUrlCtrl = TextEditingController();
 
+  bool _showPreview = false;
   bool _isSubmitting = false;
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _bodyCtrl.dispose();
+    _imageUrlCtrl.dispose();
     super.dispose();
   }
 
-  // Submit post
+  bool _looksLikeUrl(String s) {
+    final uri = Uri.tryParse(s.trim());
+    return uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
@@ -51,8 +59,18 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
       return;
     }
 
+    // reply shows usernane otherwise anonymous
+    final rawDisplayName = user.displayName?.trim();
+    final rawEmailName = user.email?.split('@').first.trim();
+
     final authorName =
-        user.displayName ?? user.email?.split('@').first ?? "Anonymous";
+        (rawDisplayName != null && rawDisplayName.isNotEmpty)
+            ? rawDisplayName
+            : ((rawEmailName != null && rawEmailName.isNotEmpty)
+                ? rawEmailName
+                : "Anonymous");
+
+    final imageUrl = _imageUrlCtrl.text.trim();
 
     setState(() => _isSubmitting = true);
 
@@ -63,6 +81,8 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
         body: _bodyCtrl.text.trim(),
         authorId: user.uid,
         authorName: authorName,
+        mediaUrl: imageUrl.isEmpty ? null : imageUrl,
+        mediaType: imageUrl.isEmpty ? null : "image",
       );
 
       if (!mounted) return;
@@ -80,10 +100,11 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
   @override
   Widget build(BuildContext context) {
+    final previewUrl = _imageUrlCtrl.text.trim();
+
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // Header
       appBar: AppBar(
         backgroundColor: const Color(0xFFF2D21B),
         elevation: 0,
@@ -118,11 +139,9 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// CATEGORY TITLE
                 Center(
                   child: Text(
                     widget.category.title,
-                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -132,60 +151,33 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
                 const SizedBox(height: 18),
 
-                /// CREATE POST TITLE
-                Row(
-                  children: const [
-                    Icon(Icons.near_me, size: 28, color: Colors.black54),
-                    SizedBox(width: 10),
-                    Text(
-                      "Create Post",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 18),
-
-                /// POST TITLE FIELD
                 const Text(
                   "Post Title",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-
                 const SizedBox(height: 8),
 
                 TextFormField(
                   controller: _titleCtrl,
                   decoration: InputDecoration(
                     hintText: "Enter Post Title",
-                    hintStyle: const TextStyle(color: Colors.black26),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return "Title is required.";
-                    }
-                    return null;
-                  },
+                  validator:
+                      (v) =>
+                          v == null || v.trim().isEmpty
+                              ? "Title is required."
+                              : null,
                 ),
 
                 const SizedBox(height: 14),
 
-                /// POST BODY FIELD
                 const Text(
                   "Post Body",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-
                 const SizedBox(height: 8),
 
                 TextFormField(
@@ -193,113 +185,148 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   maxLines: 5,
                   decoration: InputDecoration(
                     hintText: "Enter Post Details",
-                    hintStyle: const TextStyle(color: Colors.black26),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return "Body is required.";
-                    }
-                    return null;
-                  },
+                  validator:
+                      (v) =>
+                          v == null || v.trim().isEmpty
+                              ? "Body is required."
+                              : null,
                 ),
 
                 const SizedBox(height: 16),
 
-                /// POST MEDIA TITLE
                 const Text(
-                  "Post Media",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  "Post Media (Optional)",
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-
                 const SizedBox(height: 8),
 
-                /// ATTACH MEDIA BUTTON
-                OutlinedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Media upload coming soon")),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
+                TextFormField(
+                  controller: _imageUrlCtrl,
+                  keyboardType: TextInputType.url,
+                  decoration: InputDecoration(
+                    hintText: "Paste an image URL",
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    side: const BorderSide(color: Colors.black26),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        setState(() => _showPreview = true);
+                      },
+                    ),
                   ),
-                  child: Row(
-                    children: const [
-                      Expanded(
-                        child: Text(
-                          "Attach Media",
-                          style: TextStyle(color: Colors.black54, fontSize: 15),
-                        ),
-                      ),
-
-                      Icon(Icons.add, color: Colors.black),
-                    ],
-                  ),
+                  validator: (v) {
+                    final text = (v ?? "").trim();
+                    if (text.isEmpty) return null;
+                    if (!_looksLikeUrl(text)) {
+                      return "Please enter a valid http/https URL.";
+                    }
+                    return null;
+                  },
+                  onChanged: (_) {
+                    if (_showPreview) setState(() {});
+                  },
                 ),
+
+                const SizedBox(height: 10),
+
+                if (_showPreview && _looksLikeUrl(previewUrl))
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Image.network(
+                        previewUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                        errorBuilder:
+                            (_, __, ___) => Container(
+                              alignment: Alignment.center,
+                              color: Colors.black12,
+                              child: const Text("Preview failed to load"),
+                            ),
+                      ),
+                    ),
+                  ),
 
                 const SizedBox(height: 28),
 
-                /// CANCEL / POST BUTTONS
+                /// CANCEL / SUBMIT BUTTONS
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed:
-                            _isSubmitting ? null : () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        height: 52,
+                        child: OutlinedButton(
+                          onPressed:
+                              _isSubmitting
+                                  ? null
+                                  : () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            side: const BorderSide(
+                              color: Color(0xFFD6D6D6),
+                              width: 1.2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
                           ),
-                          side: const BorderSide(color: Colors.black26),
-                        ),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.black),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
 
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB7B40E),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _isSubmitting ? null : _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB7B40E),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
                           ),
-                        ),
-                        child:
-                            _isSubmitting
-                                ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                  : const Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                )
-                                : const Text(
-                                  "Post",
-                                  style: TextStyle(color: Colors.black),
-                                ),
+                        ),
                       ),
                     ),
                   ],

@@ -1,6 +1,7 @@
 // This is where users can report an issue about a post
 // created by Giselle -- for student review so i dont forget
 
+import 'package:beach_circle_flutter/community_goods/smf/widgets/report_submitted.dart';
 import 'package:flutter/material.dart';
 import '../service/moderation_service.dart';
 
@@ -74,6 +75,10 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       constraints: const BoxConstraints(
         maxHeight: 260, // compact height
       ),
+
+      // makes the menu background white
+      color: Colors.white,
+
       items:
           _issueTypes
               .map(
@@ -107,7 +112,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ReportSubmittedPage()),
+        MaterialPageRoute(builder: (_) => const ReportSubmittedWidget()),
       );
     } catch (e) {
       if (!mounted) return;
@@ -122,6 +127,9 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // makes the page background white
+      backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: _bcYellow,
         elevation: 0,
@@ -285,7 +293,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
-                          vertical: 12,
+                          vertical: 14,
                         ),
                         side: const BorderSide(color: Color(0xFFD0D0D0)),
                         shape: RoundedRectangleBorder(
@@ -297,10 +305,10 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                         style: TextStyle(color: Colors.black87),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     const Text(
                       'Optional',
-                      style: TextStyle(color: Colors.black54, fontSize: 14),
+                      style: TextStyle(color: Colors.black54, fontSize: 15),
                     ),
                   ],
                 ),
@@ -317,131 +325,77 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                 ),
                 child: Row(
                   children: [
-                    OutlinedButton(
-                      onPressed:
-                          _submitting
-                              ? null
-                              : () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: _cancelOrange, width: 2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
+                    // layout of buttons
+                    Expanded(
+                      child: SizedBox(
+                        height: 54,
+                        child: OutlinedButton(
+                          onPressed:
+                              _submitting
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(
+                              color: Color(0xFFD6D6D6),
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: _submitting ? null : _handleSubmit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _submitGreen,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+
+                    const SizedBox(width: 16),
+
+                    // submit/cancel button
+                    Expanded(
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _submitting ? null : _handleSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _submitGreen,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child:
+                              _submitting
+                                  ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Submit',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                         ),
                       ),
-                      child:
-                          _submitting
-                              ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Text(
-                                'Submit',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
                     ),
                   ],
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// this is the report page after user press submits
-class ReportSubmittedPage extends StatelessWidget {
-  const ReportSubmittedPage({super.key});
-
-  static const Color _submitGreen = Color(0xFFB7C300);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 170,
-                  height: 170,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE53935), // creating ! icon
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '!',
-                      style: TextStyle(
-                        fontSize: 110,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        height: 1.0,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Report Submitted',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 26),
-                SizedBox(
-                  width: 180,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _submitGreen,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Exit',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
