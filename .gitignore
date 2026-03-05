@@ -289,11 +289,8 @@ beach_circle_flutter/windows/flutter/generated_plugin_registrant.cc
 beach_circle_flutter/windows/flutter/generated_plugins.cmake
 beach_circle_flutter/lib/mapbox.dart
 beach_circle_flutter/.flutter-plugins-dependencies
-geojsonupload.dart
 
 
 geojsonupload.dart
 beach_circle_flutter/assets/csulb.geojson
-beach_circle_flutter/lib/scripts/add_building_ids.dart
 beach_circle_flutter/lib/scripts/test-beach-circle-firebase-adminsdk-fbsvc-b5892c2483.json
-beach_circle_flutter/lib/scripts/geojsonupload.js
