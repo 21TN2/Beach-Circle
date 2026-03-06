@@ -1,4 +1,4 @@
-// TO DO: TROUBLESHOOT BACK ARROW FOR CREATE POST PAGE
+// TO DO: FIND OUT HOW TO CHANGE IMAGES FROM ADDED FORUMS
 // student misc forum home page
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -259,18 +259,41 @@ class _MiscScreenState extends State<MiscScreen> {
                 ],
               ),
             ),
-
+            // Added New Forum from users to appear in home page - Giselle => for student work review 2
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: StreamBuilder<QuerySnapshot>(
+                  // shows approved categories from forumCategories
                   stream:
                       FirebaseFirestore.instance
-                          .collection("forum_requests")
-                          .where("status", isEqualTo: "approved")
+                          .collection("forumCategories")
+                          .orderBy("title")
                           .snapshots(),
                   builder: (context, snapshot) {
-                    final visible = _visibleCategories(builtInCategories);
+                    // built-in + approved categories shown in homepage
+                    final List<_CategoryItem> all = List<_CategoryItem>.from(
+                      builtInCategories,
+                    );
+
+                    if (snapshot.hasData) {
+                      for (final doc in snapshot.data!.docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final title = (data['title'] ?? '').toString().trim();
+                        if (title.isEmpty) continue;
+
+                        all.add(
+                          _CategoryItem(
+                            id: doc.id,
+                            title: title,
+                            // Reuse an existing asset for custom approved categories
+                            imagePath: "assets/forum/community_chat.jpg",
+                          ),
+                        );
+                      }
+                    }
+
+                    final visible = _visibleCategories(all);
                     return _buildGrid(visible);
                   },
                 ),
@@ -283,6 +306,7 @@ class _MiscScreenState extends State<MiscScreen> {
   }
 }
 
+// --------  header ------
 class _HeaderPill extends StatelessWidget {
   const _HeaderPill();
 
