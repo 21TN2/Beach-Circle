@@ -84,7 +84,6 @@ class ForumService {
     required String authorId,
     required String authorName,
   }) async {
-    // getting authors name
     final safeAuthorName =
         authorName.trim().isNotEmpty ? authorName.trim() : "Anonymous";
 
@@ -92,11 +91,7 @@ class ForumService {
       'postId': postId,
       'body': body,
       'authorId': authorId,
-
-      // includes username in reply
       'author': safeAuthorName,
-
-      // timestamp when reply was sent
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -113,7 +108,7 @@ class ForumService {
   }
 
   // ---------------------------------
-  // For Student Work Review 2: Post Pinning
+  // For Student Work Review 2: Post Pinning - Giselle
   // ---------------------------------
 
   CollectionReference<Map<String, dynamic>> _userPinsRef() {
@@ -142,5 +137,143 @@ class ForumService {
 
   Future<void> unpinPost(String postId) async {
     await _userPinsRef().doc(postId).delete();
+  }
+
+  // ----------------------------
+  // Forum Category Requests Queue
+  // When Users request a forum and this is how mods view it
+  // for student work review 2
+  // ----------------------------
+
+  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+  streamForumCategoryRequests({String status = 'pending'}) {
+    // details being collected for the forum request
+    return _db
+        .collection('forum_requests')
+        .where('status', isEqualTo: status)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs);
+  }
+
+  // when forums get approved --> moved to approved forum request (forumcategories)
+  Future<void> approveForumCategoryRequest({required String requestId}) async {
+    final reqRef = _db.collection('forum_requests').doc(requestId);
+    final catRef = _db.collection('forumCategories').doc(); // new category id
+
+    await _db.runTransaction((tx) async {
+      final reqSnap = await tx.get(reqRef);
+      if (!reqSnap.exists)
+        throw Exception(
+          'Request not found',
+        ); // error handling: if request is no longer there
+
+      final data = reqSnap.data() as Map<String, dynamic>;
+
+      final title =
+          (data['title'] ?? '')
+              .toString()
+              .trim(); // grab title of forum request
+      final description =
+          (data['description'] ?? '').toString().trim(); // grab description
+
+      if (title.isEmpty)
+        throw Exception('Request is missing title'); // requires title
+
+      // Creates the approved category the app displays
+      tx.set(catRef, {
+        'title': title,
+        'description': description,
+        'createdAt': FieldValue.serverTimestamp(),
+        // gathers who it was created by
+        'createdFromRequestId': requestId,
+        if (data['createdBy'] != null) 'createdBy': data['createdBy'],
+      });
+
+      // Mark request as approved + processed
+      tx.update(reqRef, {
+        'status': 'approved',
+        'processed': true,
+        'processedAt': FieldValue.serverTimestamp(),
+        'createdCategoryId': catRef.id,
+      });
+    });
+  }
+
+  // when forum requests get rejected
+  Future<void> rejectForumCategoryRequest({
+    required String requestId,
+    String? reason,
+  }) async {
+    await _db.collection('forum_requests').doc(requestId).update({
+      'status': 'rejected', // gathers fields of request
+      'processed': true,
+      'processedAt': FieldValue.serverTimestamp(),
+      if (reason != null && reason.trim().isNotEmpty)
+        'reviewNote': reason.trim(),
+    });
+  }
+  // ----------------------------
+  // Reports Moderation (for posts inside forums)
+  // for student work review 2 - Giselle
+  // ----------------------------
+
+  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+  streamOpenReports() {
+    return _db // field details
+        .collection('reports')
+        .where('status', isEqualTo: 'open')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs);
+  }
+
+  //shows the actual post content in the moderation screen
+  Stream<DocumentSnapshot<Map<String, dynamic>>> streamPostById(String postId) {
+    return _db.collection('forumPosts').doc(postId).snapshots();
+  }
+
+  // when we close a report, it updates the status & fields
+  Future<void> closeReport({
+    required String reportId,
+    String? moderatorNote,
+  }) async {
+    await _db.collection('reports').doc(reportId).update({
+      'status': 'closed',
+      'closedAt': FieldValue.serverTimestamp(),
+      if (moderatorNote != null && moderatorNote.trim().isNotEmpty)
+        'moderatorNote': moderatorNote.trim(),
+    });
+  }
+
+  // reject a report : updates it status and fields
+  Future<void> rejectReport({
+    required String reportId,
+    String? moderatorNote,
+  }) async {
+    await _db.collection('reports').doc(reportId).update({
+      'status': 'rejected',
+      'rejectedAt': FieldValue.serverTimestamp(),
+      if (moderatorNote != null && moderatorNote.trim().isNotEmpty)
+        'moderatorNote': moderatorNote.trim(),
+    });
+  }
+
+  // Deletes the reported then closes the report
+  Future<void> deleteReportedPostAndClose({
+    required String reportId,
+    required String postId,
+  }) async {
+    final reportRef = _db.collection('reports').doc(reportId);
+    final postRef = _db.collection('forumPosts').doc(postId);
+
+    await _db.runTransaction((tx) async {
+      tx.delete(postRef);
+      tx.update(reportRef, {
+        'status': 'closed',
+        'closedAt': FieldValue.serverTimestamp(),
+        'actionTaken': 'deleted_post',
+      });
+    });
   }
 }

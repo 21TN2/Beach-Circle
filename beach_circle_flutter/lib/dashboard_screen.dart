@@ -9,7 +9,6 @@ import 'hourscap_screen.dart';
 import 'misc_screen.dart';
 import 'addres_screen.dart';
 import 'settings_screen.dart';
-import 'screens/resources_page.dart';
 
 //import 'bathroom_finder.dart';
 //import 'map/map_screen.dart';
@@ -20,10 +19,12 @@ import 'package:beach_circle_flutter/weather/models/weather_model.dart';
 import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 
 // Forum imports
+import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -327,6 +328,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               },
             ),
+          if (user?.email !=
+                  null && // NEW FROM GISELLE ---> ADDED MODS VIEW SCREEN
+              adminEmails.contains(
+                user!.email,
+              )) // Checks current user is a moderator
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => ModerationViewScreen(
+                          forumService: _forumService,
+                        ), // to view Moderator only screen
+                  ),
+                );
+              },
+            ),
+
           IconButton(icon: const Icon(Icons.logout), onPressed: _logOut),
         ],
       );

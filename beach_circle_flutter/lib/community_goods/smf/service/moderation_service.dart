@@ -1,5 +1,5 @@
 // Moderation Service
-// created by Giselle -- for student review
+// created by Giselle -- for student review 2
 
 // imports related to firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,7 +19,8 @@ class ModerationService {
     final uid = _auth.currentUser!.uid;
 
     await _db.collection('reports').add({
-      'targetType': 'post',
+      'targetType':
+          'post', // field collections needed to store + update reports
       'postId': postId,
       'reportedUserId': postAuthorId,
       'reporterUserId': uid,
