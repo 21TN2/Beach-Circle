@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../model/forum_category.dart';
 import '../service/forum_service.dart';
+import '../service/moderation_helper.dart';
 
 class CreateForumPostPg extends StatefulWidget {
   final ForumCategory category;
@@ -58,7 +59,17 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
       );
       return;
     }
-
+    
+    if (ModerationHelper.containsProfanity(_titleCtrl.text) || 
+            ModerationHelper.containsProfanity(_bodyCtrl.text)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please keep the community friendly. Remove inappropriate language before posting."),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return; // Stops the post from being submitted!
+        }
     // reply shows usernane otherwise anonymous
     final rawDisplayName = user.displayName?.trim();
     final rawEmailName = user.email?.split('@').first.trim();
