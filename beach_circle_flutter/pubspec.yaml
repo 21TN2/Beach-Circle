@@ -33,6 +33,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/forum/
+    - assets/bathrooms.txt
 
 # flutter:
 #   assets:
