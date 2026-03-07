@@ -1,6 +1,6 @@
 name: beach_circle_flutter
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.0.4
+  mapbox_maps_flutter: ^2.12.0
 
   #Resource page Packages
   cupertino_icons: ^1.0.8
@@ -31,4 +32,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/bathrooms.txt
+    - assets/forum/
+
+# flutter:
+#   assets:
+#     - assets/.env/.env.public.dev
