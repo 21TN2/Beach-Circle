@@ -24,6 +24,7 @@ import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.da
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+
 import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatefulWidget {
