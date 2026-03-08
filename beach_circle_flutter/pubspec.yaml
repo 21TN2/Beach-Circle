@@ -42,7 +42,9 @@ flutter:
     - assets/forum/
     - assets/weather/
     - assets/bathrooms.txt
-
+    - assets/en.txt
+    - assets/char_map.txt
+    
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev

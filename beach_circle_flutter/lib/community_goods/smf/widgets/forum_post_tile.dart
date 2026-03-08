@@ -3,6 +3,8 @@ import '../model/forum_reply.dart';
 import '../service/forum_service.dart';
 import 'interested_button.dart';
 import 'report_button.dart';
+import '../screens/report_issue_pg.dart';
+import '../service/moderation_helper.dart';
 
 class ForumPostTile extends StatefulWidget {
   final String postId;
@@ -121,7 +123,7 @@ class _ForumPostTileState extends State<ForumPostTile> {
             ],
           ),
 
-          /// POST AUTHOR HEADER (NEW)
+          /// POST AUTHOR HEADER
           if (isExpanded)
             Padding(
               padding: const EdgeInsets.only(left: 40, top: 6),
@@ -319,6 +321,17 @@ class _ForumPostTileState extends State<ForumPostTile> {
                       final text = replyCtrl.text.trim();
 
                       if (text.isEmpty) return;
+
+                      //auto moderation
+                      if (ModerationHelper.containsProfanity(text)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please keep the community friendly. Remove inappropriate language before replying."),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return; // Stops the reply from going through!
+                      }
 
                       await widget.forumService.addReply(
                         postId: widget.postId,

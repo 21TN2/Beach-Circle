@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notification_test_screen.dart'; 
+import 'package:beach_circle_flutter/map_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'notification_test_screen.dart';
 import 'dormlife_screen.dart';
 import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
@@ -8,19 +12,23 @@ import 'hourscap_screen.dart';
 import 'misc_screen.dart';
 import 'addres_screen.dart'; 
 import 'settings_screen.dart';
-import 'bathroom_finder.dart'; 
 import 'map/map_screen.dart'; 
+import 'addres_screen.dart';
+import 'settings_screen.dart';
+//import 'bathroom_finder.dart';
+//import 'map/map_screen.dart';
 
 // Weather packages
-import 'package:lottie/lottie.dart';
 import 'package:beach_circle_flutter/weather/models/weather_model.dart';
 import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 
 // Forum imports
+import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -32,9 +40,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   String _homePage = "home"; 
-
   final ForumService _forumService = ForumService();
-  final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -154,6 +160,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 MaterialPageRoute(builder: (_) => const BathroomFinder())
               );
             }),
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (_) => const BathroomFinder()),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
               setState(() => _currentIndex = 1);
             }),
@@ -276,18 +285,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     if (_currentIndex == 1) return const MapScreen();
     if (_currentIndex == 2) return _buildForumTab();
-    if (_currentIndex == 3) return const AddresScreen(); 
+    if (_currentIndex == 3) return const ResourcesPage();
     return const SettingsScreen();
   }
 
   PreferredSizeWidget? _buildAppBar() {
     final user = FirebaseAuth.instance.currentUser;
-    
     // --- ADMIN LIST ---
     // Add emails here to give them access to the debug button
     final List<String> adminEmails = [
       'teef@gmail.com',
       'reytest@gmail.com',
+      'giselle1@gmail.com',
     ];
 
     if (_currentIndex == 0 && _homePage == "home") {
@@ -296,17 +305,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
         centerTitle: true,
         actions: [
           // Check if current user is in the admin list
-          if (user?.email != null && adminEmails.contains(user!.email)) 
+          if (user?.email != null && adminEmails.contains(user!.email))
             IconButton(
-              icon: const Icon(Icons.bug_report, color: Colors.red), 
+              icon: const Icon(Icons.bug_report, color: Colors.red),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationTestScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationTestScreen(),
+                  ),
+                );
               },
             ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logOut,
-          ),
+          if (user?.email !=
+                  null && // NEW FROM GISELLE ---> ADDED MODS VIEW SCREEN
+              adminEmails.contains(
+                user!.email,
+              )) // Checks current user is a moderator
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => ModerationViewScreen(
+                          forumService: _forumService,
+                        ), // to view Moderator only screen
+                  ),
+                );
+              },
+            ),
+
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logOut),
         ],
       );
     }
