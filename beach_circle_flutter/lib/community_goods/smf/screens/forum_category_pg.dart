@@ -162,6 +162,7 @@ class ForumCategoryPg extends StatelessWidget {
                     });
 
                     return ListView.separated(
+                      // creates list view of pinned
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
                       itemCount: sortedPosts.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
@@ -170,6 +171,7 @@ class ForumCategoryPg extends StatelessWidget {
                         final isPinned = pinnedIds.contains(p.id);
 
                         return ForumPostTile(
+                          // gathers post info
                           postId: p.id,
                           title: p.title,
                           description: p.body,

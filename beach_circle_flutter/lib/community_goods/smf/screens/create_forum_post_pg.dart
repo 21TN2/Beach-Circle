@@ -59,38 +59,42 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
       return;
     }
 
-    // reply shows usernane otherwise anonymous
+    // reply shows usernane otherwise anonymous ---- Student Work Review 2
     final rawDisplayName = user.displayName?.trim();
     final rawEmailName = user.email?.split('@').first.trim();
 
-    final authorName =
+    final authorName = // grabs the post user name based on the email used to login
         (rawDisplayName != null && rawDisplayName.isNotEmpty)
             ? rawDisplayName
             : ((rawEmailName != null && rawEmailName.isNotEmpty)
                 ? rawEmailName
                 : "Anonymous");
 
-    final imageUrl = _imageUrlCtrl.text.trim();
+    final imageUrl = _imageUrlCtrl.text.trim(); // url image
 
-    setState(() => _isSubmitting = true);
+    setState(() => _isSubmitting = true); // when they submit
 
     try {
       await widget.forumService.createPost(
+        // details for post
         categoryId: widget.category.id,
         title: _titleCtrl.text.trim(),
         body: _bodyCtrl.text.trim(),
         authorId: user.uid,
         authorName: authorName,
-        mediaUrl: imageUrl.isEmpty ? null : imageUrl,
+        mediaUrl:
+            imageUrl.isEmpty
+                ? null
+                : imageUrl, // NEW PART FOR SW2: IMAGE URL to post image
         mediaType: imageUrl.isEmpty ? null : "image",
       );
 
       if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Post failed: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Post failed: $e")),
+      ); // if posts fails
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -100,6 +104,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
   @override
   Widget build(BuildContext context) {
+    // this is for the url preview
     final previewUrl = _imageUrlCtrl.text.trim();
 
     return Scaffold(
@@ -199,6 +204,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 const SizedBox(height: 16),
 
                 const Text(
+                  // shown to users to upload image
                   "Post Media (Optional)",
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
@@ -208,7 +214,8 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   controller: _imageUrlCtrl,
                   keyboardType: TextInputType.url,
                   decoration: InputDecoration(
-                    hintText: "Paste an image URL",
+                    hintText:
+                        "Paste an image URL", // helps user to paste url image
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -220,22 +227,25 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     ),
                   ),
                   validator: (v) {
+                    // checks if image is proper url i.e http
                     final text = (v ?? "").trim();
                     if (text.isEmpty) return null;
                     if (!_looksLikeUrl(text)) {
-                      return "Please enter a valid http/https URL.";
+                      return "Please enter a valid http/https URL."; // displays message
                     }
                     return null;
                   },
                   onChanged: (_) {
-                    if (_showPreview) setState(() {});
+                    if (_showPreview) setState(() {}); // shows preview
                   },
                 ),
 
                 const SizedBox(height: 10),
 
-                if (_showPreview && _looksLikeUrl(previewUrl))
+                if (_showPreview &&
+                    _looksLikeUrl(previewUrl)) // if it is a proper image url
                   ClipRRect(
+                    // show image preview to user
                     borderRadius: BorderRadius.circular(12),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
@@ -243,12 +253,13 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                         previewUrl,
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, progress) {
+                          // how the image review will look
                           if (progress == null) return child;
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         },
-                        errorBuilder:
+                        errorBuilder: // error handling: show to users that preview can't load --> image cant be posted
                             (_, __, ___) => Container(
                               alignment: Alignment.center,
                               color: Colors.black12,
