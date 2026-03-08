@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.beach_circle_flutter"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
@@ -39,10 +39,17 @@ flutter {
     source = "../.."
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.9.3")
+        
+        force("androidx.browser:browser:1.8.0")
+        force("androidx.core:core-ktx:1.15.0")
+        force("androidx.core:core:1.15.0")
+    }
+}
+
 dependencies {
-    // 🔥 BRUTE FORCE FIX: We are giving specific versions manually
-    // This bypasses the "BoM" entirely so Gradle can't get confused.
-    
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-analytics-ktx:22.1.2")

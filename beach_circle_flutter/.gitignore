@@ -7,6 +7,8 @@ test_beach_circle_key.json
 # Firebase Config (Critical)
 **/google-services.json
 **/GoogleService-Info.plist
+# Firebase secrets
+lib/firebase_options.dart
 
 # Keystores
 *.jks
