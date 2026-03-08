@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import '../bathroom_finder.dart'; 
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -125,11 +126,6 @@ class _MapScreenState extends State<MapScreen> {
           MapWidget(
               key: const ValueKey("mapWidget"),
               
-              // cameraOptions: CameraOptions(
-              //   center: Point(coordinates: Position(_centerLng, _centerLat)),
-              //   zoom: 12.0,
-              // ),
-              
               // Map style 
               styleUri: "mapbox://styles/theresa2/cmlbykdmm000s01su4z139emu",
               
@@ -137,7 +133,7 @@ class _MapScreenState extends State<MapScreen> {
               onMapCreated: _onMapCreated,
           ),
           
-          //bottom left positioning buttons
+          // --- LEFT SIDE BUTTONS (Zoom & Center) ---
           Positioned(
             bottom: 40,
             left: 15,
@@ -186,13 +182,50 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   elevation: 10,
                   child: Icon(
-                    Icons.home,
+                    Icons.near_me, // Swapped to the location arrow from your prototype
                     color: Colors.black,
                   ),
                 ),
               ],
             ),
-          )
+          ),
+
+          // --- NEW: RIGHT SIDE BUTTONS (Quick Actions) ---
+          Positioned(
+            top: 20,
+            right: 15,
+            child: Column(
+              children: [
+                // Bathroom Finder Button
+                RawMaterialButton(
+                  onPressed: () {
+                    // Links directly to the BathroomFinder screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BathroomFinder(),
+                      ),
+                    );
+                  },
+                  fillColor: const Color(0xFFE8F0FE), // Light blue matching the prototype
+                  shape: CircleBorder(),
+                  constraints: BoxConstraints.tightFor(
+                    width: 54,
+                    height: 54,
+                  ),
+                  elevation: 6,
+                  child: const Icon(
+                    Icons.wc, // The toilet icon
+                    color: Colors.black,
+                    size: 28,
+                  ),
+                ),
+                
+                // You can add your Pizza, Book, and Plug buttons right here 
+                // in the future by copy-pasting the RawMaterialButton above!
+              ],
+            ),
+          ),
         ],
       ),
     );
