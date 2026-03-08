@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.beach_circle_flutter"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.beach_circle_flutter"
