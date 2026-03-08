@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_category_dot.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_event_card.dart';
-
+import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_events.dart';
 // ── Sample data (no Firebase needed for preview) ─────────────────────────────
 
 final List<DormEvent> _sampleEvents = [
@@ -189,17 +188,15 @@ class _DormHomePageState extends State<DormHomePage> {
             const SizedBox(height: 8),
 
             // ── Event cards ───────────────────────────────────────────────
-            ..._sampleEvents.map((event) => DormEventCard(
-                  event: event,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Tapped: ${event.title}')),
-                    );
-                  },
-                  onInterestedToggled: () => setState(() {
-                    event.isInterested = !event.isInterested;
-                  }),
-                )),
+            ..._sampleEvents.map((event) => DormEvents(
+                title: event.title,
+                location: event.location,
+                body: event.description,
+                dateLabel: 'SUN, OCT 26',
+                timeText: event.timeDisplay,
+                isStarred: event.isInterested,
+                color: event.category.color,
+            )),
 
             const SizedBox(height: 24),
 
