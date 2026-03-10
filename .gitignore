@@ -294,3 +294,5 @@ beach_circle_flutter/.flutter-plugins-dependencies
 geojsonupload.dart
 beach_circle_flutter/assets/csulb.geojson
 beach_circle_flutter/lib/scripts/test-beach-circle-firebase-adminsdk-fbsvc-b5892c2483.json
+beach_circle_flutter/lib/map/save.dart
+beach_circle_flutter/lib/map/test.dart
