@@ -184,32 +184,68 @@ class _MapScreenState extends State<MapScreen> {
               onMapCreated: _onMapCreated,
           ),
 
+          // Positioned(
+          //   top: 20,
+          //   right: 12,
+          //   child: Column(
+          //     children: [
+          //       _buildFilterButton(
+          //         icon: Icons.directions_car,
+          //         onPressed: () {},
+          //       ),
+          //       _buildFilterButton(
+          //         icon: Icons.local_pizza,
+          //         onPressed: () {},
+          //       ),
+          //       _buildFilterButton(
+          //         icon: Icons.menu_book,
+          //         onPressed: () {},
+          //       ),
+          //       _buildFilterButton(
+          //         icon: Icons.electric_bolt,
+          //         onPressed: () {},
+          //       ),
+          //       _buildFilterButton(
+          //         icon: Icons.wc,
+          //         onPressed: () {},
+          //       ),
+          //     ],
+          //   ),
+          // ),
           Positioned(
             top: 20,
+            bottom: 380, // stay above the bottom nav bar
             right: 12,
-            child: Column(
-              children: [
-                _buildFilterButton(
-                  icon: Icons.directions_car,
-                  onPressed: () {},
+            child: ScrollConfiguration(
+              // Hide the scrollbar indicator entirely
+              behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildFilterButton(
+                      icon: Icons.directions_car,
+                      onPressed: () {},
+                    ),
+                    _buildFilterButton(
+                      icon: Icons.local_pizza,
+                      onPressed: () {},
+                    ),
+                    _buildFilterButton(
+                      icon: Icons.menu_book,
+                      onPressed: () {},
+                    ),
+                    _buildFilterButton(
+                      icon: Icons.electric_bolt,
+                      onPressed: () {},
+                    ),
+                    _buildFilterButton(
+                      icon: Icons.wc,
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
-                _buildFilterButton(
-                  icon: Icons.local_pizza,
-                  onPressed: () {},
-                ),
-                _buildFilterButton(
-                  icon: Icons.menu_book,
-                  onPressed: () {},
-                ),
-                _buildFilterButton(
-                  icon: Icons.electric_bolt,
-                  onPressed: () {},
-                ),
-                _buildFilterButton(
-                  icon: Icons.wc,
-                  onPressed: () {},
-                ),
-              ],
+              ),
             ),
           ),
           
