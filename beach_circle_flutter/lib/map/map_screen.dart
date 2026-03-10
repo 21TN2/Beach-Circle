@@ -122,7 +122,7 @@ class _MapScreenState extends State<MapScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: RawMaterialButton(
         onPressed: onPressed,
-        fillColor: Colors.white,
+        fillColor: const ui.Color.fromARGB(255, 223, 239, 255),
         shape: const CircleBorder(),
         constraints: const BoxConstraints.tightFor(width: 55, height: 55),
         elevation: 4,
