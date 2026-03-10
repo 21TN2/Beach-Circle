@@ -85,6 +85,28 @@ class _MapScreenState extends State<MapScreen> {
       hasBottomSheet: true,
       sheetContent: _RestroomSheetContent(),
     ),
+
+    FilterOption(
+      key: 'restroom',
+      icon: Icons.wc,
+      label: 'Restrooms',
+      hasBottomSheet: true,
+      sheetContent: _RestroomSheetContent(),
+    ),
+    FilterOption(
+      key: 'restroom',
+      icon: Icons.wc,
+      label: 'Restrooms',
+      hasBottomSheet: true,
+      sheetContent: _RestroomSheetContent(),
+    ),
+    FilterOption(
+      key: 'restroom',
+      icon: Icons.wc,
+      label: 'Restrooms',
+      hasBottomSheet: true,
+      sheetContent: _RestroomSheetContent(),
+    ),
   ];
 
   void _onMapCreated(MapboxMap map) async {
@@ -218,9 +240,9 @@ class _MapScreenState extends State<MapScreen> {
         onPressed: () => _onFilterTapped(filter),
         fillColor: isActive ? const Color(0xFFFFCC00) : const ui.Color.fromARGB(255, 243, 250, 255),
         shape: const CircleBorder(),
-        constraints: const BoxConstraints.tightFor(width: 46, height: 46),
+        constraints: const BoxConstraints.tightFor(width: 55, height: 55),
         elevation: 4,
-        child: Icon(filter.icon, color: Colors.black87, size: 22),
+        child: Icon(filter.icon, color: Colors.black87, size: 30),
       ),
     );
   }
@@ -286,7 +308,7 @@ class _MapScreenState extends State<MapScreen> {
 
           Positioned(
             top: 20,
-            bottom: 80,
+            bottom: 380,
             right: 12,
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
