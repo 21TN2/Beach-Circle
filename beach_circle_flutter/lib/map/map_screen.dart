@@ -114,6 +114,23 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Widget _buildFilterButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: RawMaterialButton(
+        onPressed: onPressed,
+        fillColor: Colors.white,
+        shape: const CircleBorder(),
+        constraints: const BoxConstraints.tightFor(width: 55, height: 55),
+        elevation: 4,
+        child: Icon(icon, color: Colors.black87, size: 30),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,6 +182,35 @@ class _MapScreenState extends State<MapScreen> {
               
               textureView: true, // Better for web/Android
               onMapCreated: _onMapCreated,
+          ),
+
+          Positioned(
+            top: 20,
+            right: 12,
+            child: Column(
+              children: [
+                _buildFilterButton(
+                  icon: Icons.directions_car,
+                  onPressed: () {},
+                ),
+                _buildFilterButton(
+                  icon: Icons.local_pizza,
+                  onPressed: () {},
+                ),
+                _buildFilterButton(
+                  icon: Icons.menu_book,
+                  onPressed: () {},
+                ),
+                _buildFilterButton(
+                  icon: Icons.electric_bolt,
+                  onPressed: () {},
+                ),
+                _buildFilterButton(
+                  icon: Icons.wc,
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
           
           //bottom left positioning buttons
