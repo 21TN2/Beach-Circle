@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
@@ -116,9 +117,38 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mapbox Demo'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: PreferredSize(
+        preferredSize: const ui.Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: const Color(0xFFF2D21B), 
+          elevation: 0,
+          titleSpacing: 16,
+          toolbarHeight: 300,
+          title:
+          Container(
+            padding: const EdgeInsets.all(5), // inner padding
+            color: const ui.Color.fromARGB(255, 239, 236, 227),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Campus Map',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.black,
+                  size: 28,
+                ),
+              ],
+            ),
+          ),
+          automaticallyImplyLeading: false,
+        ),
       ),
       body: Stack(
         children: [
