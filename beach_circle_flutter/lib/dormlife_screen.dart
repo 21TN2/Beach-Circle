@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../community_goods/dorm_life/widgets/dorm_calendar.dart';
 import '../community_goods/dorm_life/widgets/dorm_events.dart';
 
@@ -14,22 +15,19 @@ class DormlifeScreen extends StatefulWidget {
   State<DormlifeScreen> createState() => _DormlifeScreenState();
 }
 
-// grabbing the current data & interested info (to do: will fix interested func)
 class _DormlifeScreenState extends State<DormlifeScreen> {
   DateTime selectedDate = DateTime.now();
   bool interestedOnly = false;
 
-  // grab the events time info : year, month, day
   Stream<QuerySnapshot<Map<String, dynamic>>> getEvents() {
     final startOfDay = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
     );
-    // calculates the end of day
+
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
-    // firebase database info fields
     return FirebaseFirestore.instance
         .collection('dorm_events')
         .where('status', isEqualTo: 'approved')
@@ -42,48 +40,81 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         .snapshots();
   }
 
-  // calculating the date and spacing
   String dateKey(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
   }
 
-  /// getting the month of event
-  Stream<Set<String>> getMonthEventDates() {
+  Stream<Map<String, List<Color>>> getMonthEventDates() {
     final monthStart = DateTime(selectedDate.year, selectedDate.month, 1);
     final nextMonthStart = DateTime(
       selectedDate.year,
       selectedDate.month + 1,
       1,
     );
-    // returns the firebase details of the events
+
     return FirebaseFirestore.instance
         .collection('dorm_events')
+        .where('status', isEqualTo: 'approved')
         .where(
-          'status',
-          isEqualTo: 'approved',
-        ) // looks to see if event is approved by mods
-        .where(
-          'startTime', // figures out the current date determined by start time
+          'startTime',
           isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart),
         )
         .where('startTime', isLessThan: Timestamp.fromDate(nextMonthStart))
         .snapshots()
         .map((snapshot) {
-          final keys = <String>{};
+          final Map<String, List<Color>> eventMap = {};
 
           for (final doc in snapshot.docs) {
             final data = doc.data();
             final dynamic startRaw = data['startTime'];
+            final category = (data['category'] ?? 'Other').toString();
 
             if (startRaw is Timestamp) {
-              keys.add(dateKey(startRaw.toDate()));
+              final key = dateKey(startRaw.toDate());
+              final color = eventColor(category);
+
+              eventMap.putIfAbsent(key, () => []);
+
+              if (!eventMap[key]!.contains(color)) {
+                eventMap[key]!.add(color);
+              }
             }
           }
 
-          return keys;
+          return eventMap;
         });
+  }
+
+  CollectionReference<Map<String, dynamic>> interestedRef() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('interestedDormEvents');
+  }
+
+  Stream<Set<String>> interestedEventIdsStream() {
+    return interestedRef().snapshots().map(
+      (snap) => snap.docs.map((doc) => doc.id).toSet(),
+    );
+  }
+
+  Future<void> toggleInterested({
+    required String eventId,
+    required bool isInterested,
+  }) async {
+    final docRef = interestedRef().doc(eventId);
+
+    if (isInterested) {
+      await docRef.delete();
+    } else {
+      await docRef.set({
+        'eventId': eventId,
+        'interestedAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   // TO DO: might need to adjust colors to have a nice color palette
@@ -91,17 +122,15 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     // the categories have colors to tell them apart
     switch (category) {
       case 'Social':
-        return Color.fromRGBO(170, 199, 103, 0.753); // social events
+        return const Color(0xFFFFCC00); // social events
       case 'Academic':
-        return const Color.fromRGBO(154, 194, 201, 1); // academic events
-      case 'Wellness':
-        return const Color.fromRGBO(140, 187, 221, 1); // wellness events
+        return const Color(0xFFF5A623); // academic events
       case 'Meetings':
         return const Color.fromARGB(255, 230, 219, 105); // meetings
       case 'Announcements':
-        return const Color.fromARGB(255, 231, 188, 89); // announcments
+        return const Color(0xFF8DB600); // announcments
       case 'Tips':
-        return const Color.fromARGB(255, 133, 212, 143); // tips
+        return const Color.fromARGB(255, 116, 152, 224); // tips
       case 'Other':
         return const Color.fromRGBO(233, 141, 133, 1); // others
       default:
@@ -114,7 +143,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     }
   }
 
-  // fixes the form of time with AM/PM
   String formatTime(DateTime dt) {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final minute = dt.minute.toString().padLeft(2, '0');
@@ -122,7 +150,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     return '$hour:$minute $suffix';
   }
 
-  // defining the months to have a proper format
   String verticalDate(DateTime date) {
     const months = [
       'JAN',
@@ -142,13 +169,11 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     return '${days[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
-  // ----- building the homepage -----------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F2F2), // background color
+      backgroundColor: const Color(0xFFF5F2F2),
       floatingActionButton: FloatingActionButton(
-        // pencil icon
         backgroundColor: const Color(0xFFF2C200),
         onPressed: () {
           // TODO: open create dorm event page
@@ -156,11 +181,10 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         child: const Icon(Icons.edit, color: Colors.black),
       ),
       body: SafeArea(
-        // for our header
         child: Column(
           children: [
             Container(
-              color: const Color(0xFFFFD500), // header color
+              color: const Color(0xFFFFD500),
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
@@ -176,7 +200,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         children: const [
                           Expanded(
                             child: Text(
-                              'Dorm Life', // header title
+                              'Dorm Life',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w500,
@@ -193,8 +217,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                   InkWell(
                     onTap: () {
                       setState(() {
-                        interestedOnly =
-                            !interestedOnly; // our interested button
+                        interestedOnly = !interestedOnly;
                       });
                     },
                     child: Container(
@@ -203,24 +226,25 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE6841A), // interested box color
+                        color:
+                            interestedOnly
+                                ? const Color(0xFFFFD700) // yellow when active
+                                : const Color(0xFFE6841A), // original orange
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            interestedOnly
-                                ? Icons.star
-                                : Icons.star_border, // interested icon
-                            color: Colors.black87,
+                            interestedOnly ? Icons.star : Icons.star_border,
+                            color: Colors.black,
                             size: 20,
                           ),
                           const SizedBox(width: 6),
                           const Text(
-                            'Interested', // interested button text
+                            'Interested',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: Colors.black87,
+                              color: Colors.black,
                             ),
                           ),
                         ],
@@ -230,14 +254,13 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                 ],
               ),
             ),
-            // for our dorm calendar formatting
-            StreamBuilder<Set<String>>(
+
+            StreamBuilder<Map<String, List<Color>>>(
               stream: getMonthEventDates(),
               builder: (context, snapshot) {
-                final eventDates = snapshot.data ?? <String>{};
+                final eventDates = snapshot.data ?? <String, List<Color>>{};
 
                 return DormCalendar(
-                  // the selected data
                   selectedDate: selectedDate,
                   eventDates: eventDates,
                   onDateSelected: (date) {
@@ -246,7 +269,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                     });
                   },
                   onPreviousMonth: () {
-                    // display previous month
                     setState(() {
                       selectedDate = DateTime(
                         selectedDate.year,
@@ -256,7 +278,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                     });
                   },
                   onNextMonth: () {
-                    // display next month
                     setState(() {
                       selectedDate = DateTime(
                         selectedDate.year,
@@ -271,83 +292,103 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
 
             const SizedBox(height: 12),
 
-            // error handling: if firebase isnt working
             Expanded(
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: getEvents(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
+              child: StreamBuilder<Set<String>>(
+                stream: interestedEventIdsStream(),
+                builder: (context, interestedSnap) {
+                  final interestedIds = interestedSnap.data ?? <String>{};
 
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                  return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    stream: getEvents(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
 
-                  var docs = snapshot.data!.docs;
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                  print("Selected date: $selectedDate");
-                  print("Docs length: ${docs.length}");
-                  for (final doc in docs) {
-                    print("Firestore doc: ${doc.data()}");
-                  }
+                      var docs = snapshot.data!.docs;
 
-                  if (interestedOnly) {
-                    docs =
-                        docs
-                            .where(
-                              (doc) =>
-                                  (doc.data()['isStarred'] ?? false) == true,
-                            )
-                            .toList();
-                  }
-                  // when theres no events posted, show to user
-                  if (docs.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No events for this day.',
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                      ),
-                    );
-                  }
-                  // when events are present, show info to  user
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                    ), // format
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data();
+                      if (interestedOnly) {
+                        docs =
+                            docs
+                                .where((doc) => interestedIds.contains(doc.id))
+                                .toList();
+                      }
 
-                      final dynamic startRaw = data['startTime']; // start time
-                      final dynamic endRaw =
-                          data['endTime'] ?? data['endTime ']; // end time
+                      if (docs.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No events for this day.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        );
+                      }
 
-                      final start = startRaw.toDate();
-                      final end = endRaw.toDate();
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          final doc = docs[index];
+                          final data = doc.data();
 
-                      return DormEvents(
-                        title:
-                            (data['title'] ??
-                                    data['title '] ??
-                                    '(No title)') // title
-                                .toString(),
-                        location:
-                            (data['location'] ?? 'No location')
-                                .toString(), // location
-                        body:
-                            (data['description'] ?? '')
-                                .toString(), // description
-                        dateLabel: verticalDate(start),
-                        timeText:
-                            '${formatTime(start)} - ${formatTime(end)}', // the proper time
-                        isStarred:
-                            (data['isStarred'] ?? false) ==
-                            true, // if the user starred it
-                        color: eventColor(
-                          (data['category'] ?? 'Other')
-                              .toString(), // category color
-                        ),
+                          final dynamic startRaw = data['startTime'];
+                          final dynamic endRaw =
+                              data['endTime'] ?? data['endTime '];
+
+                          if (startRaw == null || endRaw == null) {
+                            return const Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text('Missing startTime or endTime'),
+                              ),
+                            );
+                          }
+
+                          if (startRaw is! Timestamp || endRaw is! Timestamp) {
+                            return const Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text(
+                                  'startTime or endTime is not a Timestamp',
+                                ),
+                              ),
+                            );
+                          }
+
+                          final start = startRaw.toDate();
+                          final end = endRaw.toDate();
+                          final isInterested = interestedIds.contains(doc.id);
+
+                          return DormEvents(
+                            title:
+                                (data['title'] ??
+                                        data['title '] ??
+                                        '(No title)')
+                                    .toString(),
+                            location:
+                                (data['location'] ?? 'No location').toString(),
+                            body: (data['description'] ?? '').toString(),
+                            dateLabel: verticalDate(start),
+                            timeText:
+                                '${formatTime(start)} - ${formatTime(end)}',
+                            isInterested: isInterested,
+                            onInterestedTap: () {
+                              toggleInterested(
+                                eventId: doc.id,
+                                isInterested: isInterested,
+                              );
+                            },
+                            color: eventColor(
+                              (data['category'] ?? 'Other').toString(),
+                            ),
+                          );
+                        },
                       );
                     },
                   );

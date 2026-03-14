@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 
-// required fields to input into database
 class DormEvents extends StatelessWidget {
   const DormEvents({
     super.key,
@@ -12,32 +11,27 @@ class DormEvents extends StatelessWidget {
     required this.body,
     required this.dateLabel,
     required this.timeText,
-    required this.isStarred,
+    required this.isInterested,
+    required this.onInterestedTap,
     required this.color,
   });
 
-  final String
-  title; // all fields aside from color & starred are turned into strings
+  final String title;
   final String location;
   final String body;
   final String dateLabel;
   final String timeText;
-  final bool isStarred;
+  final bool isInterested;
+  final VoidCallback onInterestedTap;
   final Color color;
 
-  // creating card format
   @override
   Widget build(BuildContext context) {
-    final bool isDarkCard =
-        color.computeLuminance() < 0.35; // when color of the category is dark
-    final Color textColor =
-        isDarkCard ? Colors.white : Colors.black87; // title text color
-    final Color subTextColor =
-        isDarkCard ? Colors.white70 : Colors.black87; // text color
-    final Color iconColor =
-        isDarkCard ? Colors.white : Colors.black87; // icon color
+    final bool isDarkCard = color.computeLuminance() < 0.35;
+    final Color textColor = isDarkCard ? Colors.white : Colors.black87;
+    final Color subTextColor = isDarkCard ? Colors.white70 : Colors.black87;
+    final Color iconColor = isDarkCard ? Colors.white : Colors.black87;
 
-    // for the card box
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       child: Row(
@@ -47,7 +41,7 @@ class DormEvents extends StatelessWidget {
             child: Text(
               dateLabel,
               style: const TextStyle(
-                fontWeight: FontWeight.w700, // depends on the text user inputs
+                fontWeight: FontWeight.w700,
                 color: Colors.black54,
               ),
             ),
@@ -65,13 +59,27 @@ class DormEvents extends StatelessWidget {
                   Row(
                     children: [
                       const Spacer(),
-                      Icon(
-                        isStarred
-                            ? Icons.star
-                            : Icons
-                                .star_border, // card has star icon for interested
-                        color: iconColor,
-                        size: 22,
+                      GestureDetector(
+                        onTap: onInterestedTap,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (isInterested)
+                              const Icon(
+                                Icons.star_border,
+                                color: Colors.black,
+                                size: 24,
+                              ),
+                            Icon(
+                              isInterested ? Icons.star : Icons.star_border,
+                              color:
+                                  isInterested
+                                      ? const Color(0xFFFFD700)
+                                      : iconColor,
+                              size: 22,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -86,7 +94,7 @@ class DormEvents extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '$location , $timeText', // display location & time w/ this format
+                    '$location , $timeText',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
@@ -102,16 +110,14 @@ class DormEvents extends StatelessWidget {
                       style: TextStyle(color: subTextColor),
                     ),
                   ],
-                  const SizedBox(
-                    height: 14,
-                  ), // arrow in the card to take user to view more detials
+                  const SizedBox(height: 14),
                   Align(
                     alignment: Alignment.centerRight,
                     child: CircleAvatar(
                       backgroundColor: Colors.white.withOpacity(0.9),
                       child: IconButton(
                         icon: const Icon(
-                          Icons.arrow_forward, // arrow icon
+                          Icons.arrow_forward,
                           color: Colors.black,
                         ),
                         onPressed: () {
