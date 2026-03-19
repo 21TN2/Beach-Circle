@@ -1,4 +1,7 @@
 import 'dart:ui' as ui;
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../bathroom_finder.dart';
@@ -30,11 +33,11 @@ class _MapScreenState extends State<MapScreen> {
   MapboxMap? mapboxMap;
   PointAnnotationManager? pointAnnotationManager;
   
-  // --- Developer Mode & Simulation Variables ---
+  // Developer Mode and Simulation Variables
   PointAnnotationManager? _devPinManager;
   PointAnnotation? _devPin;
-  CircleAnnotationManager? _devCircleManager; // NEW: Manager for the blue dot
-  CircleAnnotation? _devCircle;               // NEW: The blue dot itself
+  CircleAnnotationManager? _devCircleManager; 
+  CircleAnnotation? _devCircle;               
   bool _isDevMode = false;
   Position? _simulatedPosition;
 
@@ -57,6 +60,89 @@ class _MapScreenState extends State<MapScreen> {
     FilterOption(key: 'restroom', icon: Icons.wc, label: 'Restrooms', hasBottomSheet: true, sheetContent: _RestroomSheetContent()),
   ];
 
+  // Store the pin data to draw them later
+  List<PointAnnotationOptions> _bathroomPinOptions = [];
+
+  // Helper function to draw the WC icon into an image format
+  Future<Uint8List> _createWcMarker() async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    
+    final Paint backgroundPaint = Paint()..color = const Color(0xFFE8F0FE);
+    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, backgroundPaint);
+    
+    final TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.wc.codePoint),
+      style: TextStyle(
+        fontSize: 28.0,
+        fontFamily: Icons.wc.fontFamily,
+        package: Icons.wc.fontPackage,
+        color: Colors.blueAccent,
+      ),
+    );
+    textPainter.layout();
+    
+    final double xCenter = (48.0 - textPainter.width) / 2.0;
+    final double yCenter = (48.0 - textPainter.height) / 2.0;
+    textPainter.paint(canvas, Offset(xCenter, yCenter));
+    
+    final ui.Image image = await pictureRecorder.endRecording().toImage(48, 48);
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  // Load buildings from GeoJSON and save their options without drawing them
+  Future<void> _loadBuildingBathrooms() async {
+    try {
+      final String geoJsonString = await rootBundle.loadString('assets/csulb.geojson');
+      final Map<String, dynamic> geoJson = json.decode(geoJsonString);
+      final List features = geoJson['features'] ?? [];
+
+      final Uint8List customIconBytes = await _createWcMarker();
+      _bathroomPinOptions.clear();
+
+      for (var feature in features) {
+        final properties = feature['properties'] ?? {};
+        final geometry = feature['geometry'] ?? {};
+        
+        if (properties['feature_type'] == 'building') {
+          final String type = geometry['type'];
+          final List<dynamic> coords = geometry['coordinates'];
+          
+          double lat = 0.0;
+          double lng = 0.0;
+
+          if (type == 'Point') {
+            lng = (coords[0] as num).toDouble();
+            lat = (coords[1] as num).toDouble();
+          } else if (type == 'Polygon') {
+            lng = (coords[0][0][0] as num).toDouble();
+            lat = (coords[0][0][1] as num).toDouble();
+          } else if (type == 'MultiPolygon') {
+            lng = (coords[0][0][0][0] as num).toDouble();
+            lat = (coords[0][0][0][1] as num).toDouble();
+          } else {
+            continue;
+          }
+
+          _bathroomPinOptions.add(
+            PointAnnotationOptions(
+              geometry: Point(coordinates: Position(lng, lat)),
+              image: customIconBytes,
+              iconSize: 1.0,
+            )
+          );
+        }
+      }
+      
+      debugPrint("Successfully loaded building coordinates");
+    } catch (e) {
+      debugPrint("Detailed Error Loading Buildings");
+      debugPrint(e.toString());
+    }
+  }
+
   void _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
 
@@ -76,7 +162,6 @@ class _MapScreenState extends State<MapScreen> {
       CameraBoundsOptions(bounds: campusBounds, minZoom: 13.0, maxZoom: 20.0),
     );
    
-    // Enable Real GPS Puck
     await mapboxMap!.location.updateSettings(
       LocationComponentSettings(
         enabled: true,
@@ -84,58 +169,52 @@ class _MapScreenState extends State<MapScreen> {
       )
     );
 
-    // Create manager for standard map pins
     await mapboxMap?.annotations.createPointAnnotationManager().then((manager) async {
       pointAnnotationManager = manager;
-      final pointAnnotationOptions = PointAnnotationOptions(
-        geometry: Point(coordinates: Position(_centerLng, _centerLat)),
-        iconSize: 1.5,
-        iconImage: "marker", 
-      );
-      pointAnnotationManager?.create(pointAnnotationOptions);
+      
+      // Load the pins into memory
+      await _loadBuildingBathrooms();
+
+      // Attach the click listener
+      pointAnnotationManager?.addOnPointAnnotationClickListener(_BathroomClickListener(context));
     });
 
-    // Create separate managers just for the Developer Pin & Circle
     _devPinManager = await mapboxMap?.annotations.createPointAnnotationManager();
     _devCircleManager = await mapboxMap?.annotations.createCircleAnnotationManager();
   }
 
-  // --- Tap-to-Simulate Logic ---
   void _onMapTapped(MapContentGestureContext context) async {
     if (!_isDevMode) return; 
 
     _simulatedPosition = context.point.coordinates;
 
-    // Delete the old dev pin and circle if they exist
     if (_devPin != null) await _devPinManager?.delete(_devPin!);
     if (_devCircle != null) await _devCircleManager?.delete(_devCircle!);
 
-    // NEW: Drop the classic Google Maps Blue Circle
     _devCircle = await _devCircleManager?.create(
       CircleAnnotationOptions(
         geometry: context.point,
-        circleRadius: 9.0, // Size of the dot
-        circleColor: const Color(0xFF4285F4).value, // Classic Google Blue
-        circleStrokeWidth: 3.0, // The white border thickness
+        circleRadius: 9.0, 
+        circleColor: const Color(0xFF4285F4).value, 
+        circleStrokeWidth: 3.0, 
         circleStrokeColor: Colors.white.value,
       )
     );
 
-    // NEW: Drop the text label right below the circle (without the big marker image)
     _devPin = await _devPinManager?.create(
       PointAnnotationOptions(
         geometry: context.point,
         textField: "You (Simulated)", 
         textColor: Colors.black.value,
-        textHaloColor: Colors.white.value, // Adds a white outline to the text so it's readable anywhere
+        textHaloColor: Colors.white.value, 
         textHaloWidth: 2.0,
-        textOffset: [0.0, 1.2], // Scoots the text down so it doesn't cover the blue dot
+        textOffset: [0.0, 1.2], 
       )
     );
 
     ScaffoldMessenger.of(this.context).showSnackBar(
       const SnackBar(
-        content: Text("Simulated Location Set!"),
+        content: Text("Simulated Location Set"),
         duration: Duration(seconds: 1),
         backgroundColor: Colors.black87,
       ),
@@ -153,7 +232,7 @@ class _MapScreenState extends State<MapScreen> {
         LocationComponentSettings(enabled: true, pulsingEnabled: true)
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Searching for real GPS... (Ensure device permissions are on)")),
+        const SnackBar(content: Text("Searching for real GPS")),
       );
     }
   }
@@ -179,6 +258,21 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _activeFilter = (_activeFilter == filter.key) ? null : filter.key;
     });
+    
+    _updateMapPins();
+  }
+
+  // Draw or erase the pins depending on the active filter
+  Future<void> _updateMapPins() async {
+    if (pointAnnotationManager == null) return;
+    
+    // Clear all existing pins
+    await pointAnnotationManager?.deleteAll();
+    
+    // Draw the bathroom pins only if the restroom filter is selected
+    if (_activeFilter == 'restroom' && _bathroomPinOptions.isNotEmpty) {
+      await pointAnnotationManager?.createMulti(_bathroomPinOptions);
+    }
   }
 
   Widget? get _activeSheetContent {
@@ -246,7 +340,13 @@ class _MapScreenState extends State<MapScreen> {
       ),
 
       bottomSheet: sheetContent != null
-          ? _FilterBottomSheet(child: sheetContent, onClose: () => setState(() => _activeFilter = null))
+          ? _FilterBottomSheet(
+              child: sheetContent, 
+              onClose: () {
+                setState(() => _activeFilter = null);
+                _updateMapPins();
+              }
+            )
           : null,
 
       body: Stack(
@@ -347,31 +447,31 @@ class _FilterBottomSheet extends StatelessWidget {
 class _ParkingSheetContent extends StatelessWidget {
   const _ParkingSheetContent();
   @override
-  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.directions_car, label: 'Parking lots & structures');
+  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.directions_car, label: 'Parking lots and structures');
 }
 
 class _StudySheetContent extends StatelessWidget {
   const _StudySheetContent();
   @override
-  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.menu_book, label: 'Study spaces & libraries');
+  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.menu_book, label: 'Study spaces and libraries');
 }
 
 class _ChargingSheetContent extends StatelessWidget {
   const _ChargingSheetContent();
   @override
-  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.electric_bolt, label: 'EV & device charging stations');
+  Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.electric_bolt, label: 'EV and device charging stations');
 }
 
 class _RestroomSheetContent extends StatelessWidget {
   const _RestroomSheetContent();
 
   static const List<Map<String, String>> _nearbyBathrooms = [
-    {"building": "ECS Building", "distance": "200 ft", "details": "Accessible • All Floors"},
+    {"building": "ECS Building", "distance": "200 ft", "details": "Accessible - All Floors"},
     {"building": "The Outpost", "distance": "500 ft", "details": "Gender Neutral Options"},
-    {"building": "University Student Union", "distance": "0.2 mi", "details": "Crowded • Accessible"},
-    {"building": "Horn Center", "distance": "0.3 mi", "details": "Clean • 1st Floor"},
-    {"building": "Library", "distance": "0.4 mi", "details": "All Floors • Clean"},
-    {"building": "Student Recreation Center", "distance": "0.5 mi", "details": "Showers • Lockers"},
+    {"building": "University Student Union", "distance": "0.2 mi", "details": "Crowded - Accessible"},
+    {"building": "Horn Center", "distance": "0.3 mi", "details": "Clean - 1st Floor"},
+    {"building": "Library", "distance": "0.4 mi", "details": "All Floors - Clean"},
+    {"building": "Student Recreation Center", "distance": "0.5 mi", "details": "Showers - Lockers"},
   ];
 
   @override
@@ -399,7 +499,7 @@ class _RestroomSheetContent extends StatelessWidget {
                 child: const Icon(Icons.wc, color: Colors.blueAccent, size: 22),
               ),
               title: Text(bathroom["building"]!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-              subtitle: Text("${bathroom["distance"]} • ${bathroom["details"]}", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              subtitle: Text("${bathroom["distance"]} - ${bathroom["details"]}", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const BathroomFinder()));
@@ -429,6 +529,19 @@ class _SheetPlaceholder extends StatelessWidget {
           Text(label, style: const TextStyle(color: Colors.black54, fontSize: 14)),
         ],
       ),
+    );
+  }
+}
+
+class _BathroomClickListener extends OnPointAnnotationClickListener {
+  final BuildContext context;
+  _BathroomClickListener(this.context);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const BathroomFinder()),
     );
   }
 }

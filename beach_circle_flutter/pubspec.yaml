@@ -33,7 +33,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/forum/
-
+    - assets/csulb.geojson
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev
