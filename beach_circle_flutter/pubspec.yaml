@@ -34,6 +34,8 @@ flutter:
     - assets/logo.png
     - assets/forum/
     - assets/csulb.geojson
+    - assets/bathrooms.txt
+
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev
