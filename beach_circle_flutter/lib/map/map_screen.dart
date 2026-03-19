@@ -386,44 +386,7 @@ class _MapScreenState extends State<MapScreen> {
                 RawMaterialButton(onPressed: _locateUser, fillColor: Colors.blueAccent, shape: const CircleBorder(), constraints: const BoxConstraints.tightFor(width: 50, height: 50), elevation: 10, child: const Icon(Icons.my_location, color: Colors.white)),
               ],
             ),
-          ),
-
-          // --- NEW: RIGHT SIDE BUTTONS (Quick Actions) ---
-          Positioned(
-            top: 20,
-            right: 15,
-            child: Column(
-              children: [
-                // Bathroom Finder Button
-                RawMaterialButton(
-                  onPressed: () {
-                    // Links directly to the BathroomFinder screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BathroomFinder(),
-                      ),
-                    );
-                  },
-                  fillColor: const Color(0xFFE8F0FE), // Light blue matching the prototype
-                  shape: CircleBorder(),
-                  constraints: BoxConstraints.tightFor(
-                    width: 54,
-                    height: 54,
-                  ),
-                  elevation: 6,
-                  child: const Icon(
-                    Icons.wc, // The toilet icon
-                    color: Colors.black,
-                    size: 28,
-                  ),
-                ),
-                
-                // You can add your Pizza, Book, and Plug buttons right here 
-                // in the future by copy-pasting the RawMaterialButton above!
-              ],
-            ),
-          ),
+          )
         ],
       ),
     );

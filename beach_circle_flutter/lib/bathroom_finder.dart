@@ -11,12 +11,12 @@ class BathroomFinder extends StatefulWidget {
 }
 
 class _BathroomFinderState extends State<BathroomFinder> {
-  // --- STATE VARIABLES ---
+  // STATE VARIABLES 
   int _selectedRating = 0;
   String _selectedBathroom = ""; 
   bool _isLoading = false; 
   
-  List<String> _bathroomOptions = []; // Will hold the auto-generated list
+  List<String> _bathroomOptions = []; // Will hold the auto generated list
   
   final TextEditingController _commentController = TextEditingController();
   
@@ -34,10 +34,10 @@ class _BathroomFinderState extends State<BathroomFinder> {
   @override
   void initState() {
     super.initState();
-    _loadBathroomsFromFile(); // Read and generate the list when screen opens
+    _loadBathroomsFromFile(); 
   }
 
-  // --- HELPER: Converts numbers to 1st, 2nd, 3rd, 4th, etc. ---
+  // HELPER Converts numbers to 1st 2nd 3rd 4th
   String _getOrdinal(int number) {
     if (number % 100 >= 11 && number % 100 <= 13) return '${number}th';
     switch (number % 10) {
@@ -48,7 +48,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
     }
   }
 
-  // --- READ & AUTO-GENERATE FROM TEXT FILE ---
+  // READ AND AUTO GENERATE FROM TEXT FILE 
   Future<void> _loadBathroomsFromFile() async {
     try {
       final String fileText = await rootBundle.loadString('assets/bathrooms.txt');
@@ -59,33 +59,36 @@ class _BathroomFinderState extends State<BathroomFinder> {
       for (String line in lines) {
         if (line.trim().isEmpty) continue;
         
-        // Split by comma: "ECS,6" -> ["ECS", "6"]
-        final parts = line.split(',');
+        // New format Name | Abbrev | Floors
+        final parts = line.split('|');
         
-        if (parts.length == 2) {
-          String building = parts[0].trim();
-          int? floors = int.tryParse(parts[1].trim());
+        if (parts.length >= 3) {
+          String name = parts[0].trim();
+          String abbrev = parts[1].trim();
+          int? floors = int.tryParse(parts[2].trim());
+          
+          String buildingDisplay = abbrev != 'None' ? "$name ($abbrev)" : name;
           
           if (floors != null && floors > 0) {
-            // Auto-generate the floors AND the gender types
+            // Auto generate the floors AND the gender types
             for (int i = 1; i <= floors; i++) {
-              String baseName = "$building - ${_getOrdinal(i)} Floor";
+              String baseName = "$buildingDisplay - ${_getOrdinal(i)} Floor";
               generatedList.add("$baseName - Men's");
               generatedList.add("$baseName - Women's");
               generatedList.add("$baseName - Gender Neutral");
             }
           } else {
-            // Fallback if the number isn't readable
-            generatedList.add("$building - Men's");
-            generatedList.add("$building - Women's");
-            generatedList.add("$building - Gender Neutral");
+            // Fallback if the number is not readable
+            generatedList.add("$buildingDisplay - Men's");
+            generatedList.add("$buildingDisplay - Women's");
+            generatedList.add("$buildingDisplay - Gender Neutral");
           }
-        } else {
-          // If there is no comma (e.g., "The Outpost")
-          String building = line.trim();
-          generatedList.add("$building - Men's");
-          generatedList.add("$building - Women's");
-          generatedList.add("$building - Gender Neutral");
+        } else if (parts.isNotEmpty) {
+          // Fallback for lines without pipes
+          String buildingDisplay = parts[0].trim();
+          generatedList.add("$buildingDisplay - Men's");
+          generatedList.add("$buildingDisplay - Women's");
+          generatedList.add("$buildingDisplay - Gender Neutral");
         }
       }
       
@@ -93,11 +96,11 @@ class _BathroomFinderState extends State<BathroomFinder> {
         _bathroomOptions = generatedList;
       });
     } catch (e) {
-      print("Error loading bathrooms.txt: $e");
+      debugPrint("Error loading bathrooms file: $e");
     }
   }
 
-  // --- FIREBASE SUBMIT LOGIC ---
+  // FIREBASE SUBMIT LOGIC 
   Future<void> _submitReview() async {
     if (_selectedBathroom.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +136,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Review Submitted Successfully!")),
+          const SnackBar(content: Text("Review Submitted Successfully")),
         );
         Navigator.pop(context);
       }
@@ -168,7 +171,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- HEADER ---
+              // HEADER 
               Row(
                 children: [
                   Container(
@@ -188,7 +191,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
               ),
               const SizedBox(height: 25),
 
-              // --- SEARCH BAR ---
+              // SEARCH BAR 
               const Text("Search for a Bathroom", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               Autocomplete<String>(
@@ -211,7 +214,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     controller: controller,
                     focusNode: focusNode,
                     decoration: InputDecoration(
-                      hintText: _bathroomOptions.isEmpty ? "Loading buildings..." : "Example: ECS - 1st Floor - Men's",
+                      hintText: _bathroomOptions.isEmpty ? "Loading buildings" : "Example: ECS - 1st Floor - Men's",
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.cancel, color: Colors.grey, size: 20),
@@ -233,7 +236,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
               const SizedBox(height: 25),
 
-              // --- OVERALL RATING ---
+              // OVERALL RATING 
               const Text("Overall Rating", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               Row(
@@ -256,7 +259,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
               const SizedBox(height: 25),
 
-              // --- BATHROOM DETAILS (CHECKBOXES) ---
+              // BATHROOM DETAILS CHECKBOXES 
               const Text("Bathroom Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 10),
               
@@ -311,14 +314,14 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
               const SizedBox(height: 25),
 
-              // --- COMMENTS ---
+              // COMMENTS 
               const Text("Comments", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextField(
                 controller: _commentController,
                 maxLines: 3, 
                 decoration: InputDecoration(
-                  hintText: "Add any extra details... (e.g., Door lock is broken)",
+                  hintText: "Add any extra details",
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   contentPadding: const EdgeInsets.all(12),
                 ),
@@ -326,7 +329,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
               const SizedBox(height: 30),
 
-              // --- BUTTONS ---
+              // BUTTONS 
               Row(
                 children: [
                   Expanded(
