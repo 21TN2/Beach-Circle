@@ -40,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _dormNavKey = GlobalKey<NavigatorState>();
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -189,6 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "dormlife";
+                _dormNavKey.currentState?.popUntil((r) => r.isFirst);
               });
             }),
           ]),
@@ -278,13 +280,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildDormTab() {
+    return Navigator(
+      key: _dormNavKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(builder: (_) => const DormlifeScreen());
+      },
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
           return const EventsScreen();
         case "dormlife":
-          return const DormlifeScreen();
+          return _buildDormTab();
         case "hourscap":
           return const HourscapScreen();
         case "feedback":

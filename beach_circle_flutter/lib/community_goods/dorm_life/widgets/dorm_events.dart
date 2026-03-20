@@ -2,7 +2,9 @@
 // This is to create how the events are organized
 
 import 'package:flutter/material.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/screens/expanded_dorm_event.dart';
 
+// required fields to input into database
 class DormEvents extends StatelessWidget {
   const DormEvents({
     super.key,
@@ -14,8 +16,19 @@ class DormEvents extends StatelessWidget {
     required this.isInterested,
     required this.onInterestedTap,
     required this.color,
+
+    // optional fields
+    this.flyerLink,
+    this.registrationLink,
+    this.imageUrl,
+    this.highlights,
+    this.interestedCount,
+    this.websiteLink,
+    this.instagramLink,
+    this.contactEmail,
   });
 
+  // event fields
   final String title;
   final String location;
   final String body;
@@ -24,14 +37,25 @@ class DormEvents extends StatelessWidget {
   final bool isInterested;
   final VoidCallback onInterestedTap;
   final Color color;
+  final String? flyerLink;
+  final String? registrationLink;
+  final String? imageUrl;
+  final List<String>? highlights;
+  final int? interestedCount;
+  final String? websiteLink;
+  final String? instagramLink;
+  final String? contactEmail;
 
+  // Work Review 3: To create star button more user friendly
   @override
   Widget build(BuildContext context) {
     final bool isDarkCard = color.computeLuminance() < 0.35;
     final Color textColor = isDarkCard ? Colors.white : Colors.black87;
     final Color subTextColor = isDarkCard ? Colors.white70 : Colors.black87;
     final Color iconColor = isDarkCard ? Colors.white : Colors.black87;
+    // ---
 
+    // for event card box
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       child: Row(
@@ -59,6 +83,7 @@ class DormEvents extends StatelessWidget {
                   Row(
                     children: [
                       const Spacer(),
+                      // Work Review 3: How Interested star acts when clicked on or unclicked
                       GestureDetector(
                         onTap: onInterestedTap,
                         child: Stack(
@@ -119,9 +144,29 @@ class DormEvents extends StatelessWidget {
                         icon: const Icon(
                           Icons.arrow_forward,
                           color: Colors.black,
-                        ),
+                        ), // Work Review 3: To allow users to view more details in a new page
                         onPressed: () {
-                          // TODO: open event details page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => ExpandedDormEventPg(
+                                    title: title,
+                                    location: location,
+                                    body: body,
+                                    dateLabel: dateLabel,
+                                    timeText: timeText,
+                                    flyerLink: flyerLink,
+                                    registrationLink: registrationLink,
+                                    imageUrl: imageUrl,
+                                    highlights: highlights,
+                                    interestedCount: interestedCount,
+                                    websiteLink: websiteLink,
+                                    instagramLink: instagramLink,
+                                    contactEmail: contactEmail,
+                                  ),
+                            ),
+                          );
                         },
                       ),
                     ),

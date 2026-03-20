@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 
+// needs selected date, prev month, event date
 class DormCalendar extends StatefulWidget {
   const DormCalendar({
     super.key,
@@ -25,9 +26,10 @@ class DormCalendar extends StatefulWidget {
   State<DormCalendar> createState() => _DormCalendarState();
 }
 
+// default calendar isn't expanded
 class _DormCalendarState extends State<DormCalendar> {
   bool expanded = false;
-
+  // labels calendar with months
   String monthLabel(DateTime date) {
     const months = [
       'January',
@@ -46,12 +48,14 @@ class _DormCalendarState extends State<DormCalendar> {
     return '${months[date.month - 1]} ${date.year}';
   }
 
+  // formats data with year - month - day
   String dateKey(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
   }
 
+  // grabs the current week
   List<DateTime> get currentWeek {
     final selected = widget.selectedDate;
     final weekday = selected.weekday % 7; // Sunday = 0
@@ -67,6 +71,7 @@ class _DormCalendarState extends State<DormCalendar> {
     );
   }
 
+  // days in a week & month
   List<DateTime?> get monthDays {
     final firstDayOfMonth = DateTime(
       widget.selectedDate.year,
@@ -96,6 +101,7 @@ class _DormCalendarState extends State<DormCalendar> {
     return days;
   }
 
+  // builds the calendar view
   Widget buildDayBox(DateTime date) {
     final isSelected = DateUtils.isSameDay(date, widget.selectedDate);
     final dots = widget.eventDates[dateKey(date)] ?? [];
@@ -103,6 +109,7 @@ class _DormCalendarState extends State<DormCalendar> {
     return GestureDetector(
       onTap: () => widget.onDateSelected(date),
       child: Container(
+        // how selected date looks to user
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
@@ -119,6 +126,7 @@ class _DormCalendarState extends State<DormCalendar> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
+            // Work Review 3: how dots appear in the calendar based on event category
             if (dots.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -141,11 +149,22 @@ class _DormCalendarState extends State<DormCalendar> {
     );
   }
 
+  // ----
+  // building weekly view
   @override
   Widget build(BuildContext context) {
-    const weekdayLabels = ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat'];
+    const weekdayLabels = [
+      'Sun',
+      'Mon',
+      'Tues',
+      'Wed',
+      'Thur',
+      'Fri',
+      'Sat',
+    ]; // starts with sun --> sat
 
     return Container(
+      // calendar weekly view
       margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -157,7 +176,7 @@ class _DormCalendarState extends State<DormCalendar> {
           Row(
             children: [
               IconButton(
-                onPressed:
+                onPressed: // goes to prev month
                     expanded
                         ? widget.onPreviousMonth
                         : () {
@@ -192,6 +211,7 @@ class _DormCalendarState extends State<DormCalendar> {
                 icon: const Icon(Icons.chevron_right),
               ),
               IconButton(
+                // when users want to expand calendar
                 onPressed: () {
                   setState(() {
                     expanded = !expanded;
@@ -204,6 +224,7 @@ class _DormCalendarState extends State<DormCalendar> {
           const SizedBox(height: 8),
 
           Row(
+            // fixing format
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children:
                 weekdayLabels
@@ -225,7 +246,7 @@ class _DormCalendarState extends State<DormCalendar> {
           ),
 
           const SizedBox(height: 8),
-
+          // how calendar looks default
           if (!expanded)
             SizedBox(
               height: 60,
@@ -241,7 +262,7 @@ class _DormCalendarState extends State<DormCalendar> {
                     }).toList(),
               ),
             ),
-
+          // how calendar looks expanded
           if (expanded)
             GridView.builder(
               shrinkWrap: true,

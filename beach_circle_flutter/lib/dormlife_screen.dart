@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../community_goods/dorm_life/widgets/dorm_calendar.dart';
 import '../community_goods/dorm_life/widgets/dorm_events.dart';
+import '../community_goods/dorm_life/services/interested_dorm_service.dart';
 
 class DormlifeScreen extends StatefulWidget {
   const DormlifeScreen({super.key});
@@ -15,19 +16,20 @@ class DormlifeScreen extends StatefulWidget {
   State<DormlifeScreen> createState() => _DormlifeScreenState();
 }
 
+// grabbing the current date & interested info
 class _DormlifeScreenState extends State<DormlifeScreen> {
   DateTime selectedDate = DateTime.now();
   bool interestedOnly = false;
-
+  // grab event time info
   Stream<QuerySnapshot<Map<String, dynamic>>> getEvents() {
     final startOfDay = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
     );
-
+    // calculates the end of day
     final endOfDay = startOfDay.add(const Duration(days: 1));
-
+    // firebase info fields
     return FirebaseFirestore.instance
         .collection('dorm_events')
         .where('status', isEqualTo: 'approved')
@@ -40,12 +42,14 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         .snapshots();
   }
 
+  // calculating date & spacing
   String dateKey(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
   }
 
+  // getting months of events
   Stream<Map<String, List<Color>>> getMonthEventDates() {
     final monthStart = DateTime(selectedDate.year, selectedDate.month, 1);
     final nextMonthStart = DateTime(
@@ -53,16 +57,19 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
       selectedDate.month + 1,
       1,
     );
-
+    // returns the firebase details of events
     return FirebaseFirestore.instance
         .collection('dorm_events')
-        .where('status', isEqualTo: 'approved')
+        .where(
+          'status',
+          isEqualTo: 'approved',
+        ) // looks to see if event is approved by mods
         .where(
           'startTime',
           isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart),
         )
         .where('startTime', isLessThan: Timestamp.fromDate(nextMonthStart))
-        .snapshots()
+        .snapshots() // calculates day based off start time
         .map((snapshot) {
           final Map<String, List<Color>> eventMap = {};
 
@@ -70,7 +77,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
             final data = doc.data();
             final dynamic startRaw = data['startTime'];
             final category = (data['category'] ?? 'Other').toString();
-
+            // Student Work Review 3: made by Giselle
             if (startRaw is Timestamp) {
               final key = dateKey(startRaw.toDate());
               final color = eventColor(category);
@@ -78,6 +85,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
               eventMap.putIfAbsent(key, () => []);
 
               if (!eventMap[key]!.contains(color)) {
+                // grabs the color of event to put on calendar
                 eventMap[key]!.add(color);
               }
             }
@@ -87,34 +95,9 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         });
   }
 
-  CollectionReference<Map<String, dynamic>> interestedRef() {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    return FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('interestedDormEvents');
-  }
-
+  // Work Review 3: connected to firebase about users' pref of Interested events
   Stream<Set<String>> interestedEventIdsStream() {
-    return interestedRef().snapshots().map(
-      (snap) => snap.docs.map((doc) => doc.id).toSet(),
-    );
-  }
-
-  Future<void> toggleInterested({
-    required String eventId,
-    required bool isInterested,
-  }) async {
-    final docRef = interestedRef().doc(eventId);
-
-    if (isInterested) {
-      await docRef.delete();
-    } else {
-      await docRef.set({
-        'eventId': eventId,
-        'interestedAt': FieldValue.serverTimestamp(),
-      });
-    }
+    return InterestedDormService.interestedEventIdsStream();
   }
 
   // TO DO: might need to adjust colors to have a nice color palette
@@ -122,27 +105,28 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     // the categories have colors to tell them apart
     switch (category) {
       case 'Social':
-        return const Color(0xFFFFCC00); // social events
+        return const Color.fromARGB(255, 249, 228, 155); // social events
       case 'Academic':
         return const Color(0xFFF5A623); // academic events
       case 'Meetings':
-        return const Color.fromARGB(255, 230, 219, 105); // meetings
+        return const Color.fromARGB(255, 255, 188, 144); // meetings
       case 'Announcements':
         return const Color(0xFF8DB600); // announcments
       case 'Tips':
-        return const Color.fromARGB(255, 116, 152, 224); // tips
+        return const Color.fromARGB(255, 202, 196, 148); // tips
       case 'Other':
-        return const Color.fromRGBO(233, 141, 133, 1); // others
+        return const Color.fromRGBO(136, 131, 83, 1); // others
       default:
         return const Color.fromRGBO(
-          245,
-          238,
-          158,
+          231,
+          148,
+          88,
           1,
         ); // any other thats not determined
     }
   }
 
+  // fixes the form of time with AM/PM
   String formatTime(DateTime dt) {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final minute = dt.minute.toString().padLeft(2, '0');
@@ -150,6 +134,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     return '$hour:$minute $suffix';
   }
 
+  // defining the months in the year & days in the week
   String verticalDate(DateTime date) {
     const months = [
       'JAN',
@@ -169,11 +154,13 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     return '${days[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
+  // ------ building the homepage ----------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2F2),
       floatingActionButton: FloatingActionButton(
+        // pencil icon
         backgroundColor: const Color(0xFFF2C200),
         onPressed: () {
           // TODO: open create dorm event page
@@ -181,6 +168,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         child: const Icon(Icons.edit, color: Colors.black),
       ),
       body: SafeArea(
+        // for our header
         child: Column(
           children: [
             Container(
@@ -200,7 +188,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         children: const [
                           Expanded(
                             child: Text(
-                              'Dorm Life',
+                              'Dorm Life', // header title
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w500,
@@ -217,6 +205,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                   InkWell(
                     onTap: () {
                       setState(() {
+                        // changes state based on whether user is interested or not
                         interestedOnly = !interestedOnly;
                       });
                     },
@@ -229,7 +218,9 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         color:
                             interestedOnly
                                 ? const Color(0xFFFFD700) // yellow when active
-                                : const Color(0xFFE6841A), // original orange
+                                : const Color(
+                                  0xFFE6841A,
+                                ), // original orange -- ends here
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Row(
@@ -254,13 +245,14 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                 ],
               ),
             ),
-
+            // for our dorm calendar formatting
             StreamBuilder<Map<String, List<Color>>>(
               stream: getMonthEventDates(),
               builder: (context, snapshot) {
                 final eventDates = snapshot.data ?? <String, List<Color>>{};
 
                 return DormCalendar(
+                  // the selected date
                   selectedDate: selectedDate,
                   eventDates: eventDates,
                   onDateSelected: (date) {
@@ -269,6 +261,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                     });
                   },
                   onPreviousMonth: () {
+                    // display previous month
                     setState(() {
                       selectedDate = DateTime(
                         selectedDate.year,
@@ -276,7 +269,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         1,
                       );
                     });
-                  },
+                  }, // display next month
                   onNextMonth: () {
                     setState(() {
                       selectedDate = DateTime(
@@ -291,7 +284,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
             ),
 
             const SizedBox(height: 12),
-
+            // error handling if firebase isn't working on interested pref
             Expanded(
               child: StreamBuilder<Set<String>>(
                 stream: interestedEventIdsStream(),
@@ -317,7 +310,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                                 .where((doc) => interestedIds.contains(doc.id))
                                 .toList();
                       }
-
+                      // when there are no events posted, display message
                       if (docs.isEmpty) {
                         return const Center(
                           child: Text(
@@ -329,7 +322,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                           ),
                         );
                       }
-
+                      // fixing format to avoid crashes
                       return ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: docs.length,
@@ -340,7 +333,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                           final dynamic startRaw = data['startTime'];
                           final dynamic endRaw =
                               data['endTime'] ?? data['endTime '];
-
+                          // Work Review 3: Handle format errors
                           if (startRaw == null || endRaw == null) {
                             return const Card(
                               child: Padding(
@@ -359,8 +352,8 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                                 ),
                               ),
                             );
-                          }
-
+                          } // -----
+                          // when events are added, display info
                           final start = startRaw.toDate();
                           final end = endRaw.toDate();
                           final isInterested = interestedIds.contains(doc.id);
@@ -377,16 +370,47 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             dateLabel: verticalDate(start),
                             timeText:
                                 '${formatTime(start)} - ${formatTime(end)}',
+                            // Work Review 3: To show interested events only
                             isInterested: isInterested,
-                            onInterestedTap: () {
-                              toggleInterested(
-                                eventId: doc.id,
-                                isInterested: isInterested,
-                              );
+                            onInterestedTap: () async {
+                              try {
+                                await InterestedDormService.toggleInterested(
+                                  eventId: doc.id,
+                                  isInterested: isInterested,
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Could not update interested: $e',
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                             color: eventColor(
                               (data['category'] ?? 'Other').toString(),
                             ),
+                            imageUrl: data['imageUrl']?.toString(),
+                            highlights:
+                                data['highlights'] != null
+                                    ? List<String>.from(data['highlights'])
+                                    : null,
+                            flyerLink: data['flyerLink']?.toString(),
+                            registrationLink:
+                                data['registrationLink']?.toString(),
+                            websiteLink: data['websiteLink']?.toString(),
+                            instagramLink: data['instagramLink']?.toString(),
+                            contactEmail: data['contactEmail']?.toString(),
+                            interestedCount:
+                                data['interestedCount'] is num
+                                    ? (data['interestedCount'] as num).toInt()
+                                    : int.tryParse(
+                                          data['interestedCount']?.toString() ??
+                                              '',
+                                        ) ??
+                                        0,
                           );
                         },
                       );
