@@ -54,7 +54,7 @@ class _MapScreenState extends State<MapScreen> {
 
   static final List<FilterOption> _filters = [
     FilterOption(key: 'parking', icon: Icons.directions_car, label: 'Parking', hasBottomSheet: true, sheetContent: _ParkingSheetContent()),
-    FilterOption(key: 'food', icon: Icons.local_pizza, label: 'Food', hasBottomSheet: false),
+    FilterOption(key: 'food', icon: Icons.local_pizza, label: 'Food', hasBottomSheet: true, sheetContent: _FoodAlertSheetContent()),
     FilterOption(key: 'study', icon: Icons.menu_book, label: 'Study', hasBottomSheet: true, sheetContent: _StudySheetContent()),
     FilterOption(key: 'charging', icon: Icons.electric_bolt, label: 'Charging', hasBottomSheet: true, sheetContent: _ChargingSheetContent()),
     FilterOption(key: 'restroom', icon: Icons.wc, label: 'Restrooms', hasBottomSheet: true, sheetContent: _RestroomSheetContent()),
@@ -361,7 +361,7 @@ class _MapScreenState extends State<MapScreen> {
 
           Positioned(
             top: 20,
-            bottom: 380,
+            bottom: 370,
             right: 12,
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
@@ -460,6 +460,172 @@ class _ChargingSheetContent extends StatelessWidget {
   const _ChargingSheetContent();
   @override
   Widget build(BuildContext context) => const _SheetPlaceholder(icon: Icons.electric_bolt, label: 'EV and device charging stations');
+}
+
+
+// //me w modi
+// class _FoodAlertSheetContent extends StatelessWidget {
+//   const _FoodAlertSheetContent();
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ScrollConfiguration(
+//       behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+//       child: SingleChildScrollView(
+//         physics: const BouncingScrollPhysics(),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Padding(
+//               padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+//               child: Text("Food Alerts", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87
+//               )
+//               ),
+//             ),
+//             ListView.separated(
+//               shrinkWrap: true,
+//               physics: const NeverScrollableScrollPhysics(),
+//               padding: const EdgeInsets.only(top: 5, bottom: 20),
+//               itemCount: 30,//change to food alert list length w fetching
+//               separatorBuilder: (context, index) => Divider(color: Colors.grey.shade200, height: 1),
+//               itemBuilder: (context, index) { //sort food alerts by active on top, order descdending, only relevant past week
+//                 final alert = null; //= _nearbyBathrooms[index];
+//                 return ListTile(
+//                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+//                   leading: Container(
+//                     padding: const EdgeInsets.all(10),
+//                     decoration: const BoxDecoration(color: Color(0xFFE8F0FE), shape: BoxShape.circle),
+//                     child: const Icon(Icons.pin_drop, color: ui.Color.fromARGB(255, 255, 0, 0), size: 22),
+//                   ),
+//                   title: Text("alert title", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+//                   subtitle: Text("alert details", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+//                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+//                   onTap: () {},
+//                 );
+//               },
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// //claude
+// class _FoodAlertSheetContent extends StatelessWidget {
+//   final ScrollController scrollController; // <-- add this
+//   const _FoodAlertSheetContent({required this.scrollController});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView.separated(
+//       controller: scrollController, 
+//       shrinkWrap: false,            // let it take full height naturally
+//       padding: const EdgeInsets.only(bottom: 20),
+//       itemCount: 6, // header + 5 items
+//       separatorBuilder: (context, index) =>
+//           index == 0 ? const SizedBox.shrink() : Divider(color: Colors.grey.shade200, height: 1),
+//       itemBuilder: (context, index) {
+//         if (index == 0) {
+//           return const Padding(
+//             padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+//             child: Text(
+//               "Food Alerts",
+//               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+//             ),
+//           );
+//         }
+//         final alertIndex = index - 1;
+//         return ListTile(
+//           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+//           leading: Container(
+//             padding: const EdgeInsets.all(10),
+//             decoration: const BoxDecoration(color: Color(0xFFE8F0FE), shape: BoxShape.circle),
+//             child: const Icon(Icons.pin_drop, color: Color(0xFFFF0000), size: 22),
+//           ),
+//           title: const Text("alert title", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+//           subtitle: Text("alert details", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+//           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+//           onTap: () {},
+//         );
+//       },
+//     );
+//   }
+// }
+    // return Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: [
+    //     const Padding(
+    //       padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+    //       child: Text("Food Alerts", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+    //     ),
+    //     ListView.separated(
+    //       shrinkWrap: true,
+    //       physics: const NeverScrollableScrollPhysics(),
+    //       padding: const EdgeInsets.only(top: 5, bottom: 20),
+    //       itemCount: 5,//change to food alert list length w fetching
+    //       separatorBuilder: (context, index) => Divider(color: Colors.grey.shade200, height: 1),
+    //       itemBuilder: (context, index) { //sort food alerts by active on top, order descdending, only relevant past week
+    //         final alert = null; //= _nearbyBathrooms[index];
+    //         return ListTile(
+    //           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+    //           leading: Container(
+    //             padding: const EdgeInsets.all(10),
+    //             decoration: const BoxDecoration(color: Color(0xFFE8F0FE), shape: BoxShape.circle),
+    //             child: const Icon(Icons.pin_drop, color: ui.Color.fromARGB(255, 255, 0, 0), size: 22),
+    //           ),
+    //           title: Text("alert title", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+    //           subtitle: Text("alert details", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+    //           trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+    //           onTap: () {
+                
+    //           },
+    //         );
+    //       },
+    //     ),
+    //   ],
+    // );
+
+// //og
+class _FoodAlertSheetContent extends StatelessWidget {
+  const _FoodAlertSheetContent();
+
+  @override
+  Widget build(BuildContext context) {
+        return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+          child: Text("Food Alerts", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+        ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 5, bottom: 20),
+          itemCount: 15,//change to food alert list length w fetching
+          separatorBuilder: (context, index) => Divider(color: Colors.grey.shade200, height: 1),
+          itemBuilder: (context, index) { //sort food alerts by active on top, order descdending, only relevant past week
+            final alert = null; //= _nearbyBathrooms[index];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(color: Color(0xFFE8F0FE), shape: BoxShape.circle),
+                child: const Icon(Icons.pin_drop, color: ui.Color.fromARGB(255, 255, 0, 0), size: 22),
+              ),
+              title: Text("alert title", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              subtitle: Text("alert details", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () {
+                
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
 }
 
 class _RestroomSheetContent extends StatelessWidget {
