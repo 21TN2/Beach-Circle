@@ -23,7 +23,8 @@ class FilterOption {
 }
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final String? initialFilter;
+  const MapScreen({super.key, this.initialFilter});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -62,6 +63,12 @@ class _MapScreenState extends State<MapScreen> {
 
   // Store the pin data to draw them later
   List<PointAnnotationOptions> _bathroomPinOptions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _activeFilter = widget.initialFilter;
+  }
 
   // Helper function to draw the WC icon into an image format
   Future<Uint8List> _createWcMarker() async {

@@ -28,6 +28,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   String _homePage = "home"; 
+  String? _mapFilter;
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
@@ -137,7 +138,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           _scrollingRow([
             _tileOpen(Icons.local_pizza, 'Food Alert', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "food";
+              });
             }),
             _tileOpen(Icons.directions_car, 'Parking', () {
               setState(() => _currentIndex = 1);
@@ -147,10 +151,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }),
             // Bathroom Tile
             _tileOpen(Icons.family_restroom, 'Bathrooms', () {
-               Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (_) => const BathroomFinder())
-              );
+              //  Navigator.push(
+              //   context, 
+              //   MaterialPageRoute(builder: (_) => const BathroomFinder())
+              // );
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "restroom";
+              });
             }),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
               setState(() => _currentIndex = 1);
@@ -272,7 +280,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         default: return _dashboardBody(context);
       }
     }
-    if (_currentIndex == 1) return const MapScreen();
+    if (_currentIndex == 1 && (_mapFilter != null)) {
+      return MapScreen(initialFilter: _mapFilter);
+    }
+    else if (_currentIndex == 1) {
+      return MapScreen();
+    }
+
     if (_currentIndex == 2) return _buildForumTab();
     if (_currentIndex == 3) return const AddresScreen(); 
     return const SettingsScreen();
@@ -316,6 +330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentIndex = index;
             if (index == 0) _homePage = "home";
+            if (index != 1) _mapFilter = null; // reset when leaving map
           });
         },
         items: const [
