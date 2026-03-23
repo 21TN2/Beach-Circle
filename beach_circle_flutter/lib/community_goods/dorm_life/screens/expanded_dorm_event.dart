@@ -214,7 +214,7 @@ class ExpandedDormEventPg extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "Event Board",
+                        "Dorm Life",
                         style: TextStyle(
                           color: Colors.black45,
                           fontSize: 16,
