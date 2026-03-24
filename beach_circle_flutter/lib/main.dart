@@ -28,7 +28,6 @@ void main() async {
   }
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-
     await Firebase.initializeApp(options: firebaseConfigWeb);
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
