@@ -18,7 +18,7 @@ class ModerationViewScreen extends StatelessWidget {
     'reytest@gmail.com',
     'giselle1@gmail.com',
     'nguyentheresa204@gmail.com',
-    // Just Needs Josue
+    'josue@gmail.com'
   ];
 
   /// checks if user is admin or not

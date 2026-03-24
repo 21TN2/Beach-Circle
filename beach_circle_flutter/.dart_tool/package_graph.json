@@ -274,7 +274,7 @@
     },
     {
       "name": "matcher",
-      "version": "0.12.18",
+      "version": "0.12.17",
       "dependencies": [
         "async",
         "meta",
@@ -285,7 +285,7 @@
     },
     {
       "name": "test_api",
-      "version": "0.7.9",
+      "version": "0.7.7",
       "dependencies": [
         "async",
         "boolean_selector",
@@ -678,14 +678,14 @@
     },
     {
       "name": "material_color_utilities",
-      "version": "0.13.0",
+      "version": "0.11.1",
       "dependencies": [
         "collection"
       ]
     },
     {
       "name": "characters",
-      "version": "1.4.1",
+      "version": "1.4.0",
       "dependencies": []
     },
     {
@@ -868,15 +868,6 @@
         "flutter",
         "http",
         "plugin_platform_interface"
-      ]
-    },
-    {
-
-      "name": "cross_file",
-      "version": "0.3.5+1",
-      "dependencies": [
-        "meta",
-        "web"
       ]
     },
     {
