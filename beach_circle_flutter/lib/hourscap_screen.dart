@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class HourscapScreen extends StatelessWidget {
   const HourscapScreen({super.key});
 
+  //Campus Title Card
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,6 +18,7 @@ class HourscapScreen extends StatelessWidget {
   }
 }
 
+//Building foundations(name, icon, hours, etc. )
 class Building {
   final String name;
   final IconData icon;
@@ -35,12 +37,16 @@ class Building {
   });
 }
 
+//Hours n Capcaity Page set up
 class HoursCapacityPage extends StatelessWidget {
   const HoursCapacityPage({super.key});
 
+  //Building Information
   @override
   Widget build(BuildContext context) {
     final List<Building> buildings = [
+
+      //Building shows the foundation(name, icon, hours, etc. )
       Building(
         name: "Academic Services",
         icon: Icons.school,
@@ -222,6 +228,7 @@ class HoursCapacityPage extends StatelessWidget {
   }
 }
 
+  //Creating building widgets
 class BuildingCard extends StatelessWidget {
   final Building building;
 
@@ -229,6 +236,8 @@ class BuildingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    //Building widget
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -238,6 +247,8 @@ class BuildingCard extends StatelessWidget {
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
+
+      //Buildig name
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         leading: Icon(building.icon, size: 28, color: Colors.black),
@@ -245,16 +256,26 @@ class BuildingCard extends StatelessWidget {
           building.name,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
+
+        //Building icon
         iconColor: Colors.black,
         collapsedIconColor: Colors.black,
         childrenPadding: const EdgeInsets.symmetric(horizontal: 8),
+
+        //Building hours widget
         children: [
           buildDropdownSection(
             title: "Hours",
             content: building.hours.join("\n"),
           ),
+
+          //Building capacity widget
           buildDropdownSection(title: "Capacity", content: building.capacity),
+
+          //building location widget
           buildDropdownSection(title: "Location", content: building.location),
+
+          //Building services widget
           buildDropdownSection(
             title: "Services",
             content: building.services.join("\n"),
@@ -264,6 +285,7 @@ class BuildingCard extends StatelessWidget {
     );
   }
 
+  //Drop down option for buildings
   Widget buildDropdownSection({
     required String title,
     required String content,
@@ -272,6 +294,7 @@ class BuildingCard extends StatelessWidget {
       builder: (context, setState) {
         bool isExpanded = false;
 
+      //Drop down icon
         return Theme(
           data: ThemeData().copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
@@ -282,6 +305,8 @@ class BuildingCard extends StatelessWidget {
                 isExpanded = value;
               });
             },
+
+            //If building widget was drop down
             trailing: Icon(
               isExpanded ? Icons.remove : Icons.add,
               color: Colors.black,

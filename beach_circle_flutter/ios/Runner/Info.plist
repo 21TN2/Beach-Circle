@@ -7,11 +7,8 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-<<<<<<<< HEAD:beach_circle_flutter/ios/Runner/Info.plist
 	<string>Beach Circle Flutter</string>
-========
 	<string>Resource Page</string>
->>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/ios/Runner/Info.plist
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -19,11 +16,8 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-<<<<<<<< HEAD:beach_circle_flutter/ios/Runner/Info.plist
 	<string>beach_circle_flutter</string>
-========
 	<string>resource_page</string>
->>>>>>>> 39db6d282e77b0df5de5be27d56f22bd4dbe8ff9:resource_page/ios/Runner/Info.plist
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -55,5 +49,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to let users take a photo for feedback.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to let users upload images for feedback.</string>
 </dict>
 </plist>

@@ -56,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
+//State Abbreviation for Weather Location 
   String _getStateAbbreviation(String stateName) {
     const stateMap = {
       "Alabama": "AL",
@@ -485,11 +486,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'd947beb08a254433a6949b94bf6dccc1',
   ); //API key
 
-  Weather? _csulbWeather;
-  Weather? _weather;
+  Weather? _csulbWeather; //Weather at CSULb
+  Weather? _weather; //User current location weather
 
-  bool _isLoading = true;
-  bool _locationDenied = false;
+  bool _isLoading = true; //Whether user accepts permission or denies
+  bool _locationDenied = false; //Location permission denied 
 
   String? _currentLocationName;
 
@@ -503,12 +504,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     try {
-      // 1️⃣ CSULB
+      // CSULB Weather
       final csulb = await _weatherService.getWeatherByCoords(
         33.7838,
         -118.1141,
       );
-      // 2️⃣ Permission check
+      //Permission check
       LocationPermission permission = await Geolocator.checkPermission();
 
       if (permission == LocationPermission.denied) {
@@ -526,12 +527,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return;
       }
 
-      // 2️⃣ Current location position
+      // Current location of the User
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // 3️⃣ Reverse geocode for city + state
+      //Find City & State of the User
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -540,7 +541,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       String city = placemarks[0].locality ?? "";
       String state = placemarks[0].administrativeArea ?? "";
 
-      String stateAbbreviation = _getStateAbbreviation(state);
+      String stateAbbreviation = _getStateAbbreviation(state); //Ex. California -> CA
 
       final current = await _weatherService.getWeatherByCoords(
         position.latitude,
@@ -549,6 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (!mounted) return;
 
+    //Weather Widget Display 
       setState(() {
         _csulbWeather = csulb;
         _weather = current;
@@ -561,17 +563,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  //State of the Weather
   @override
   void initState() {
     super.initState();
     _fetchWeather();
   }
 
-  //Displays weather background
+  //Weather Widget Background
   List<Color> _getBackgroundColorsFor(Weather weather) {
     final condition = weather.mainCondition.toLowerCase();
     final isNight = weather.icon.contains("n");
 
+    //Weather Conditions(Cloudy, Sunny, Rainy, etc.)
     if (condition == "clear") {
       return isNight
           ? [Colors.indigo.shade900, Colors.black]
@@ -603,14 +607,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return [Colors.blue, Colors.lightBlue];
   }
 
-  //Displays weather icons to match weather conditions
+  //Weather icons match current weather conditions(Ex. If rainy weather show rainy icon)
   String _getWeatherAnimationFor(Weather weather) {
     final condition = weather.mainCondition.toLowerCase();
     final isNight = weather.icon.contains("n");
 
     if (condition == "clear") {
       return isNight
-          ? "assets/weather/night.json"
+          ? "assets/weather/night.json" //Json file is the weather icons 
           : "assets/weather/sunny.json";
     }
 
@@ -639,6 +643,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return "assets/weather/sunny.json";
   }
 
+  //Weather Widget Title
   Widget _weatherHeader(String name) {
     return Column(
       children: [
@@ -651,6 +656,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _currentPage = index;
               });
             },
+
+            //CSULB Campus title text
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -660,6 +667,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   name: name,
                 ),
               ),
+
+              //Current location text
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: _buildWeatherCard(
@@ -672,9 +681,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
 
+        //Title Card Size
         const SizedBox(height: 8),
-
-        // 👇 DOT INDICATOR
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(2, (index) {
@@ -697,11 +705,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  //Weather Card Widget Implementations
   Widget _buildWeatherCard({
     required Weather? weather,
     required String title,
     required String name,
   }) {
+
+    //Implementing Background onto Widget
     return Container(
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -716,6 +727,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         borderRadius: BorderRadius.circular(18),
       ),
+
+      //If location permission is allowed
       child:
           weather == null
               ? _isLoading
@@ -723,13 +736,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: CircularProgressIndicator(color: Colors.white),
                   )
                   : (title == "Current Location" && _locationDenied)
-                  ? _buildLocationRetry()
+                  ? _buildLocationRetry() 
                   : const SizedBox()
               : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
+                    //Welcoming User Texts
                     children: [
                       Text(
                         "Hello, $name",
@@ -745,6 +760,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: const TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(height: 6),
+
+                      //Title Card Implemented on Widget
                       Text(
                         title == "CSULB Campus"
                             ? "Long Beach, CA"
@@ -753,6 +770,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
 
                       const SizedBox(height: 10),
+
+                      //Current Temperature
                       Text(
                         "${weather.temperature.round()}°C • "
                         "${convertToFahrenheit(weather.temperature).round()}°F",
@@ -769,6 +788,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
+
+                  //Weather icon 
                   Lottie.asset(
                     _getWeatherAnimationFor(weather),
                     width: 95,
@@ -779,11 +800,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  //Location permission Denied
   void _showLocationErrorDialog() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+
+          //Display message requiring location permissions
           title: const Text("Location Access Required"),
           content: const Text(
             "Please enable location access to view current weather.",
@@ -801,12 +825,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  //If location permission is not accepted or denied(Allow Retry)
   Widget _buildLocationRetry() {
     return GestureDetector(
       onTap: () async {
-        LocationPermission permission = await Geolocator.requestPermission();
+        LocationPermission permission = await Geolocator.requestPermission(); //Permission Request
 
-        if (permission == LocationPermission.always ||
+        if (permission == LocationPermission.always || 
             permission == LocationPermission.whileInUse) {
           _fetchWeather();
         }
@@ -816,11 +841,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: const [
           Icon(Icons.location_off, size: 50, color: Colors.white),
           SizedBox(height: 12),
+
+          //If location is not accepted, prompted message
           Text(
             "Location Access Needed",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 6),
+
+          //Allow users to tap to load permission acceess
           Text(
             "Tap to allow location",
             style: TextStyle(color: Colors.white70),
