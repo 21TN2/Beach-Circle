@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../model/forum_category.dart';
 import '../service/forum_service.dart';
+import '../service/moderation_helper.dart';
 
 class CreateForumPostPg extends StatefulWidget {
   final ForumCategory category;
@@ -58,43 +59,49 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
       );
       return;
     }
-
-    // reply shows usernane otherwise anonymous ---- Student Work Review 2
+    
+    if (ModerationHelper.containsProfanity(_titleCtrl.text) || 
+            ModerationHelper.containsProfanity(_bodyCtrl.text)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please keep the community friendly. Remove inappropriate language before posting."),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return; // Stops the post from being submitted!
+        }
+    // reply shows usernane otherwise anonymous
     final rawDisplayName = user.displayName?.trim();
     final rawEmailName = user.email?.split('@').first.trim();
 
-    final authorName = // grabs the post user name based on the email used to login
+    final authorName =
         (rawDisplayName != null && rawDisplayName.isNotEmpty)
             ? rawDisplayName
             : ((rawEmailName != null && rawEmailName.isNotEmpty)
                 ? rawEmailName
                 : "Anonymous");
 
-    final imageUrl = _imageUrlCtrl.text.trim(); // url image
+    final imageUrl = _imageUrlCtrl.text.trim();
 
-    setState(() => _isSubmitting = true); // when they submit
+    setState(() => _isSubmitting = true);
 
     try {
       await widget.forumService.createPost(
-        // details for post
         categoryId: widget.category.id,
         title: _titleCtrl.text.trim(),
         body: _bodyCtrl.text.trim(),
         authorId: user.uid,
         authorName: authorName,
-        mediaUrl:
-            imageUrl.isEmpty
-                ? null
-                : imageUrl, // NEW PART FOR SW2: IMAGE URL to post image
+        mediaUrl: imageUrl.isEmpty ? null : imageUrl,
         mediaType: imageUrl.isEmpty ? null : "image",
       );
 
       if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Post failed: $e")),
-      ); // if posts fails
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Post failed: $e")));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -104,7 +111,6 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
   @override
   Widget build(BuildContext context) {
-    // this is for the url preview
     final previewUrl = _imageUrlCtrl.text.trim();
 
     return Scaffold(
@@ -204,7 +210,6 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 const SizedBox(height: 16),
 
                 const Text(
-                  // shown to users to upload image
                   "Post Media (Optional)",
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
@@ -214,8 +219,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   controller: _imageUrlCtrl,
                   keyboardType: TextInputType.url,
                   decoration: InputDecoration(
-                    hintText:
-                        "Paste an image URL", // helps user to paste url image
+                    hintText: "Paste an image URL",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -227,25 +231,22 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     ),
                   ),
                   validator: (v) {
-                    // checks if image is proper url i.e http
                     final text = (v ?? "").trim();
                     if (text.isEmpty) return null;
                     if (!_looksLikeUrl(text)) {
-                      return "Please enter a valid http/https URL."; // displays message
+                      return "Please enter a valid http/https URL.";
                     }
                     return null;
                   },
                   onChanged: (_) {
-                    if (_showPreview) setState(() {}); // shows preview
+                    if (_showPreview) setState(() {});
                   },
                 ),
 
                 const SizedBox(height: 10),
 
-                if (_showPreview &&
-                    _looksLikeUrl(previewUrl)) // if it is a proper image url
+                if (_showPreview && _looksLikeUrl(previewUrl))
                   ClipRRect(
-                    // show image preview to user
                     borderRadius: BorderRadius.circular(12),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
@@ -253,13 +254,12 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                         previewUrl,
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, progress) {
-                          // how the image review will look
                           if (progress == null) return child;
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         },
-                        errorBuilder: // error handling: show to users that preview can't load --> image cant be posted
+                        errorBuilder:
                             (_, __, ___) => Container(
                               alignment: Alignment.center,
                               color: Colors.black12,

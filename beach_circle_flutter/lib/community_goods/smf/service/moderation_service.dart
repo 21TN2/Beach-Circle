@@ -15,19 +15,21 @@ class ModerationService {
     required String postAuthorId,
     required String reason,
     required String details,
+    String? imageUrl,
   }) async {
     final uid = _auth.currentUser!.uid;
 
     await _db.collection('reports').add({
       'targetType':
           'post', // field collections needed to store + update reports
-      'postId': postId, // unique post id to identify post
-      'reportedUserId': postAuthorId, // whos being reported
-      'reporterUserId': uid, // who reported it
-      'reason': reason, // reason
-      'details': details, // details of the incident
-      'status': 'open', // report is opened until close by mods
-      'createdAt': FieldValue.serverTimestamp(), // gets timestamps
+      'postId': postId,
+      'reportedUserId': postAuthorId,
+      'reporterUserId': uid,
+      'reason': reason,
+      'details': details,
+      'imageUrl': imageUrl,
+      'status': 'open',
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 }

@@ -12,13 +12,14 @@ class ModerationViewScreen extends StatelessWidget {
   const ModerationViewScreen({super.key, required this.forumService});
 
   final ForumService forumService;
+
   // mods emails associated with their account
   static const List<String> adminEmails = [
     'teef@gmail.com',
     'reytest@gmail.com',
     'giselle1@gmail.com',
     'nguyentheresa204@gmail.com',
-    // Just Needs Josue
+    'josuealfaro8441@gmail.com',
   ];
 
   /// checks if user is admin or not
@@ -69,13 +70,15 @@ class _ForumRequestsTab extends StatelessWidget {
       stream: forumService.streamForumCategoryRequests(status: 'pending'),
       builder: (context, snap) {
         if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
-        if (!snap.hasData)
+        if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         final docs = snap.data!;
-        if (docs
-            .isEmpty) // if screen is empty --> shows the message that theres no request yet
+        if (docs.isEmpty) {
+          // if screen is empty --> shows the message that theres no request yet
           return const Center(child: Text('No pending forum requests.'));
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(12), // building the list for forum
@@ -100,19 +103,15 @@ class _ForumRequestsTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title.isEmpty
-                          ? '(No title)'
-                          : title, // shows title otherwise no title
+                      title.isEmpty ? '(No title)' : title,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      desc.isEmpty ? '(No description)' : desc,
-                    ), // shows descr otherwise no descr
+                    Text(desc.isEmpty ? '(No description)' : desc),
                     const SizedBox(height: 8),
                     Text(
                       createdBy.isEmpty
-                          ? 'Requested by: (unknown)' // shows who it was requested by --> uses user ID
+                          ? 'Requested by: (unknown)'
                           : 'Requested by: $createdBy',
                       style: const TextStyle(color: Colors.black54),
                     ),
@@ -120,7 +119,6 @@ class _ForumRequestsTab extends StatelessWidget {
 
                     Row(
                       children: [
-                        // button icon for approved
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -131,14 +129,13 @@ class _ForumRequestsTab extends StatelessWidget {
                             onPressed: () async {
                               try {
                                 await forumService.approveForumCategoryRequest(
-                                  // approves the post when pressed
                                   requestId: d.id,
                                 );
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Approved -> Added to Forums', // mods receive a message when appproved
+                                        'Approved -> Added to Forums',
                                       ),
                                     ),
                                   );
@@ -147,54 +144,45 @@ class _ForumRequestsTab extends StatelessWidget {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
-                                        'Approve failed: $e',
-                                      ), // error: approval failed shown to mods
+                                      content: Text('Approve failed: $e'),
                                     ),
                                   );
                                 }
                               }
                             },
-                            child: const Text('Approve'), // approve text
+                            child: const Text('Approve'),
                           ),
                         ),
-                        const SizedBox(width: 10), // reject button
+                        const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.red, // red to show that it means no
+                              backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             onPressed: () async {
                               try {
                                 await forumService.rejectForumCategoryRequest(
-                                  // when pressed, it rejects request
                                   requestId: d.id,
-                                  reason:
-                                      'Rejected by moderator', // shows the reason
+                                  reason: 'Rejected by moderator',
                                 );
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Rejected'),
-                                    ), // shows reject message to mods
+                                    const SnackBar(content: Text('Rejected')),
                                   );
                                 }
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
-                                        'Reject failed: $e',
-                                      ), // error: rejection failed
+                                      content: Text('Reject failed: $e'),
                                     ),
                                   );
                                 }
                               }
                             },
-                            child: const Text('Reject'), // button text
+                            child: const Text('Reject'),
                           ),
                         ),
                       ],
@@ -215,6 +203,35 @@ class _ReportsTab extends StatelessWidget {
   const _ReportsTab({required this.forumService});
   final ForumService forumService;
 
+  void _showFullImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(12),
+          child: InteractiveViewer(
+            panEnabled: true,
+            minScale: 0.8,
+            maxScale: 4,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Could not load image.',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // opens up the report page to access
@@ -222,36 +239,29 @@ class _ReportsTab extends StatelessWidget {
       stream: forumService.streamOpenReports(),
       builder: (context, snap) {
         if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
-        if (!snap.hasData)
+        if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         final docs = snap.data!;
-        if (docs.isEmpty)
-          return const Center(
-            child: Text('No open reports.'),
-          ); // if report page is empty w/ no report
+        if (docs.isEmpty) {
+          return const Center(child: Text('No open reports.'));
+        }
 
         return ListView.builder(
-          // defining it
           padding: const EdgeInsets.all(12),
           itemCount: docs.length,
           itemBuilder: (_, i) {
             final r = docs[i];
             final data = r.data();
 
-            final postId =
-                (data['postId'] ?? '')
-                    .toString(); // report shows these details: post id from the reported post
-            final reason =
-                (data['reason'] ?? '')
-                    .toString(); // reason why its being reported
-            final details =
-                (data['details'] ?? '').toString(); // detail description
-            final targetType =
-                (data['targetType'] ?? '').toString(); // the post in question
+            final postId = (data['postId'] ?? '').toString();
+            final reason = (data['reason'] ?? '').toString();
+            final details = (data['details'] ?? '').toString();
+            final targetType = (data['targetType'] ?? '').toString();
+            final imageUrl = (data['imageUrl'] ?? '').toString();
 
             return Card(
-              // building the card to display details
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -263,24 +273,47 @@ class _ReportsTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Report (${targetType.isEmpty ? "unknown" : targetType})', // shows whats being reported
+                      'Report (${targetType.isEmpty ? "unknown" : targetType})',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 6),
                     Text('Reason: ${reason.isEmpty ? "(none)" : reason}'),
+                    Text('Details: ${details.isEmpty ? "(none)" : details}'),
 
-                    /// the basic reason
-                    Text(
-                      'Details: ${details.isEmpty ? "(none)" : details}',
-                    ), // details from the user about it
+                    if (imageUrl.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () => _showFullImage(context, imageUrl),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            imageUrl,
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Text(
+                                'Could not load image.',
+                                style: TextStyle(color: Colors.redAccent),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Tap image to view full screenshot',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+
                     const SizedBox(height: 6),
                     Text(
-                      'postId: ${postId.isEmpty ? "(missing)" : postId}', // the id of the post
+                      'postId: ${postId.isEmpty ? "(missing)" : postId}',
                       style: const TextStyle(color: Colors.black54),
                     ),
 
                     if (postId.isNotEmpty) ...[
-                      // what happens after its deleted
                       const Divider(height: 18),
                       StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                         stream: forumService.streamPostById(postId),
@@ -289,7 +322,7 @@ class _ReportsTab extends StatelessWidget {
                           final postDoc = ps.data!;
                           if (!postDoc.exists) {
                             return const Text(
-                              'Post no longer exists.', // to show mods posts is not there anymore
+                              'Post no longer exists.',
                               style: TextStyle(color: Colors.redAccent),
                             );
                           }
@@ -317,7 +350,6 @@ class _ReportsTab extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     Row(
-                      // whats shown to the mods after they make an action
                       children: [
                         Expanded(
                           child: ElevatedButton(
@@ -332,7 +364,6 @@ class _ReportsTab extends StatelessWidget {
                                       try {
                                         await forumService
                                             .deleteReportedPostAndClose(
-                                              // when mods delete + close a report
                                               reportId: r.id,
                                               postId: postId,
                                             );
@@ -342,7 +373,7 @@ class _ReportsTab extends StatelessWidget {
                                           ).showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                'Post deleted --> report closed', // displays confirm message
+                                                'Post deleted --> report closed',
                                               ),
                                             ),
                                           );
@@ -354,7 +385,7 @@ class _ReportsTab extends StatelessWidget {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Delete failed: $e', // error: deletion couldnt happen
+                                                'Delete failed: $e',
                                               ),
                                             ),
                                           );
@@ -362,45 +393,34 @@ class _ReportsTab extends StatelessWidget {
                                       }
                                     }
                                     : null,
-                            child: const Text('Delete Post'), // button text
+                            child: const Text('Delete Post'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.black26),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             onPressed: () async {
                               try {
-                                await forumService.rejectReport(
-                                  reportId: r.id,
-                                  moderatorNote:
-                                      'Invalid / no action', // when mods fail to reject
-                                );
+                                await forumService.closeReport(reportId: r.id);
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text(
-                                        'Report rejected',
-                                      ), // when mods reject a post
+                                      content: Text('Report closed'),
                                     ),
                                   );
                                 }
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Reject failed: $e',
-                                      ), // error: rejection failed
-                                    ),
+                                    SnackBar(content: Text('Close failed: $e')),
                                   );
                                 }
                               }
                             },
-                            child: const Text('Reject Report'), // button text
+                            child: const Text('Reject'),
                           ),
                         ),
                       ],
