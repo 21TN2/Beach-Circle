@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/services/event_service.dart';
 
 class ModerationViewScreen extends StatelessWidget {
   const ModerationViewScreen({super.key, required this.forumService});
@@ -64,6 +65,35 @@ class _ForumRequestsTab extends StatelessWidget {
   const _ForumRequestsTab({required this.forumService});
   final ForumService forumService;
 
+  void _showFullImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(12),
+          child: InteractiveViewer(
+            panEnabled: true,
+            minScale: 0.8,
+            maxScale: 4,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Could not load image.',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override // each forum starts off as pending
   Widget build(BuildContext context) {
     return StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
@@ -89,6 +119,7 @@ class _ForumRequestsTab extends StatelessWidget {
             final title = (data['title'] ?? '').toString();
             final desc = (data['description'] ?? '').toString();
             final createdBy = (data['createdBy'] ?? '').toString();
+            final imageUrl = (data['imageUrl'] ?? '').toString();
 
             return Card(
               // building how the card view will look
@@ -108,6 +139,34 @@ class _ForumRequestsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(desc.isEmpty ? '(No description)' : desc),
+
+                    if (imageUrl.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () => _showFullImage(context, imageUrl),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            imageUrl,
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Text(
+                                'Could not load image.',
+                                style: TextStyle(color: Colors.redAccent),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Tap image to view full screenshot',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+
                     const SizedBox(height: 8),
                     Text(
                       createdBy.isEmpty
@@ -200,8 +259,9 @@ class _ForumRequestsTab extends StatelessWidget {
 
 // ------------------- Reports Tab -------------------
 class _ReportsTab extends StatelessWidget {
-  const _ReportsTab({required this.forumService});
+  _ReportsTab({required this.forumService});
   final ForumService forumService;
+  final EventService _eventService = EventService();
 
   void _showFullImage(BuildContext context, String imageUrl) {
     showDialog(
@@ -255,7 +315,7 @@ class _ReportsTab extends StatelessWidget {
             final r = docs[i];
             final data = r.data();
 
-            final postId = (data['postId'] ?? '').toString();
+            final targetId = (data['targetId'] ?? '').toString();
             final reason = (data['reason'] ?? '').toString();
             final details = (data['details'] ?? '').toString();
             final targetType = (data['targetType'] ?? '').toString();
@@ -309,14 +369,14 @@ class _ReportsTab extends StatelessWidget {
 
                     const SizedBox(height: 6),
                     Text(
-                      'postId: ${postId.isEmpty ? "(missing)" : postId}',
+                      'targetId: ${targetId.isEmpty ? "(missing)" : targetId}',
                       style: const TextStyle(color: Colors.black54),
                     ),
 
-                    if (postId.isNotEmpty) ...[
+                    if (targetType == 'post' && targetId.isNotEmpty) ...[
                       const Divider(height: 18),
                       StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        stream: forumService.streamPostById(postId),
+                        stream: forumService.streamPostById(targetId),
                         builder: (context, ps) {
                           if (!ps.hasData) return const SizedBox.shrink();
                           final postDoc = ps.data!;
@@ -359,21 +419,32 @@ class _ReportsTab extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             onPressed:
-                                (targetType == 'post' && postId.isNotEmpty)
+                                targetId.isNotEmpty
                                     ? () async {
                                       try {
-                                        await forumService
-                                            .deleteReportedPostAndClose(
-                                              reportId: r.id,
-                                              postId: postId,
-                                            );
+                                        if (targetType == 'post') {
+                                          await forumService
+                                              .deleteReportedPostAndClose(
+                                                reportId: r.id,
+                                                postId: targetId,
+                                              );
+                                        } else if (targetType == 'event') {
+                                          await _eventService
+                                              .deleteReportedEventAndClose(
+                                                reportId: r.id,
+                                                eventId: targetId,
+                                              );
+                                        }
+
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                'Post deleted --> report closed',
+                                                targetType == 'event'
+                                                    ? 'Dorm Event deleted --> report closed'
+                                                    : 'Post deleted --> report closed',
                                               ),
                                             ),
                                           );
@@ -393,7 +464,11 @@ class _ReportsTab extends StatelessWidget {
                                       }
                                     }
                                     : null,
-                            child: const Text('Delete Post'),
+                            child: Text(
+                              targetType == 'event'
+                                  ? 'Delete Dorm Event'
+                                  : 'Delete Post',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),

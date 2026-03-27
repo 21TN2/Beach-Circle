@@ -16,6 +16,8 @@ class DormEvents extends StatelessWidget {
     required this.isInterested,
     required this.onInterestedTap,
     required this.color,
+    required this.eventId,
+    required this.eventOwnerId,
 
     // optional fields
     this.flyerLink,
@@ -37,6 +39,8 @@ class DormEvents extends StatelessWidget {
   final bool isInterested;
   final VoidCallback onInterestedTap;
   final Color color;
+  final String eventId;
+  final String eventOwnerId;
   final String? flyerLink;
   final String? registrationLink;
   final String? imageUrl;
@@ -156,6 +160,8 @@ class DormEvents extends StatelessWidget {
                                     body: body,
                                     dateLabel: dateLabel,
                                     timeText: timeText,
+                                    eventId: eventId,
+                                    eventOwnerId: eventOwnerId,
                                     flyerLink: flyerLink,
                                     registrationLink: registrationLink,
                                     imageUrl: imageUrl,

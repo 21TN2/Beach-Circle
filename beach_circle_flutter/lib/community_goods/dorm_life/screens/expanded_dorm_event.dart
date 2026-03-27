@@ -1,6 +1,7 @@
 // Work Review 3: Made by Giselle
 // Purpose: when users want to see more details of event
 
+import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,6 +13,8 @@ class ExpandedDormEventPg extends StatelessWidget {
     required this.body,
     required this.dateLabel,
     required this.timeText,
+    required this.eventId,
+    required this.eventOwnerId,
     // optional fields
     this.flyerLink,
     this.registrationLink,
@@ -28,6 +31,8 @@ class ExpandedDormEventPg extends StatelessWidget {
   final String body;
   final String dateLabel;
   final String timeText;
+  final String eventId;
+  final String eventOwnerId;
 
   final String? flyerLink;
   final String? registrationLink;
@@ -447,9 +452,15 @@ class ExpandedDormEventPg extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Event reporting coming soon."),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ReportIssuePage(
+                            targetId: eventId,
+                            reportedUserId: eventOwnerId,
+                            targetType: 'event',
+                          ),
                     ),
                   );
                 },

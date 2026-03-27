@@ -205,8 +205,9 @@ class ForumCategoryPg extends StatelessWidget {
                               MaterialPageRoute(
                                 builder:
                                     (_) => ReportIssuePage(
-                                      postId: p.id,
-                                      postAuthorId: p.authorId,
+                                      targetId: p.id,
+                                      reportedUserId: p.authorId,
+                                      targetType: 'post',
                                     ),
                               ),
                             );

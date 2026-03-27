@@ -370,7 +370,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             dateLabel: verticalDate(start),
                             timeText:
                                 '${formatTime(start)} - ${formatTime(end)}',
-                            // Work Review 3: To show interested events only
                             isInterested: isInterested,
                             onInterestedTap: () async {
                               try {
@@ -392,6 +391,10 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             color: eventColor(
                               (data['category'] ?? 'Other').toString(),
                             ),
+                            eventId: doc.id,
+                            eventOwnerId:
+                                (data['createdBy'] ?? data['authorId'] ?? '')
+                                    .toString(),
                             imageUrl: data['imageUrl']?.toString(),
                             highlights:
                                 data['highlights'] != null
