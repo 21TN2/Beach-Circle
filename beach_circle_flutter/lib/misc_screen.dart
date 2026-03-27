@@ -309,12 +309,11 @@ class _MiscScreenState extends State<MiscScreen> {
 // --------  header ------
 class _HeaderPill extends StatelessWidget {
   const _HeaderPill();
-
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.only(left: 13, right: 4),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.85),
         borderRadius: BorderRadius.circular(6),
@@ -322,20 +321,19 @@ class _HeaderPill extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // centered text
           const Center(
             child: Text(
               "Student Miscellaneous Forum",
-              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 15.5,
                 color: Colors.black54,
               ),
             ),
           ),
 
-          // chevron on right
           const Positioned(
             right: 0,
             child: Icon(Icons.chevron_right, color: Colors.black54),

@@ -15,6 +15,7 @@ class ModerationService {
     required String postAuthorId,
     required String reason,
     required String details,
+    String? imageUrl,
   }) async {
     final uid = _auth.currentUser!.uid;
 
@@ -26,6 +27,7 @@ class ModerationService {
       'reporterUserId': uid,
       'reason': reason,
       'details': details,
+      'imageUrl': imageUrl,
       'status': 'open',
       'createdAt': FieldValue.serverTimestamp(),
     });
