@@ -1,6 +1,8 @@
 // TIFF
+// dorm_event.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 enum DormCategory {
   athletics,    // 🟡 Yellow  – spirit / sports
@@ -82,23 +84,33 @@ class DormEvent {
   // ── Firestore serialization ────────────────────────────────────────────────
 
   Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'location': location,
-      'buildingCode': buildingCode,
-      'roomNumber': roomNumber,
-      'date': Timestamp.fromDate(date),
-      'startHour': startTime.hour,
-      'startMinute': startTime.minute,
-      'endHour': endTime?.hour,
-      'endMinute': endTime?.minute,
-      'isAllDay': isAllDay,
-      'description': description,
-      'links': links,
-      'category': category.index,
-      'isInterested': isInterested,
-    };
-  }
+  return {
+    'title': title,
+    'location': location,
+    'buildingCode': buildingCode,
+    'roomNumber': roomNumber,
+    'date': Timestamp.fromDate(date),
+    'startTime': Timestamp.fromDate(DateTime(
+      date.year, date.month, date.day,
+      startTime.hour, startTime.minute,
+    )),
+    'endTime': endTime == null ? null : Timestamp.fromDate(DateTime(
+      date.year, date.month, date.day,
+      endTime!.hour, endTime!.minute,
+    )),
+    'startHour': startTime.hour,
+    'startMinute': startTime.minute,
+    'endHour': endTime?.hour,
+    'endMinute': endTime?.minute,
+    'isAllDay': isAllDay,
+    'description': description,
+    'links': links,
+    'category': category.index,
+    'isInterested': isInterested,
+    'createdBy': FirebaseAuth.instance.currentUser?.uid ?? '',
+    'status': 'approved',
+  };
+}
 
   factory DormEvent.fromFirestore(DocumentSnapshot doc) {
     final m = doc.data() as Map<String, dynamic>;

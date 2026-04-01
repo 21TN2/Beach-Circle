@@ -1,243 +1,295 @@
-// import 'package:flutter/material.dart';
-// import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
-// import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_category_dot.dart';
-// import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_events.dart';
-// // ── Sample data (no Firebase needed for preview) ─────────────────────────────
+// TIFF
 
-// final List<DormEvent> _sampleEvents = [
-//   DormEvent(
-//     id: '1',
-//     title: 'LBSU vs Stanford\nRip the Roots',
-//     location: 'Pyramid Lawn',
-//     date: DateTime(2024, 10, 26),
-//     startTime: const TimeOfDay(hour: 18, minute: 0),
-//     endTime: const TimeOfDay(hour: 19, minute: 30),
-//     description: "Join us as we come together to support CSULB Women's Volleyball Team!",
-//     links: 'Flyer: https://www.instagram.com/p/DN1Wott5NSv/',
-//     category: DormCategory.athletics,
-//   ),
-//   DormEvent(
-//     id: '2',
-//     title: 'General\nBody Meeting',
-//     location: 'Los Cerritos Classroom',
-//     date: DateTime(2024, 10, 26),
-//     startTime: const TimeOfDay(hour: 19, minute: 0),
-//     endTime: const TimeOfDay(hour: 20, minute: 0),
-//     category: DormCategory.organization,
-//   ),
-//   DormEvent(
-//     id: '3',
-//     title: "Final's\nGoodie Bags",
-//     location: 'Service Center Front Desk',
-//     date: DateTime(2024, 10, 26),
-//     startTime: const TimeOfDay(hour: 0, minute: 0),
-//     isAllDay: true,
-//     category: DormCategory.residential,
-//   ),
-// ];
+// dorm_homepg.dart
+// Main Dorm Life home screen — ties together DormCalendar, DormEvents,
+// InterestedDormService, DormServices, and navigates to DormCreatePage.
 
-// // ── Screen ────────────────────────────────────────────────────────────────────
+import 'package:flutter/material.dart';
 
-// class DormHomePage extends StatefulWidget {
-//   const DormHomePage({super.key});
+import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/services/dorm_services.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/services/interested_dorm_service.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_calendar.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_events.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_create.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_interested.dart';
 
-//   @override
-//   State<DormHomePage> createState() => _DormHomePageState();
-// }
+class DormHomePage extends StatefulWidget {
+  const DormHomePage({super.key});
 
-// class _DormHomePageState extends State<DormHomePage> {
-//   DateTime _selectedDate = DateTime(2024, 10, 26);
-//   DormCategory _selectedCategory = DormCategory.athletics;
+  @override
+  State<DormHomePage> createState() => _DormHomePageState();
+}
 
-//   final List<DateTime> _days = List.generate(
-//     7,
-//     (i) => DateTime(2024, 10, 24).add(Duration(days: i)),
-//   );
+class _DormHomePageState extends State<DormHomePage> {
+  static const Color kYellow    = Color(0xFFFFCC00);
+  static const Color kYellowBtn = Color(0xFFD4A800);
+  static const Color kPurple    = Color(0xFF3B3599);
 
-//   static const _dayNames = [
-//     'MON', 'TUES', 'WED', 'THURS', 'FRI', 'SAT', 'SUN'
-//   ];
+  // ── State ──────────────────────────────────────────────────────────────────
+  DateTime _selectedDate = DateTime.now();
+  DateTime _displayMonth = DateTime.now();
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
+  // eventDates drives the colored dots on the calendar
+  // key = "yyyy-MM-dd", value = list of category colors
+  Map<String, List<Color>> _eventDates = {};
 
-//       // ── Yellow top bar ──────────────────────────────────────────────────
-//       appBar: AppBar(
-//         backgroundColor: const Color(0xFFFFCC00),
-//         elevation: 0,
-//         leading: const Icon(Icons.arrow_back, color: Colors.black),
-//         title: Container(
-//           height: 36,
-//           decoration: BoxDecoration(
-//             color: Colors.white,
-//             borderRadius: BorderRadius.circular(8),
-//           ),
-//           child: const Center(
-//             child: Text(
-//               'Dorm Life',
-//               style: TextStyle(color: Colors.black54, fontSize: 16),
-//             ),
-//           ),
-//         ),
-//         actions: const [
-//           Padding(
-//             padding: EdgeInsets.only(right: 12),
-//             child: Icon(Icons.chevron_right, color: Colors.blue),
-//           ),
-//         ],
-//       ),
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
-//       body: SingleChildScrollView(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
+  String _dateKey(DateTime d) {
+    final m   = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '${d.year}-$m-$day';
+  }
 
-//             // ── Interested banner ─────────────────────────────────────────
-//             Align(
-//               alignment: Alignment.topRight,
-//               child: Container(
-//                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-//                 decoration: const BoxDecoration(
-//                   color: Color(0xFFE07B00),
-//                   borderRadius: BorderRadius.only(
-//                     bottomLeft: Radius.circular(12),
-//                   ),
-//                 ),
-//                 child: const Row(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     Icon(Icons.star_border, color: Colors.white, size: 16),
-//                     SizedBox(width: 6),
-//                     Text(
-//                       'Interested',
-//                       style: TextStyle(color: Colors.white, fontSize: 13),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
+  String _dateLabel(DateTime d) {
+    const days = ['MON', 'TUES', 'WED', 'THURS', 'FRI', 'SAT', 'SUN'];
+    const months = [
+      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+    ];
+    return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
+  }
 
-//             // ── Date strip ────────────────────────────────────────────────
-//             Container(
-//               height: 90,
-//               color: Colors.grey.shade100,
-//               child: ListView.builder(
-//                 scrollDirection: Axis.horizontal,
-//                 padding: const EdgeInsets.symmetric(horizontal: 12),
-//                 itemCount: _days.length,
-//                 itemBuilder: (context, i) {
-//                   final day = _days[i];
-//                   final isSelected = day.day == _selectedDate.day;
-//                   final cats = day.day == 26
-//                       ? [
-//                           DormCategory.athletics,
-//                           DormCategory.organization,
-//                           DormCategory.residential,
-//                         ]
-//                       : <DormCategory>[];
+  // Reload dot map whenever displayed month changes
+  Future<void> _loadEventDatesForMonth(DateTime month) async {
+    final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
+    final Map<String, List<Color>> result = {};
 
-//                   return GestureDetector(
-//                     onTap: () => setState(() => _selectedDate = day),
-//                     child: AnimatedContainer(
-//                       duration: const Duration(milliseconds: 200),
-//                       width: 64,
-//                       margin: const EdgeInsets.symmetric(
-//                           vertical: 8, horizontal: 2),
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(12),
-//                         border: isSelected
-//                             ? Border.all(color: Colors.black87, width: 2)
-//                             : null,
-//                       ),
-//                       child: Column(
-//                         mainAxisAlignment: MainAxisAlignment.center,
-//                         children: [
-//                           Text(
-//                             _dayNames[day.weekday - 1],
-//                             style: TextStyle(
-//                               fontSize: 11,
-//                               fontWeight: isSelected
-//                                   ? FontWeight.bold
-//                                   : FontWeight.normal,
-//                               color: isSelected
-//                                   ? Colors.black
-//                                   : Colors.grey.shade600,
-//                             ),
-//                           ),
-//                           const SizedBox(height: 4),
-//                           Text(
-//                             '${day.day}',
-//                             style: const TextStyle(
-//                               fontSize: 20,
-//                               fontWeight: FontWeight.bold,
-//                               color: Colors.black87,
-//                             ),
-//                           ),
-//                           const SizedBox(height: 4),
-//                           DormCategoryDotRow(categories: cats, dotSize: 9),
-//                         ],
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
+    for (int d = 1; d <= daysInMonth; d++) {
+      final day  = DateTime(month.year, month.month, d);
+      final cats = await DormServices.categoriesOnDay(day);
+      if (cats.isNotEmpty) {
+        result[_dateKey(day)] = cats.map((c) => c.color).toList();
+      }
+    }
 
-//             const SizedBox(height: 8),
+    if (mounted) setState(() => _eventDates = result);
+  }
 
-//             // ── Event cards ───────────────────────────────────────────────
-//             ..._sampleEvents.map((event) => DormEvents(
-//                 title: event.title,
-//                 location: event.location,
-//                 body: event.description,
-//                 dateLabel: 'SUN, OCT 26',
-//                 timeText: event.timeDisplay,
-//                 isStarred: event.isInterested,
-//                 color: event.category.color,
-//             )),
+  // ── Month navigation ───────────────────────────────────────────────────────
 
-//             const SizedBox(height: 24),
+  void _goToPreviousMonth() {
+    final prev = DateTime(_displayMonth.year, _displayMonth.month - 1);
+    setState(() => _displayMonth = prev);
+    _loadEventDatesForMonth(prev);
+  }
 
-//             // ── Category dot selector preview ─────────────────────────────
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   const Text(
-//                     '[ Category Selector Preview ]',
-//                     style: TextStyle(
-//                       fontSize: 12,
-//                       color: Colors.grey,
-//                       fontStyle: FontStyle.italic,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Row(
-//                     children: [
-//                       const Text('Add Dorm Details  '),
-//                       DormCategorySelector(
-//                         selected: _selectedCategory,
-//                         onChanged: (cat) =>
-//                             setState(() => _selectedCategory = cat),
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(height: 4),
-//                   Text(
-//                     'Selected: ${_selectedCategory.label}',
-//                     style: const TextStyle(fontSize: 12, color: Colors.black54),
-//                   ),
-//                 ],
-//               ),
-//             ),
+  void _goToNextMonth() {
+    final next = DateTime(_displayMonth.year, _displayMonth.month + 1);
+    setState(() => _displayMonth = next);
+    _loadEventDatesForMonth(next);
+  }
 
-//             const SizedBox(height: 32),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  // ── Navigation ─────────────────────────────────────────────────────────────
+
+  void _openCreatePage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const DormCreatePage()),
+    );
+  }
+
+  void _openInterestedPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const DormInterestedPage()),
+    );
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEventDatesForMonth(_displayMonth);
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0F0F0),
+
+      // ── Yellow top bar ────────────────────────────────────────────────────
+      appBar: AppBar(
+        backgroundColor: kYellow,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 64,
+        titleSpacing: 12,
+        title: Row(
+          children: [
+            // Search / channel pill
+            Expanded(
+              child: Container(
+                height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF9D6),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Dorm Life',
+                        style: TextStyle(
+                            color: Color(0xFF555555), fontSize: 15),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: kPurple),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Interested button
+            GestureDetector(
+              onTap: _openInterestedPage,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: kYellowBtn,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.star_border, size: 18, color: Colors.black),
+                    SizedBox(width: 6),
+                    Text(
+                      'Interested',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // ── Body ─────────────────────────────────────────────────────────────
+      body: Column(
+        children: [
+          // Calendar widget (week / month toggle)
+          DormCalendar(
+            selectedDate: _selectedDate,
+            onDateSelected: (d) => setState(() => _selectedDate = d),
+            onPreviousMonth: _goToPreviousMonth,
+            onNextMonth: _goToNextMonth,
+            eventDates: _eventDates,
+          ),
+
+          const SizedBox(height: 8),
+
+          // Event list for selected date
+          Expanded(
+            child: StreamBuilder<List<DormEvent>>(
+              stream: DormServices.eventsForDateStream(_selectedDate),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final events = snapshot.data ?? [];
+
+                if (events.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No events for this day.',
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  );
+                }
+
+                return StreamBuilder<Set<String>>(
+                  stream: InterestedDormService.interestedEventIdsStream(),
+                  builder: (context, intSnap) {
+                    final interestedIds = intSnap.data ?? {};
+
+                    return ListView.builder(
+                      padding:
+                          const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                      itemCount: events.length,
+                      itemBuilder: (context, i) {
+                        final event      = events[i];
+                        final isInterested =
+                            interestedIds.contains(event.id);
+
+                        return DormEvents(
+                          title: event.title,
+                          location: event.location,
+                          body: event.description,
+                          dateLabel: _dateLabel(_selectedDate),
+                          timeText: event.timeDisplay,
+                          isInterested: isInterested,
+                          color: event.category.color,
+                          eventId: event.id,
+                          eventOwnerId: event.id,
+                          flyerLink: event.links.isNotEmpty
+                              ? event.links
+                              : null,
+                          onInterestedTap: () async {
+                            try {
+                              await InterestedDormService.toggleInterested(
+                                eventId: event.id,
+                                isInterested: isInterested,
+                              );
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  content:
+                                      Text('Sign in to mark interest.'),
+                                  behavior: SnackBarBehavior.floating,
+                                ));
+                              }
+                            }
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+
+      // ── FAB → Add Dorm Details ────────────────────────────────────────────
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openCreatePage,
+        backgroundColor: kYellow,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.edit, color: Colors.black),
+      ),
+
+      // ── Bottom nav ────────────────────────────────────────────────────────
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: const [
+            Icon(Icons.home, color: kPurple, size: 28),
+            Icon(Icons.location_on_outlined, color: kPurple, size: 28),
+            Icon(Icons.chat_bubble_outline, color: kPurple, size: 28),
+            Icon(Icons.layers_outlined, color: kPurple, size: 28),
+            Icon(Icons.settings_outlined, color: kPurple, size: 28),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -18,7 +18,6 @@ class DormEvents extends StatelessWidget {
     required this.color,
     required this.eventId,
     required this.eventOwnerId,
-
     // optional fields
     this.flyerLink,
     this.registrationLink,
@@ -57,7 +56,6 @@ class DormEvents extends StatelessWidget {
     final Color textColor = isDarkCard ? Colors.white : Colors.black87;
     final Color subTextColor = isDarkCard ? Colors.white70 : Colors.black87;
     final Color iconColor = isDarkCard ? Colors.white : Colors.black87;
-    // ---
 
     // for event card box
     return Container(
@@ -84,6 +82,8 @@ class DormEvents extends StatelessWidget {
               ),
               child: Column(
                 children: [
+
+                  // ── Star button row ──
                   Row(
                     children: [
                       const Spacer(),
@@ -93,18 +93,16 @@ class DormEvents extends StatelessWidget {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            if (isInterested)
-                              const Icon(
-                                Icons.star_border,
-                                color: Colors.black,
-                                size: 24,
-                              ),
                             Icon(
-                              isInterested ? Icons.star : Icons.star_border,
-                              color:
-                                  isInterested
-                                      ? const Color(0xFFFFD700)
-                                      : iconColor,
+                              Icons.star,
+                              color: isInterested
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.transparent,
+                              size: 22,
+                            ),
+                            Icon(
+                              Icons.star_border,
+                              color: iconColor,
                               size: 22,
                             ),
                           ],
@@ -112,6 +110,8 @@ class DormEvents extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  // ── Title ──
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -121,9 +121,12 @@ class DormEvents extends StatelessWidget {
                       color: textColor,
                     ),
                   ),
+
                   const SizedBox(height: 10),
+
+                  // ── Location + time ──
                   Text(
-                    '$location , $timeText',
+                    '@ $location , $timeText',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
@@ -131,15 +134,10 @@ class DormEvents extends StatelessWidget {
                       color: subTextColor,
                     ),
                   ),
-                  if (body.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      body,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: subTextColor),
-                    ),
-                  ],
+
                   const SizedBox(height: 14),
+
+                  // ── Arrow button ──
                   Align(
                     alignment: Alignment.centerRight,
                     child: CircleAvatar(
@@ -148,35 +146,35 @@ class DormEvents extends StatelessWidget {
                         icon: const Icon(
                           Icons.arrow_forward,
                           color: Colors.black,
-                        ), // Work Review 3: To allow users to view more details in a new page
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (_) => ExpandedDormEventPg(
-                                    title: title,
-                                    location: location,
-                                    body: body,
-                                    dateLabel: dateLabel,
-                                    timeText: timeText,
-                                    eventId: eventId,
-                                    eventOwnerId: eventOwnerId,
-                                    flyerLink: flyerLink,
-                                    registrationLink: registrationLink,
-                                    imageUrl: imageUrl,
-                                    highlights: highlights,
-                                    interestedCount: interestedCount,
-                                    websiteLink: websiteLink,
-                                    instagramLink: instagramLink,
-                                    contactEmail: contactEmail,
-                                  ),
+                              builder: (_) => ExpandedDormEventPg(
+                                title: title,
+                                location: location,
+                                body: body,
+                                dateLabel: dateLabel,
+                                timeText: timeText,
+                                eventId: eventId,
+                                eventOwnerId: eventOwnerId,
+                                flyerLink: flyerLink,
+                                registrationLink: registrationLink,
+                                imageUrl: imageUrl,
+                                highlights: highlights,
+                                interestedCount: interestedCount,
+                                websiteLink: websiteLink,
+                                instagramLink: instagramLink,
+                                contactEmail: contactEmail,
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
                   ),
+
                 ],
               ),
             ),
