@@ -13,6 +13,8 @@ import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_cale
 import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_events.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_create.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_interested.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_create.dart';
+
 
 class DormHomePage extends StatefulWidget {
   const DormHomePage({super.key});
@@ -235,6 +237,7 @@ class _DormHomePageState extends State<DormHomePage> {
                           flyerLink: event.links.isNotEmpty
                               ? event.links
                               : null,
+                          imageUrl: event.imageUrl,
                           onInterestedTap: () async {
                             try {
                               await InterestedDormService.toggleInterested(
