@@ -7,7 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/services/interested_dorm_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
@@ -138,6 +137,16 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
+            // ── Event image ───────────────────────────────────────────────────────────
+          if (event.imageUrl != null && event.imageUrl!.isNotEmpty) ...[
+            Image.network(
+              event.imageUrl!,
+              width: double.infinity,
+              fit: BoxFit.contain,
+            ),
+            
+            const SizedBox(height: 24),
+],
             // ── Date / Location / Time card ───────────────────────────────
             Container(
               width: double.infinity,

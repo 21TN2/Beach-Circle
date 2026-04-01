@@ -3,10 +3,17 @@
 // dorm_create.dart
 // Add Dorm Details form — wired to DormServices & DormEvent model
 
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:image_picker/image_picker.dart';
+
 import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/services/dorm_services.dart';
+import 'package:beach_circle_flutter/community_goods/dorm_life/services/dl_cloudinary.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_category_dot.dart';
 
 class DormCreatePage extends StatefulWidget {
@@ -27,6 +34,10 @@ class _DormCreatePageState extends State<DormCreatePage> {
   DormCategory _selectedCategory = DormCategory.athletics;
   bool         _isAllDay         = false;
   bool         _isSubmitting     = false;
+
+  // Image state — XFile for both platforms, bytes for web preview
+  XFile?     _pickedFile;
+  Uint8List? _imageBytes;
 
   final _roomController       = TextEditingController();
   final _eventNameController  = TextEditingController();
@@ -77,6 +88,27 @@ class _DormCreatePageState extends State<DormCreatePage> {
     return '${names[d.weekday - 1]} ${months[d.month - 1]} ${d.day}';
   }
 
+  // ── Image picker ───────────────────────────────────────────────────────────
+
+  Future<void> _pickImage() async {
+    final XFile? picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    if (picked == null) return;
+
+    final bytes = kIsWeb ? await picked.readAsBytes() : null;
+
+    setState(() {
+      _pickedFile = picked;
+      _imageBytes = bytes;
+    });
+  }
+
+  void _removeImage() => setState(() {
+        _pickedFile = null;
+        _imageBytes = null;
+      });
+
   // ── Submit ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleSubmit() async {
@@ -92,6 +124,20 @@ class _DormCreatePageState extends State<DormCreatePage> {
     setState(() => _isSubmitting = true);
 
     try {
+      String? imageUrl;
+      if (_pickedFile != null) {
+        if (kIsWeb) {
+          imageUrl = await DormCloudinaryService.uploadImageBytes(
+            _imageBytes!,
+            _pickedFile!.name,
+          );
+        } else {
+          imageUrl = await DormCloudinaryService.uploadImage(
+            File(_pickedFile!.path),
+          );
+        }
+      }
+
       final selectedDay = _days[_selectedDayIndex];
       final building = DormServices.buildings.firstWhere(
         (b) => b['code'] == _selectedBuildingCode,
@@ -113,6 +159,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
         description: _eventDescController.text.trim(),
         links: _eventLinksController.text.trim(),
         category: _selectedCategory,
+        imageUrl: imageUrl,
       );
 
       await DormServices.addEvent(event);
@@ -194,6 +241,8 @@ class _DormCreatePageState extends State<DormCreatePage> {
                       controller: _eventLinksController,
                       keyboardType: TextInputType.url,
                     ),
+                    const SizedBox(height: 16),
+                    _buildImagePicker(),
                     const SizedBox(height: 24),
                     _buildActionButtons(),
                     const SizedBox(height: 32),
@@ -400,7 +449,6 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  // NEW PICKERCOL - troubleshooting
   Widget _pickerCol({
     required List<String> items,
     required int initialIndex,
@@ -434,6 +482,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
           .toList(),
     );
   }
+
   Widget _buildAllDayToggle() {
     return Row(
       children: [
@@ -537,6 +586,96 @@ class _DormCreatePageState extends State<DormCreatePage> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  // ── Image picker section ───────────────────────────────────────────────────
+
+  Widget _buildImagePicker() {
+    final hasImage = _pickedFile != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Event Image (Optional)',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        if (hasImage) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: AspectRatio(
+              aspectRatio: 16 / 6,
+              child: kIsWeb
+                  ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                  : Image.file(File(_pickedFile!.path), fit: BoxFit.cover),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.photo_library_outlined, size: 18),
+                  label: const Text('Change Image'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.black87,
+                    side: const BorderSide(color: Color(0xFFD8D8D8), width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _removeImage,
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Remove'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    side: BorderSide(color: Colors.red.shade200, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ] else
+          GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFD8D8D8), width: 1.5),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add_photo_alternate_outlined,
+                      size: 32, color: Colors.black45),
+                  SizedBox(height: 8),
+                  Text(
+                    'Tap to add an image',
+                    style: TextStyle(
+                      color: Colors.black45,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

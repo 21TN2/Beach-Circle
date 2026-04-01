@@ -49,6 +49,7 @@ class DormEvent {
   final String description;
   final String links;
   final DormCategory category;
+  final String? imageUrl;   // ← new
   bool isInterested;
 
   DormEvent({
@@ -64,6 +65,7 @@ class DormEvent {
     this.description = '',
     this.links = '',
     required this.category,
+    this.imageUrl,           // ← new
     this.isInterested = false,
   });
 
@@ -84,33 +86,34 @@ class DormEvent {
   // ── Firestore serialization ────────────────────────────────────────────────
 
   Map<String, dynamic> toMap() {
-  return {
-    'title': title,
-    'location': location,
-    'buildingCode': buildingCode,
-    'roomNumber': roomNumber,
-    'date': Timestamp.fromDate(date),
-    'startTime': Timestamp.fromDate(DateTime(
-      date.year, date.month, date.day,
-      startTime.hour, startTime.minute,
-    )),
-    'endTime': endTime == null ? null : Timestamp.fromDate(DateTime(
-      date.year, date.month, date.day,
-      endTime!.hour, endTime!.minute,
-    )),
-    'startHour': startTime.hour,
-    'startMinute': startTime.minute,
-    'endHour': endTime?.hour,
-    'endMinute': endTime?.minute,
-    'isAllDay': isAllDay,
-    'description': description,
-    'links': links,
-    'category': category.index,
-    'isInterested': isInterested,
-    'createdBy': FirebaseAuth.instance.currentUser?.uid ?? '',
-    'status': 'approved',
-  };
-}
+    return {
+      'title': title,
+      'location': location,
+      'buildingCode': buildingCode,
+      'roomNumber': roomNumber,
+      'date': Timestamp.fromDate(date),
+      'startTime': Timestamp.fromDate(DateTime(
+        date.year, date.month, date.day,
+        startTime.hour, startTime.minute,
+      )),
+      'endTime': endTime == null ? null : Timestamp.fromDate(DateTime(
+        date.year, date.month, date.day,
+        endTime!.hour, endTime!.minute,
+      )),
+      'startHour': startTime.hour,
+      'startMinute': startTime.minute,
+      'endHour': endTime?.hour,
+      'endMinute': endTime?.minute,
+      'isAllDay': isAllDay,
+      'description': description,
+      'links': links,
+      'category': category.index,
+      'imageUrl': imageUrl,  // ← new
+      'isInterested': isInterested,
+      'createdBy': FirebaseAuth.instance.currentUser?.uid ?? '',
+      'status': 'approved',
+    };
+  }
 
   factory DormEvent.fromFirestore(DocumentSnapshot doc) {
     final m = doc.data() as Map<String, dynamic>;
@@ -130,6 +133,7 @@ class DormEvent {
       description: m['description'] ?? '',
       links: m['links'] ?? '',
       category: DormCategory.values[m['category'] ?? 0],
+      imageUrl: m['imageUrl'],   // ← new
       isInterested: m['isInterested'] ?? false,
     );
   }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/dorm_event.dart';
 
+// dorm_services.dart
 // ── DormServices ─────────────────────────────────────────────────────────────
 // All Firestore reads/writes for dorm events live here.
 // Screens call these methods and use setState() to rebuild.

@@ -252,23 +252,17 @@ class ExpandedDormEventPg extends StatelessWidget {
             const SizedBox(height: 18),
 
             if (hasImage) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.network(
-                  imageUrl!,
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (_, __, ___) => Container(
-                        height: 180,
-                        color: _cardGrey,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "Image failed to load",
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
+              Image.network(
+                imageUrl!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Container(
+                  color: _cardGrey,
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "Image failed to load",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
               const SizedBox(height: 22),
