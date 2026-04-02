@@ -103,12 +103,13 @@ class _EBCalendarState extends State<EBCalendar> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: dots.take(3).map((color) {
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                    width: 6,
-                    height: 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1),
                     ),
                   );
                 }).toList(),

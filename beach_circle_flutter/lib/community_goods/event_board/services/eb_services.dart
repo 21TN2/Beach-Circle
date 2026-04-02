@@ -26,10 +26,7 @@ class EBServices {
         .where('date', isLessThan: Timestamp.fromDate(end))
         .orderBy('date')
         .snapshots()
-        .map((snap) {
-          debugPrint('=== EB snap docs count: ${snap.docs.length}');
-          return snap.docs.map(EBEvent.fromFirestore).toList();
-        });
+        .map((snap) => snap.docs.map(EBEvent.fromFirestore).toList());
   }
 
   // ── One-time fetch ─────────────────────────────────────────────────────────
@@ -60,7 +57,6 @@ class EBServices {
         'name': (m['name'] ?? '').toString(),
       };
     }).toList();
-
     list.sort((a, b) => a['name']!.compareTo(b['name']!));
     return list;
   }
@@ -102,5 +98,30 @@ class EBServices {
     final cats = events.map((e) => e.category).toSet().toList();
     cats.sort((a, b) => a.index.compareTo(b.index));
     return cats;
+  }
+
+  // ── Reactive month stream for calendar dots ────────────────────────────────
+
+  static Stream<Map<String, List<EBCategory>>> categoriesForMonthStream(DateTime month) {
+    final start = DateTime(month.year, month.month, 1);
+    final end = DateTime(month.year, month.month + 1, 1);
+    return _db
+        .collection(_collection)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThan: Timestamp.fromDate(end))
+        .snapshots()
+        .map((snap) {
+          final Map<String, Set<EBCategory>> map = {};
+          for (final doc in snap.docs) {
+            final event = EBEvent.fromFirestore(doc);
+            final key =
+                '${event.date.year}-${event.date.month.toString().padLeft(2, '0')}-${event.date.day.toString().padLeft(2, '0')}';
+            map.putIfAbsent(key, () => {}).add(event.category);
+          }
+          return map.map((key, cats) {
+            final sorted = cats.toList()..sort((a, b) => a.index.compareTo(b.index));
+            return MapEntry(key, sorted);
+          });
+        });
   }
 }

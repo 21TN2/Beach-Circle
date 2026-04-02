@@ -23,13 +23,6 @@ class _EBHomePageState extends State<EBHomePage> {
 
   DateTime _selectedDate = DateTime.now();
   DateTime _displayMonth = DateTime.now();
-  Map<String, List<Color>> _eventDates = {};
-
-  String _dateKey(DateTime d) {
-    final m   = d.month.toString().padLeft(2, '0');
-    final day = d.day.toString().padLeft(2, '0');
-    return '${d.year}-$m-$day';
-  }
 
   String _dateLabel(DateTime d) {
     const days = ['MON', 'TUES', 'WED', 'THURS', 'FRI', 'SAT', 'SUN'];
@@ -40,29 +33,16 @@ class _EBHomePageState extends State<EBHomePage> {
     return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
   }
 
-  Future<void> _loadEventDatesForMonth(DateTime month) async {
-    final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
-    final Map<String, List<Color>> result = {};
-    for (int d = 1; d <= daysInMonth; d++) {
-      final day  = DateTime(month.year, month.month, d);
-      final cats = await EBServices.categoriesOnDay(day);
-      if (cats.isNotEmpty) {
-        result[_dateKey(day)] = cats.map((c) => c.color).toList();
-      }
-    }
-    if (mounted) setState(() => _eventDates = result);
-  }
-
   void _goToPreviousMonth() {
-    final prev = DateTime(_displayMonth.year, _displayMonth.month - 1);
-    setState(() => _displayMonth = prev);
-    _loadEventDatesForMonth(prev);
+    setState(() {
+      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
+    });
   }
 
   void _goToNextMonth() {
-    final next = DateTime(_displayMonth.year, _displayMonth.month + 1);
-    setState(() => _displayMonth = next);
-    _loadEventDatesForMonth(next);
+    setState(() {
+      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
+    });
   }
 
   void _openCreatePage() {
@@ -82,7 +62,6 @@ class _EBHomePageState extends State<EBHomePage> {
   @override
   void initState() {
     super.initState();
-    _loadEventDatesForMonth(_displayMonth);
   }
 
   @override
@@ -166,22 +145,33 @@ class _EBHomePageState extends State<EBHomePage> {
         children: [
           // ── Background image ──────────────────────────────────────────
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/lb_background.png',
-              fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.50),
+            child: Opacity(
+              opacity: 0.25,
+              child: Image.asset(
+                'assets/images/lb_background.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
 
           // ── Foreground content ────────────────────────────────────────
           Column(
             children: [
-              EBCalendar(
-                selectedDate: _selectedDate,
-                onDateSelected: (d) => setState(() => _selectedDate = d),
-                onPreviousMonth: _goToPreviousMonth,
-                onNextMonth: _goToNextMonth,
-                eventDates: _eventDates,
+              StreamBuilder<Map<String, List<EBCategory>>>(
+                stream: EBServices.categoriesForMonthStream(_displayMonth),
+                builder: (context, dotSnap) {
+                  final catMap = dotSnap.data ?? {};
+                  final eventDates = catMap.map(
+                    (key, cats) => MapEntry(key, cats.map((c) => c.color).toList()),
+                  );
+                  return EBCalendar(
+                    selectedDate: _selectedDate,
+                    onDateSelected: (d) => setState(() => _selectedDate = d),
+                    onPreviousMonth: _goToPreviousMonth,
+                    onNextMonth: _goToNextMonth,
+                    eventDates: eventDates,
+                  );
+                },
               ),
 
           const SizedBox(height: 8),
