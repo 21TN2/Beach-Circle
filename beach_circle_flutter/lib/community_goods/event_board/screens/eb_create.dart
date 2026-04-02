@@ -11,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/eb_services.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/widgets/eb_category_dot.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/services/dl_cloudinary.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/services/eb_cloudinary.dart';
 
 class EBCreatePage extends StatefulWidget {
   const EBCreatePage({super.key});
@@ -124,11 +124,11 @@ class _EBCreatePageState extends State<EBCreatePage> {
       if (kIsWeb) {
         final bytes = await picked.readAsBytes();
         setState(() => _imageBytes = bytes);
-        url = await DormCloudinaryService.uploadImageBytes(bytes, picked.name);
+        url = await EBCloudinaryService.uploadImageBytes(bytes, picked.name);
       } else {
         final file = File(picked.path);
         setState(() => _imageFile = file);
-        url = await DormCloudinaryService.uploadImage(file);
+        url = await EBCloudinaryService.uploadImage(file);
       }
       setState(() => _uploadedImageUrl = url);
     } finally {
@@ -457,22 +457,6 @@ class _EBCreatePageState extends State<EBCreatePage> {
         ),
       ),
 
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: kPurple, size: 28),
-            Icon(Icons.location_on_outlined, color: kPurple, size: 28),
-            Icon(Icons.layers_outlined, color: kPurple, size: 28),
-            Icon(Icons.settings_outlined, color: kPurple, size: 28),
-          ],
-        ),
-      ),
     );
   }
 

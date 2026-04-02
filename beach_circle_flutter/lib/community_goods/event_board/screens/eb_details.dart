@@ -264,22 +264,6 @@ class EBDetailsPage extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: kPurple, size: 28),
-            Icon(Icons.location_on_outlined, color: kPurple, size: 28),
-            Icon(Icons.layers_outlined, color: kPurple, size: 28),
-            Icon(Icons.settings_outlined, color: kPurple, size: 28),
-          ],
-        ),
-      ),
     );
   }
 }

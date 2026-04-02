@@ -1,20 +1,21 @@
 // eb_cloudinary.dart
-// Handles image uploads for Event Board event creation.
-// Supports both mobile (File) and web (Uint8List bytes).
+// Event Board Cloudinary Service
+// Handles image uploads (jpg/png) for event board event creation
+// Supports both mobile (File) and web (Uint8List bytes)
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-class EbCloudinaryService {
+class EBCloudinaryService {
   static const _cloudName    = 'dif9wnnci';
   static const _uploadPreset = 'beach_circle_screenshots';
   static final  _uri = Uri.parse(
     'https://api.cloudinary.com/v1_1/$_cloudName/image/upload',
   );
 
-  // ── Mobile: upload from File ─────────────────────────────────────────────
+  // ── Mobile: upload from File ───────────────────────────────────────────────
   static Future<String?> uploadImage(File imageFile) async {
     final request = http.MultipartRequest('POST', _uri)
       ..fields['upload_preset'] = _uploadPreset
@@ -29,7 +30,7 @@ class EbCloudinaryService {
     return null;
   }
 
-  // ── Web: upload from Uint8List bytes ────────────────────────────────────
+  // ── Web: upload from Uint8List bytes ──────────────────────────────────────
   static Future<String?> uploadImageBytes(Uint8List bytes, String filename) async {
     final request = http.MultipartRequest('POST', _uri)
       ..fields['upload_preset'] = _uploadPreset

@@ -9,7 +9,6 @@ import 'hourscap_screen.dart';
 import 'misc_screen.dart';
 import 'addres_screen.dart';
 import 'settings_screen.dart';
-import 'eventboard_screen.dart';
 
 //import 'bathroom_finder.dart';
 //import 'map/map_screen.dart';
@@ -42,6 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
   final GlobalKey<NavigatorState> _dormNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _ebNavKey = GlobalKey<NavigatorState>();
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -290,11 +290,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildEventBoardTab() {
+  return Navigator(
+    key: _ebNavKey,
+    onGenerateRoute: (settings) {
+      return MaterialPageRoute(builder: (_) => const EventBoardScreen());
+    },
+  );
+}
+
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
-          return const EventBoardScreen();
+        return _buildEventBoardTab();
         case "dormlife":
           return _buildDormTab();
         case "hourscap":

@@ -17,8 +17,6 @@ class EBHomePage extends StatefulWidget {
 }
 
 class _EBHomePageState extends State<EBHomePage> {
-  // Event Board uses yellow app bar (same as Dorm Life per screenshots)
-  // with purple bottom nav — keeping CSULB brand consistency
   static const Color kYellow    = Color(0xFFFFCC00);
   static const Color kYellowBtn = Color(0xFFD4A800);
   static const Color kPurple    = Color(0xFF3B3599);
@@ -164,15 +162,27 @@ class _EBHomePageState extends State<EBHomePage> {
         ),
       ),
 
-      body: Column(
+      body: Stack(
         children: [
-          EBCalendar(
-            selectedDate: _selectedDate,
-            onDateSelected: (d) => setState(() => _selectedDate = d),
-            onPreviousMonth: _goToPreviousMonth,
-            onNextMonth: _goToNextMonth,
-            eventDates: _eventDates,
+          // ── Background image ──────────────────────────────────────────
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/lb_background.png',
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.50),
+            ),
           ),
+
+          // ── Foreground content ────────────────────────────────────────
+          Column(
+            children: [
+              EBCalendar(
+                selectedDate: _selectedDate,
+                onDateSelected: (d) => setState(() => _selectedDate = d),
+                onPreviousMonth: _goToPreviousMonth,
+                onNextMonth: _goToNextMonth,
+                eventDates: _eventDates,
+              ),
 
           const SizedBox(height: 8),
 
@@ -245,6 +255,8 @@ class _EBHomePageState extends State<EBHomePage> {
               },
             ),
           ),
+            ],
+          ),
         ],
       ),
 
@@ -253,24 +265,6 @@ class _EBHomePageState extends State<EBHomePage> {
         backgroundColor: kYellow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.edit, color: Colors.black),
-      ),
-
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: kPurple, size: 28),
-            Icon(Icons.location_on_outlined, color: kPurple, size: 28),
-            Icon(Icons.chat_bubble_outline, color: kPurple, size: 28),
-            Icon(Icons.layers_outlined, color: kPurple, size: 28),
-            Icon(Icons.settings_outlined, color: kPurple, size: 28),
-          ],
-        ),
       ),
     );
   }
