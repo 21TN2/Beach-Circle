@@ -9,14 +9,16 @@ import 'package:beach_circle_flutter/community_goods/event_board/widgets/eb_even
 import 'package:beach_circle_flutter/community_goods/event_board/screens/eb_create.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/screens/eb_interested.dart';
 
-class EbHomePage extends StatefulWidget {
-  const EbHomePage({super.key});
+class EBHomePage extends StatefulWidget {
+  const EBHomePage({super.key});
 
   @override
-  State<EbHomePage> createState() => _EbHomePageState();
+  State<EBHomePage> createState() => _EBHomePageState();
 }
 
-class _EbHomePageState extends State<EbHomePage> {
+class _EBHomePageState extends State<EBHomePage> {
+  // Event Board uses yellow app bar (same as Dorm Life per screenshots)
+  // with purple bottom nav — keeping CSULB brand consistency
   static const Color kYellow    = Color(0xFFFFCC00);
   static const Color kYellowBtn = Color(0xFFD4A800);
   static const Color kPurple    = Color(0xFF3B3599);
@@ -41,12 +43,11 @@ class _EbHomePageState extends State<EbHomePage> {
   }
 
   Future<void> _loadEventDatesForMonth(DateTime month) async {
-    final daysInMonth =
-        DateUtils.getDaysInMonth(month.year, month.month);
+    final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
     final Map<String, List<Color>> result = {};
     for (int d = 1; d <= daysInMonth; d++) {
       final day  = DateTime(month.year, month.month, d);
-      final cats = await EbServices.categoriesOnDay(day);
+      final cats = await EBServices.categoriesOnDay(day);
       if (cats.isNotEmpty) {
         result[_dateKey(day)] = cats.map((c) => c.color).toList();
       }
@@ -55,15 +56,13 @@ class _EbHomePageState extends State<EbHomePage> {
   }
 
   void _goToPreviousMonth() {
-    final prev =
-        DateTime(_displayMonth.year, _displayMonth.month - 1);
+    final prev = DateTime(_displayMonth.year, _displayMonth.month - 1);
     setState(() => _displayMonth = prev);
     _loadEventDatesForMonth(prev);
   }
 
   void _goToNextMonth() {
-    final next =
-        DateTime(_displayMonth.year, _displayMonth.month + 1);
+    final next = DateTime(_displayMonth.year, _displayMonth.month + 1);
     setState(() => _displayMonth = next);
     _loadEventDatesForMonth(next);
   }
@@ -71,14 +70,14 @@ class _EbHomePageState extends State<EbHomePage> {
   void _openCreatePage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const EbCreatePage()),
+      MaterialPageRoute(builder: (_) => const EBCreatePage()),
     );
   }
 
   void _openInterestedPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const EbInterestedPage()),
+      MaterialPageRoute(builder: (_) => const EBInterestedPage()),
     );
   }
 
@@ -100,7 +99,7 @@ class _EbHomePageState extends State<EbHomePage> {
         toolbarHeight: 64,
         titleSpacing: 12,
         title: StreamBuilder<Set<String>>(
-          stream: InterestedEbService.interestedEventIdsStream(),
+          stream: InterestedEBService.interestedEventIdsStream(),
           builder: (context, intSnap) {
             final hasInterested = (intSnap.data ?? {}).isNotEmpty;
 
@@ -109,8 +108,7 @@ class _EbHomePageState extends State<EbHomePage> {
                 Expanded(
                   child: Container(
                     height: 42,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF9D6),
                       borderRadius: BorderRadius.circular(10),
@@ -121,8 +119,7 @@ class _EbHomePageState extends State<EbHomePage> {
                           child: Text(
                             'Event Board',
                             style: TextStyle(
-                                color: Color(0xFF555555),
-                                fontSize: 15),
+                                color: Color(0xFF555555), fontSize: 15),
                           ),
                         ),
                         Icon(Icons.chevron_right, color: kPurple),
@@ -143,9 +140,7 @@ class _EbHomePageState extends State<EbHomePage> {
                     child: Row(
                       children: [
                         Icon(
-                          hasInterested
-                              ? Icons.star
-                              : Icons.star_border,
+                          hasInterested ? Icons.star : Icons.star_border,
                           size: 18,
                           color: hasInterested
                               ? const Color(0xFFFFD700)
@@ -171,7 +166,7 @@ class _EbHomePageState extends State<EbHomePage> {
 
       body: Column(
         children: [
-          EbCalendar(
+          EBCalendar(
             selectedDate: _selectedDate,
             onDateSelected: (d) => setState(() => _selectedDate = d),
             onPreviousMonth: _goToPreviousMonth,
@@ -182,13 +177,11 @@ class _EbHomePageState extends State<EbHomePage> {
           const SizedBox(height: 8),
 
           Expanded(
-            child: StreamBuilder<List<EventBoardEvent>>(
-              stream: EbServices.eventsForDateStream(_selectedDate),
+            child: StreamBuilder<List<EBEvent>>(
+              stream: EBServices.eventsForDateStream(_selectedDate),
               builder: (context, snapshot) {
-                if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator());
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 final events = snapshot.data ?? [];
@@ -197,28 +190,24 @@ class _EbHomePageState extends State<EbHomePage> {
                   return const Center(
                     child: Text(
                       'No events for this day.',
-                      style:
-                          TextStyle(color: Colors.grey, fontSize: 15),
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
                     ),
                   );
                 }
 
                 return StreamBuilder<Set<String>>(
-                  stream: InterestedEbService
-                      .interestedEventIdsStream(),
+                  stream: InterestedEBService.interestedEventIdsStream(),
                   builder: (context, intSnap) {
                     final interestedIds = intSnap.data ?? {};
 
                     return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(
-                          16, 4, 16, 100),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                       itemCount: events.length,
                       itemBuilder: (context, i) {
                         final event = events[i];
-                        final isInterested =
-                            interestedIds.contains(event.id);
+                        final isInterested = interestedIds.contains(event.id);
 
-                        return EbEvents(
+                        return EBEvents(
                           title: event.title,
                           location: event.location,
                           body: event.description,
@@ -228,18 +217,13 @@ class _EbHomePageState extends State<EbHomePage> {
                           color: event.category.color,
                           eventId: event.id,
                           eventOwnerId: event.createdBy ?? '',
-                          flyerLink: event.links == 'null'
-                              ? null
-                              : event.links,
+                          flyerLink: event.links == 'null' ? null : event.links,
                           imageUrl: event.imageUrl,
                           interestedCount: event.interestedCount,
-                          roomNumber: event.roomNumber.isEmpty
-                              ? null
-                              : event.roomNumber,
+                          roomNumber: event.roomNumber.isEmpty ? null : event.roomNumber,
                           onInterestedTap: () async {
                             try {
-                              await InterestedEbService
-                                  .toggleInterested(
+                              await InterestedEBService.toggleInterested(
                                 eventId: event.id,
                                 isInterested: isInterested,
                               );
@@ -247,10 +231,8 @@ class _EbHomePageState extends State<EbHomePage> {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(const SnackBar(
-                                  content: Text(
-                                      'Sign in to mark interest.'),
-                                  behavior:
-                                      SnackBarBehavior.floating,
+                                  content: Text('Sign in to mark interest.'),
+                                  behavior: SnackBarBehavior.floating,
                                 ));
                               }
                             }
@@ -269,16 +251,14 @@ class _EbHomePageState extends State<EbHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreatePage,
         backgroundColor: kYellow,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.edit, color: Colors.black),
       ),
 
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          border:
-              Border(top: BorderSide(color: Color(0xFFD8D8D8))),
+          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
         ),
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(

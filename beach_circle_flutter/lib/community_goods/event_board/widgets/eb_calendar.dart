@@ -1,8 +1,10 @@
 // eb_calendar.dart
+// Event Board Calendar — expanded and weekly view
+
 import 'package:flutter/material.dart';
 
-class EbCalendar extends StatefulWidget {
-  const EbCalendar({
+class EBCalendar extends StatefulWidget {
+  const EBCalendar({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
@@ -18,10 +20,10 @@ class EbCalendar extends StatefulWidget {
   final Map<String, List<Color>> eventDates;
 
   @override
-  State<EbCalendar> createState() => _EbCalendarState();
+  State<EBCalendar> createState() => _EBCalendarState();
 }
 
-class _EbCalendarState extends State<EbCalendar> {
+class _EBCalendarState extends State<EBCalendar> {
   bool expanded = false;
 
   String monthLabel(DateTime date) {
@@ -68,9 +70,7 @@ class _EbCalendarState extends State<EbCalendar> {
       days.add(null);
     }
     for (int day = 1; day <= daysInMonth; day++) {
-      days.add(
-        DateTime(widget.selectedDate.year, widget.selectedDate.month, day),
-      );
+      days.add(DateTime(widget.selectedDate.year, widget.selectedDate.month, day));
     }
     return days;
   }
@@ -172,6 +172,7 @@ class _EbCalendarState extends State<EbCalendar> {
             ],
           ),
           const SizedBox(height: 8),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: weekdayLabels
@@ -189,7 +190,9 @@ class _EbCalendarState extends State<EbCalendar> {
                     ))
                 .toList(),
           ),
+
           const SizedBox(height: 8),
+
           if (!expanded)
             SizedBox(
               height: 60,
@@ -204,6 +207,7 @@ class _EbCalendarState extends State<EbCalendar> {
                 }).toList(),
               ),
             ),
+
           if (expanded)
             GridView.builder(
               shrinkWrap: true,

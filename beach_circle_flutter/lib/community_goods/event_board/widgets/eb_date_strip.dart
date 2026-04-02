@@ -1,16 +1,18 @@
 // eb_date_strip.dart
+// Horizontally scrollable date strip for Event Board.
+
 import 'package:flutter/material.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/eb_services.dart';
 import 'eb_category_dot.dart';
 
-class EbDateStrip extends StatefulWidget {
+class EBDateStrip extends StatefulWidget {
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateSelected;
   final DateTime startDate;
   final int dayRange;
 
-  EbDateStrip({
+  EBDateStrip({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
@@ -19,17 +21,15 @@ class EbDateStrip extends StatefulWidget {
   }) : startDate = startDate ?? selectedDate.subtract(const Duration(days: 3));
 
   @override
-  State<EbDateStrip> createState() => _EbDateStripState();
+  State<EBDateStrip> createState() => _EBDateStripState();
 }
 
-class _EbDateStripState extends State<EbDateStrip> {
+class _EBDateStripState extends State<EBDateStrip> {
   late ScrollController _scroll;
   late List<DateTime> _days;
-
-  final Map<String, List<EventBoardCategory>> _dotCache = {};
+  final Map<String, List<EBCategory>> _dotCache = {};
 
   static const double _itemWidth = 64.0;
-
   static const _dayNames = ['MON', 'TUES', 'WED', 'THURS', 'FRI', 'SAT', 'SUN'];
 
   @override
@@ -56,7 +56,7 @@ class _EbDateStripState extends State<EbDateStrip> {
     for (final day in _days) {
       final key = '${day.year}-${day.month}-${day.day}';
       if (_dotCache.containsKey(key)) continue;
-      final cats = await EbServices.categoriesOnDay(day);
+      final cats = await EBServices.categoriesOnDay(day);
       if (mounted) setState(() => _dotCache[key] = cats);
     }
   }
@@ -130,7 +130,7 @@ class _EbDateStripState extends State<EbDateStrip> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  EbCategoryDotRow(categories: cats, dotSize: 9),
+                  EBCategoryDotRow(categories: cats, dotSize: 9),
                 ],
               ),
             ),

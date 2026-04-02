@@ -9,18 +9,17 @@ import 'package:beach_circle_flutter/community_goods/event_board/services/eb_ser
 import 'package:beach_circle_flutter/community_goods/event_board/services/interested_eb_service.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/widgets/eb_events.dart';
 
-class EbInterestedPage extends StatelessWidget {
-  const EbInterestedPage({super.key});
+class EBInterestedPage extends StatelessWidget {
+  const EBInterestedPage({super.key});
 
-  static const Color kYellow    = Color(0xFFFFCC00);
-  static const Color kYellowBtn = Color(0xFFD4A800);
-  static const Color kPurple    = Color(0xFF3B3599);
+  static const Color kYellow = Color(0xFFFFCC00);
+  static const Color kPurple = Color(0xFF3B3599);
 
   String _dateLabel(DateTime d) {
-    const days = ['MON', 'TUES', 'WED', 'THURS', 'FRI', 'SAT', 'SUN'];
+    const days = ['MON','TUES','WED','THURS','FRI','SAT','SUN'];
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+      'JAN','FEB','MAR','APR','MAY','JUN',
+      'JUL','AUG','SEP','OCT','NOV','DEC',
     ];
     return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
   }
@@ -55,8 +54,7 @@ class EbInterestedPage extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Event Board',
-                        style:
-                            TextStyle(color: Color(0xFF555555), fontSize: 15),
+                        style: TextStyle(color: Color(0xFF555555), fontSize: 15),
                       ),
                     ),
                     Icon(Icons.chevron_right, color: kPurple),
@@ -96,7 +94,7 @@ class EbInterestedPage extends StatelessWidget {
 
           Expanded(
             child: StreamBuilder<Set<String>>(
-              stream: InterestedEbService.interestedEventIdsStream(),
+              stream: InterestedEBService.interestedEventIdsStream(),
               builder: (context, intSnap) {
                 if (intSnap.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -110,9 +108,8 @@ class EbInterestedPage extends StatelessWidget {
 
                 return StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
-                      .collection('board_events')
-                      .where(FieldPath.documentId,
-                          whereIn: interestedIds.toList())
+                      .collection('eb_events')
+                      .where(FieldPath.documentId, whereIn: interestedIds.toList())
                       .snapshots(),
                   builder: (context, eventSnap) {
                     if (eventSnap.connectionState == ConnectionState.waiting) {
@@ -134,7 +131,7 @@ class EbInterestedPage extends StatelessWidget {
                     if (docs.isEmpty) return _buildEmptyState();
 
                     final events = docs
-                        .map((doc) => EventBoardEvent.fromFirestore(doc))
+                        .map((doc) => EBEvent.fromFirestore(doc))
                         .toList()
                       ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -143,10 +140,9 @@ class EbInterestedPage extends StatelessWidget {
                       itemCount: events.length,
                       itemBuilder: (context, i) {
                         final event = events[i];
-                        final isInterested =
-                            interestedIds.contains(event.id);
+                        final isInterested = interestedIds.contains(event.id);
 
-                        return EbEvents(
+                        return EBEvents(
                           title: event.title,
                           location: event.location,
                           body: event.description,
@@ -161,7 +157,7 @@ class EbInterestedPage extends StatelessWidget {
                           interestedCount: event.interestedCount,
                           onInterestedTap: () async {
                             try {
-                              await InterestedEbService.toggleInterested(
+                              await InterestedEBService.toggleInterested(
                                 eventId: event.id,
                                 isInterested: isInterested,
                               );
@@ -169,8 +165,7 @@ class EbInterestedPage extends StatelessWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text(
-                                        'Could not update interest.'),
+                                    content: Text('Could not update interest.'),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
@@ -218,9 +213,10 @@ class EbInterestedPage extends StatelessWidget {
           Text(
             'No interested events yet.',
             style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
           ),
           SizedBox(height: 8),
           Text(

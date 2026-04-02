@@ -4,12 +4,12 @@ import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event
 
 // ── Single dot ───────────────────────────────────────────────────────────────
 
-class EbCategoryDot extends StatelessWidget {
-  final EventBoardCategory category;
+class EBCategoryDot extends StatelessWidget {
+  final EBCategory category;
   final double size;
   final bool isSelected;
 
-  const EbCategoryDot({
+  const EBCategoryDot({
     super.key,
     required this.category,
     this.size = 10,
@@ -35,12 +35,12 @@ class EbCategoryDot extends StatelessWidget {
 
 // ── Row of dots for a day ────────────────────────────────────────────────────
 
-class EbCategoryDotRow extends StatelessWidget {
-  final List<EventBoardCategory> categories;
+class EBCategoryDotRow extends StatelessWidget {
+  final List<EBCategory> categories;
   final double dotSize;
   final double spacing;
 
-  const EbCategoryDotRow({
+  const EBCategoryDotRow({
     super.key,
     required this.categories,
     this.dotSize = 10,
@@ -55,7 +55,7 @@ class EbCategoryDotRow extends StatelessWidget {
       children: categories
           .map((c) => Padding(
                 padding: EdgeInsets.only(right: spacing),
-                child: EbCategoryDot(category: c, size: dotSize),
+                child: EBCategoryDot(category: c, size: dotSize),
               ))
           .toList(),
     );
@@ -64,12 +64,12 @@ class EbCategoryDotRow extends StatelessWidget {
 
 // ── 3-dot category selector (used in Add Event form header) ──────────────────
 
-class EbCategorySelector extends StatelessWidget {
-  final EventBoardCategory selected;
-  final ValueChanged<EventBoardCategory> onChanged;
+class EBCategorySelector extends StatelessWidget {
+  final EBCategory selected;
+  final ValueChanged<EBCategory> onChanged;
   final double dotSize;
 
-  const EbCategorySelector({
+  const EBCategorySelector({
     super.key,
     required this.selected,
     required this.onChanged,
@@ -78,24 +78,35 @@ class EbCategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
-      children: EventBoardCategory.values.map((cat) {
-        return GestureDetector(
-          onTap: () => onChanged(cat),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Tooltip(
-              message: cat.label,
-              child: EbCategoryDot(
-                category: cat,
-                size: dotSize,
-                isSelected: cat == selected,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: EBCategory.values.map((cat) {
+            return GestureDetector(
+              onTap: () => onChanged(cat),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: EBCategoryDot(
+                  category: cat,
+                  size: dotSize,
+                  isSelected: cat == selected,
+                ),
               ),
-            ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          selected.label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: selected.color,
           ),
-        );
-      }).toList(),
+        ),
+      ],
     );
   }
 }

@@ -3,39 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-enum EventBoardCategory {
-  athletics,    // 🟡 Yellow  – spirit / sports
-  organization, // 🟠 Orange  – club / org
-  academic,     // 🟢 Olive   – academic / workshops
+enum EBCategory {
+  sports,    // 🔘 Grey    – sports / athletics
+  clubs,     // 🟤 Beige   – club events
+  asi,       // 🟦 Pine Blue – ASI events
 }
 
-extension EventBoardCategoryExtension on EventBoardCategory {
+extension EBCategoryExtension on EBCategory {
   Color get color {
     switch (this) {
-      case EventBoardCategory.athletics:
-        return const Color(0xFFFFCC00);
-      case EventBoardCategory.organization:
-        return const Color(0xFFF5A623);
-      case EventBoardCategory.academic:
-        return const Color(0xFF8DB600);
+      case EBCategory.sports:
+        return const Color(0xFF757780);
+      case EBCategory.clubs:
+        return const Color(0xFFD2CCA1);
+      case EBCategory.asi:
+        return const Color(0xFF387780);
     }
   }
 
   String get label {
     switch (this) {
-      case EventBoardCategory.athletics:
-        return 'Athletics';
-      case EventBoardCategory.organization:
-        return 'Organization';
-      case EventBoardCategory.academic:
-        return 'Academic';
+      case EBCategory.sports:
+        return 'Sports';
+      case EBCategory.clubs:
+        return 'Clubs';
+      case EBCategory.asi:
+        return 'ASI Events';
     }
   }
 }
 
-// ── EventBoardEvent model ────────────────────────────────────────────────────
+// ── EBEvent model ─────────────────────────────────────────────────────────────
 
-class EventBoardEvent {
+class EBEvent {
   final String id;
   final String title;
   final String location;
@@ -43,17 +43,17 @@ class EventBoardEvent {
   final String roomNumber;
   final DateTime date;
   final TimeOfDay startTime;
-  final TimeOfDay? endTime; // null = all-day
+  final TimeOfDay? endTime;
   final bool isAllDay;
   final String description;
   final String links;
-  final EventBoardCategory category;
+  final EBCategory category;
   final String? imageUrl;
   final String? createdBy;
   bool isInterested;
   final int? interestedCount;
 
-  EventBoardEvent({
+  EBEvent({
     required this.id,
     required this.title,
     required this.location,
@@ -86,7 +86,7 @@ class EventBoardEvent {
         : '${fmt(startTime)} - ${fmt(endTime!)}';
   }
 
-  // ── Firestore serialization ──────────────────────────────────────────────
+  // ── Firestore serialization ────────────────────────────────────────────────
 
   Map<String, dynamic> toMap() {
     return {
@@ -99,12 +99,10 @@ class EventBoardEvent {
         date.year, date.month, date.day,
         startTime.hour, startTime.minute,
       )),
-      'endTime': endTime == null
-          ? null
-          : Timestamp.fromDate(DateTime(
-              date.year, date.month, date.day,
-              endTime!.hour, endTime!.minute,
-            )),
+      'endTime': endTime == null ? null : Timestamp.fromDate(DateTime(
+        date.year, date.month, date.day,
+        endTime!.hour, endTime!.minute,
+      )),
       'startHour': startTime.hour,
       'startMinute': startTime.minute,
       'endHour': endTime?.hour,
@@ -120,7 +118,7 @@ class EventBoardEvent {
     };
   }
 
-  factory EventBoardEvent.fromFirestore(DocumentSnapshot doc) {
+  factory EBEvent.fromFirestore(DocumentSnapshot doc) {
     final m = doc.data() as Map<String, dynamic>;
 
     final rawLinks = [
@@ -133,7 +131,7 @@ class EventBoardEvent {
       orElse: () => '',
     );
 
-    return EventBoardEvent(
+    return EBEvent(
       id: doc.id,
       title: (m['title'] ?? '').toString(),
       location: (m['location'] ?? '').toString(),
@@ -152,7 +150,7 @@ class EventBoardEvent {
       links: (rawLinks == null || rawLinks.toString().trim() == 'null')
           ? ''
           : rawLinks.toString().trim(),
-      category: EventBoardCategory.values[m['category'] ?? 0],
+      category: EBCategory.values[m['category'] ?? 0],
       imageUrl: m['imageUrl'],
       createdBy: (m['createdBy'] ?? '').toString(),
       interestedCount: m['interestedCount'] as int?,

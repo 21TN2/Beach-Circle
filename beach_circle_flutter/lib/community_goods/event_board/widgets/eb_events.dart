@@ -1,9 +1,11 @@
 // eb_events.dart
+// Event card widget for Event Board
+
 import 'package:flutter/material.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/screens/expanded_eb_event.dart';
 
-class EbEvents extends StatelessWidget {
-  const EbEvents({
+class EBEvents extends StatelessWidget {
+  const EBEvents({
     super.key,
     required this.title,
     required this.location,
@@ -143,7 +145,7 @@ class EbEvents extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ExpandedEbEventPg(
+                              builder: (_) => ExpandedEBEventPg(
                                 title: title,
                                 location: location,
                                 body: body,

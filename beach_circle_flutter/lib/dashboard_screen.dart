@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notification_test_screen.dart';
 import 'dormlife_screen.dart';
-import 'events_screen.dart';
+import 'eventboard_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';

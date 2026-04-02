@@ -1,9 +1,11 @@
 // interested_eb_service.dart
+// Interested Star + Interested Count for Event Board
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class InterestedEbService {
-  InterestedEbService._();
+class InterestedEBService {
+  InterestedEBService._();
 
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -13,7 +15,7 @@ class InterestedEbService {
     return _firestore
         .collection('users')
         .doc(uid)
-        .collection('interestedBoardEvents');
+        .collection('interestedEBEvents');
   }
 
   static Stream<Set<String>> interestedEventIdsStream() {
@@ -22,7 +24,7 @@ class InterestedEbService {
     return _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('interestedBoardEvents')
+        .collection('interestedEBEvents')
         .snapshots()
         .map((snap) => snap.docs.map((doc) => doc.id).toSet());
   }
@@ -39,10 +41,10 @@ class InterestedEbService {
     final userInterestedRef = _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('interestedBoardEvents')
+        .collection('interestedEBEvents')
         .doc(eventId);
 
-    final eventRef = _firestore.collection('board_events').doc(eventId);
+    final eventRef = _firestore.collection('eb_events').doc(eventId);
 
     await _firestore.runTransaction((transaction) async {
       final eventSnap = await transaction.get(eventRef);
@@ -53,6 +55,7 @@ class InterestedEbService {
 
       final eventData = eventSnap.data();
       final rawCount = eventData?['interestedCount'];
+
       final currentCount =
           rawCount is num
               ? rawCount.toInt()

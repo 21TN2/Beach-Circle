@@ -3,21 +3,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/eb_event.dart';
 
-class EbServices {
+class EBServices {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
-  static const String _collection = 'board_events';
+  static const String _collection = 'eb_events';
 
-  // ── Stream (real-time) ───────────────────────────────────────────────────
+  // ── Stream (real-time) ─────────────────────────────────────────────────────
 
-  static Stream<List<EventBoardEvent>> eventsStream() {
+  static Stream<List<EBEvent>> eventsStream() {
     return _db
         .collection(_collection)
         .orderBy('date')
         .snapshots()
-        .map((snap) => snap.docs.map(EventBoardEvent.fromFirestore).toList());
+        .map((snap) => snap.docs.map(EBEvent.fromFirestore).toList());
   }
 
-  static Stream<List<EventBoardEvent>> eventsForDateStream(DateTime date) {
+  static Stream<List<EBEvent>> eventsForDateStream(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
     return _db
@@ -27,14 +27,14 @@ class EbServices {
         .orderBy('date')
         .snapshots()
         .map((snap) {
-          debugPrint('=== [EB] snap docs count: ${snap.docs.length}');
-          return snap.docs.map(EventBoardEvent.fromFirestore).toList();
+          debugPrint('=== EB snap docs count: ${snap.docs.length}');
+          return snap.docs.map(EBEvent.fromFirestore).toList();
         });
   }
 
-  // ── One-time fetch ───────────────────────────────────────────────────────
+  // ── One-time fetch ─────────────────────────────────────────────────────────
 
-  static Future<List<EventBoardEvent>> fetchEventsForDate(DateTime date) async {
+  static Future<List<EBEvent>> fetchEventsForDate(DateTime date) async {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
     final snap = await _db
@@ -43,10 +43,10 @@ class EbServices {
         .where('date', isLessThan: Timestamp.fromDate(end))
         .orderBy('date')
         .get();
-    return snap.docs.map(EventBoardEvent.fromFirestore).toList();
+    return snap.docs.map(EBEvent.fromFirestore).toList();
   }
 
-  // ── Fetch buildings from Firestore ───────────────────────────────────────
+  // ── Fetch buildings from Firestore ─────────────────────────────────────────
 
   static Future<List<Map<String, String>>> fetchBuildings() async {
     final snap = await _db
@@ -60,17 +60,18 @@ class EbServices {
         'name': (m['name'] ?? '').toString(),
       };
     }).toList();
+
     list.sort((a, b) => a['name']!.compareTo(b['name']!));
     return list;
   }
 
-  // ── Create ───────────────────────────────────────────────────────────────
+  // ── Create ─────────────────────────────────────────────────────────────────
 
-  static Future<void> addEvent(EventBoardEvent event) async {
+  static Future<void> addEvent(EBEvent event) async {
     await _db.collection(_collection).add(event.toMap());
   }
 
-  // ── Update interested ────────────────────────────────────────────────────
+  // ── Update interested ──────────────────────────────────────────────────────
 
   static Future<void> toggleInterested(String eventId, bool current) async {
     await _db
@@ -79,13 +80,13 @@ class EbServices {
         .update({'isInterested': !current});
   }
 
-  // ── Delete ───────────────────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────────
 
   static Future<void> deleteEvent(String eventId) async {
     await _db.collection(_collection).doc(eventId).delete();
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   static Future<String> buildingDisplayName(String code) async {
     final buildings = await fetchBuildings();
@@ -96,7 +97,7 @@ class EbServices {
     return '${match['code']} - ${match['name']}';
   }
 
-  static Future<List<EventBoardCategory>> categoriesOnDay(DateTime day) async {
+  static Future<List<EBCategory>> categoriesOnDay(DateTime day) async {
     final events = await fetchEventsForDate(day);
     final cats = events.map((e) => e.category).toSet().toList();
     cats.sort((a, b) => a.index.compareTo(b.index));

@@ -5,16 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/interested_eb_service.dart';
+import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 
-class EbDetailsPage extends StatelessWidget {
-  const EbDetailsPage({
+class EBDetailsPage extends StatelessWidget {
+  const EBDetailsPage({
     super.key,
     required this.event,
     required this.isInterested,
     required this.onInterestedTap,
   });
 
-  final EventBoardEvent event;
+  final EBEvent event;
   final bool isInterested;
   final VoidCallback onInterestedTap;
 
@@ -25,8 +26,8 @@ class EbDetailsPage extends StatelessWidget {
 
   String get _dateLabel {
     const months = [
-      'Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
-      'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.',
+      'Jan.','Feb.','Mar.','Apr.','May','Jun.',
+      'Jul.','Aug.','Sep.','Oct.','Nov.','Dec.',
     ];
     return '${months[event.date.month - 1]} ${event.date.day}';
   }
@@ -38,6 +39,7 @@ class EbDetailsPage extends StatelessWidget {
             trimmed.startsWith('mailto:'))
         ? trimmed
         : 'https://$trimmed';
+
     final uri = Uri.parse(formatted);
     final launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
     if (!launched && context.mounted) {
@@ -80,8 +82,8 @@ class EbDetailsPage extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Event Board',
-                        style:
-                            TextStyle(color: Color(0xFF555555), fontSize: 15),
+                        style: TextStyle(
+                            color: Color(0xFF555555), fontSize: 15),
                       ),
                     ),
                     Icon(Icons.chevron_right, color: kPurple),
@@ -112,6 +114,7 @@ class EbDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
+            // ── Event title ──────────────────────────────────────────────
             Text(
               event.title,
               textAlign: TextAlign.center,
@@ -125,6 +128,7 @@ class EbDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
+            // ── Event image ──────────────────────────────────────────────
             if (event.imageUrl != null && event.imageUrl!.isNotEmpty) ...[
               Image.network(
                 event.imageUrl!,
@@ -134,10 +138,10 @@ class EbDetailsPage extends StatelessWidget {
               const SizedBox(height: 24),
             ],
 
+            // ── Date / Location / Time card ──────────────────────────────
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
               decoration: BoxDecoration(
                 color: kCardGrey,
                 borderRadius: BorderRadius.circular(20),
@@ -151,13 +155,13 @@ class EbDetailsPage extends StatelessWidget {
                     label: 'Date',
                     value: _dateLabel,
                   ),
-                  _Divider(),
+                  _EBDivider(),
                   _InfoCell(
                     icon: Icons.location_on_outlined,
                     label: 'Location',
                     value: event.location,
                   ),
-                  _Divider(),
+                  _EBDivider(),
                   _InfoCell(
                     icon: Icons.access_time_outlined,
                     label: 'Time',
@@ -169,6 +173,7 @@ class EbDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
+            // ── Description card ─────────────────────────────────────────
             if (hasDescription)
               _SectionCard(
                 title: 'Description',
@@ -185,6 +190,7 @@ class EbDetailsPage extends StatelessWidget {
 
             if (hasDescription) const SizedBox(height: 20),
 
+            // ── Links card ───────────────────────────────────────────────
             if (hasLinks)
               _SectionCard(
                 title: 'Links',
@@ -204,6 +210,7 @@ class EbDetailsPage extends StatelessWidget {
 
             if (hasLinks) const SizedBox(height: 20),
 
+            // ── Room info ────────────────────────────────────────────────
             if (event.roomNumber.isNotEmpty)
               _SectionCard(
                 title: 'Room',
@@ -219,20 +226,24 @@ class EbDetailsPage extends StatelessWidget {
 
             if (event.roomNumber.isNotEmpty) const SizedBox(height: 20),
 
+            // ── Report button ────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report feature coming soon.'),
-                      behavior: SnackBarBehavior.floating,
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ReportIssuePage(
+                        targetId: event.id,
+                        reportedUserId: event.id,
+                        targetType: 'event',
+                      ),
                     ),
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                      color: Color(0xFFD6D6D6), width: 1.3),
+                  side: const BorderSide(color: Color(0xFFD6D6D6), width: 1.3),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -273,6 +284,8 @@ class EbDetailsPage extends StatelessWidget {
   }
 }
 
+// ── Info cell ─────────────────────────────────────────────────────────────────
+
 class _InfoCell extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -294,24 +307,32 @@ class _InfoCell extends StatelessWidget {
         children: [
           Icon(icon, size: 28, color: Colors.black87),
           const SizedBox(height: 8),
-          Text(label,
-              style: const TextStyle(
-                  color: kGold, fontSize: 15, fontWeight: FontWeight.w700)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: kGold,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(value,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                  height: 1.35)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              height: 1.35,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _Divider extends StatelessWidget {
+class _EBDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -344,9 +365,14 @@ class _SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  color: kGold, fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: kGold,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 12),
           child,
         ],
