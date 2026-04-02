@@ -9,6 +9,7 @@ import 'hourscap_screen.dart';
 import 'misc_screen.dart';
 import 'addres_screen.dart';
 import 'settings_screen.dart';
+import 'eventboard_screen.dart';
 
 //import 'bathroom_finder.dart';
 //import 'map/map_screen.dart';
@@ -293,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
-          return const EventsScreen();
+          return const EventBoardScreen();
         case "dormlife":
           return _buildDormTab();
         case "hourscap":
