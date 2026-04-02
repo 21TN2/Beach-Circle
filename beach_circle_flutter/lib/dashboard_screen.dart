@@ -320,6 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'teef@gmail.com',
       'reytest@gmail.com',
       'giselle1@gmail.com',
+      'josuealfaro8441@gmail.com',
     ];
 
     if (_currentIndex == 0 && _homePage == "home") {
