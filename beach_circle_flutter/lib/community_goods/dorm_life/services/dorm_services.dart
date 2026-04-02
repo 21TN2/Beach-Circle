@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';  // ← add this line
 import '../models/dorm_event.dart';
 
 // dorm_services.dart
@@ -23,16 +24,23 @@ class DormServices {
 
   /// Live stream filtered to a specific [date].
   static Stream<List<DormEvent>> eventsForDateStream(DateTime date) {
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
-    return _db
-        .collection(_collection)
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('date', isLessThan: Timestamp.fromDate(end))
-        .orderBy('date')
-        .snapshots()
-        .map((snap) => snap.docs.map(DormEvent.fromFirestore).toList());
-  }
+  final start = DateTime(date.year, date.month, date.day);
+  final end = start.add(const Duration(days: 1));
+  return _db
+      .collection(_collection)
+      .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+      .where('date', isLessThan: Timestamp.fromDate(end))
+      .orderBy('date')
+      .snapshots()
+      .map((snap) {
+        debugPrint('=== snap docs count: ${snap.docs.length}');
+        for (final doc in snap.docs) {
+          final m = doc.data();
+          debugPrint('=== doc links field: "${m['links']}"');
+        }
+        return snap.docs.map(DormEvent.fromFirestore).toList();
+      });
+}
 
   // ── One-time fetch ─────────────────────────────────────────────────────────
 

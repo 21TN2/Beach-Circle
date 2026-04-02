@@ -179,11 +179,12 @@ class ExpandedDormEventPg extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasFlyer = flyerLink != null && flyerLink!.trim().isNotEmpty;
-    final hasRegistration =
-        registrationLink != null && registrationLink!.trim().isNotEmpty;
-    final hasLinks = hasFlyer || hasRegistration;
+    final normalizedFlyerLink = (flyerLink == null || flyerLink == 'null') ? '' : flyerLink!.trim();
+    final normalizedRegistrationLink = (registrationLink == null || registrationLink == 'null') ? '' : registrationLink!.trim();
 
+    final hasFlyer = normalizedFlyerLink.isNotEmpty;
+    final hasRegistration = normalizedRegistrationLink.isNotEmpty;
+    final hasLinks = hasFlyer || hasRegistration;
     final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
     final hasHighlights = highlights != null && highlights!.isNotEmpty;
     final hasInterestedCount = interestedCount != null;
@@ -192,6 +193,9 @@ class ExpandedDormEventPg extends StatelessWidget {
         instagramLink != null && instagramLink!.trim().isNotEmpty;
     final hasEmail = contactEmail != null && contactEmail!.trim().isNotEmpty;
     final hasStayConnected = hasWebsite || hasInstagram || hasEmail;
+
+    debugPrint('flyerLink received: "$flyerLink"');
+    debugPrint('hasFlyer: $hasFlyer');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -384,16 +388,17 @@ class ExpandedDormEventPg extends StatelessWidget {
                   children: [
                     if (hasFlyer)
                       _linkRow(
-                        icon: Icons.picture_as_pdf_outlined,
-                        label: "View Flyer",
-                        onTap: () => _openLink(context, flyerLink!),
+                        icon: Icons.link,
+                        label: normalizedFlyerLink,
+                        isPlainText: true,
+                        onTap: () => _openLink(context, normalizedFlyerLink),
                       ),
                     if (hasFlyer && hasRegistration) const SizedBox(height: 10),
                     if (hasRegistration)
                       _linkRow(
                         icon: Icons.app_registration,
                         label: "Register Here",
-                        onTap: () => _openLink(context, registrationLink!),
+                        onTap: () => _openLink(context, normalizedRegistrationLink),
                       ),
                   ],
                 ),

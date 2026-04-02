@@ -166,9 +166,9 @@ class DormInterestedPage extends StatelessWidget {
                           color: event.category.color,
                           eventId: event.id,
                           eventOwnerId: event.id, // swap with ownerId field if added
-                          flyerLink: event.links.isNotEmpty
-                              ? event.links
-                              : null,
+                          flyerLink: event.links,
+                          imageUrl: event.imageUrl,
+                          interestedCount: event.interestedCount,
                           onInterestedTap: () async {
                             try {
                               await InterestedDormService.toggleInterested(

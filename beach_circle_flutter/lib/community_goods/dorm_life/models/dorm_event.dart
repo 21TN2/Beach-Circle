@@ -51,6 +51,7 @@ class DormEvent {
   final DormCategory category;
   final String? imageUrl;   // ← new
   bool isInterested;
+  final int? interestedCount;
 
   DormEvent({
     required this.id,
@@ -66,6 +67,7 @@ class DormEvent {
     this.links = '',
     required this.category,
     this.imageUrl,           // ← new
+    this.interestedCount,
     this.isInterested = false,
   });
 
@@ -106,7 +108,7 @@ class DormEvent {
       'endMinute': endTime?.minute,
       'isAllDay': isAllDay,
       'description': description,
-      'links': links,
+      'links': links.trim().isEmpty ? '' : links,
       'category': category.index,
       'imageUrl': imageUrl,  // ← new
       'isInterested': isInterested,
@@ -117,23 +119,42 @@ class DormEvent {
 
   factory DormEvent.fromFirestore(DocumentSnapshot doc) {
     final m = doc.data() as Map<String, dynamic>;
+
+    // To this (handles cases where field exists but is null/empty):
+    final rawLinks = [
+      m['links'],
+      m['link'],
+      m['flyerLink'],
+      m['flyer_link'],
+    ].firstWhere(
+      (v) => v != null && v.toString().trim().isNotEmpty,
+      orElse: () => '',
+    );
+    debugPrint('=== fromFirestore rawLinks: "$rawLinks"');  // ← add this
+    debugPrint('=== m[links] value: "${m['links']}"');      // ← add this
+    
     return DormEvent(
       id: doc.id,
-      title: m['title'] ?? '',
-      location: m['location'] ?? '',
-      buildingCode: m['buildingCode'] ?? '',
-      roomNumber: m['roomNumber'] ?? '',
+      title: (m['title'] ?? '').toString(),
+      location: (m['location'] ?? '').toString(),
+      buildingCode: (m['buildingCode'] ?? '').toString(),
+      roomNumber: (m['roomNumber'] ?? '').toString(),
       date: (m['date'] as Timestamp).toDate(),
       startTime: TimeOfDay(
-          hour: m['startHour'] ?? 0, minute: m['startMinute'] ?? 0),
+        hour: m['startHour'] ?? 0,
+        minute: m['startMinute'] ?? 0,
+      ),
       endTime: m['endHour'] != null
           ? TimeOfDay(hour: m['endHour'], minute: m['endMinute'] ?? 0)
           : null,
       isAllDay: m['isAllDay'] ?? false,
-      description: m['description'] ?? '',
-      links: m['links'] ?? '',
+      description: (m['description'] ?? '').toString(),
+      links: (rawLinks == null || rawLinks.toString().trim() == 'null') 
+        ? '' 
+        : rawLinks.toString().trim(),
       category: DormCategory.values[m['category'] ?? 0],
-      imageUrl: m['imageUrl'],   // ← new
+      imageUrl: m['imageUrl'],
+      interestedCount: m['interestedCount'] as int?,
       isInterested: m['isInterested'] ?? false,
     );
   }

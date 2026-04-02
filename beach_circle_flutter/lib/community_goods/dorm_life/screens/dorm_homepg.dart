@@ -111,6 +111,7 @@ class _DormHomePageState extends State<DormHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('=== DormHomePage build called');  // ← add this
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
 
@@ -223,7 +224,7 @@ class _DormHomePageState extends State<DormHomePage> {
                         final event      = events[i];
                         final isInterested =
                             interestedIds.contains(event.id);
-
+                        
                         return DormEvents(
                           title: event.title,
                           location: event.location,
@@ -234,10 +235,9 @@ class _DormHomePageState extends State<DormHomePage> {
                           color: event.category.color,
                           eventId: event.id,
                           eventOwnerId: event.id,
-                          flyerLink: event.links.isNotEmpty
-                              ? event.links
-                              : null,
+                          flyerLink: event.links == 'null' ? null : event.links,
                           imageUrl: event.imageUrl,
+                          interestedCount: event.interestedCount,
                           onInterestedTap: () async {
                             try {
                               await InterestedDormService.toggleInterested(
@@ -248,8 +248,7 @@ class _DormHomePageState extends State<DormHomePage> {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(const SnackBar(
-                                  content:
-                                      Text('Sign in to mark interest.'),
+                                  content:Text('Sign in to mark interest.'),
                                   behavior: SnackBarBehavior.floating,
                                 ));
                               }

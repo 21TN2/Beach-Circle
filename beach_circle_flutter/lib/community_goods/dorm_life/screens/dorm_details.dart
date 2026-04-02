@@ -144,7 +144,7 @@ class DormDetailsPage extends StatelessWidget {
               width: double.infinity,
               fit: BoxFit.contain,
             ),
-            
+
             const SizedBox(height: 24),
 ],
             // ── Date / Location / Time card ───────────────────────────────
@@ -222,7 +222,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (hasLinks) const SizedBox(height: 20),
 
-            // ── Room info (if present) ────────────────────────────────────
+            // ── Room info  ────────────────────────────────────
             if (event.roomNumber.isNotEmpty)
               _SectionCard(
                 title: 'Room',

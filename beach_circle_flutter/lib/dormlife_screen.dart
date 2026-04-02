@@ -387,7 +387,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             highlights: data['highlights'] != null
                                 ? List<String>.from(data['highlights'])
                                 : null,
-                            flyerLink: data['flyerLink']?.toString(),
+                            flyerLink: data['links']?.toString(),
                             registrationLink:
                                 data['registrationLink']?.toString(),
                             websiteLink: data['websiteLink']?.toString(),

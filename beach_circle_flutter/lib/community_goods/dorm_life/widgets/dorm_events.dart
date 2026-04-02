@@ -148,6 +148,10 @@ class DormEvents extends StatelessWidget {
                           color: Colors.black,
                         ),
                         onPressed: () {
+                          debugPrint('DormEvents flyerLink: "$flyerLink"');
+                          debugPrint('DormEvents registrationLink: "$registrationLink"');
+                          debugPrint('DormEvents title: "$title"');
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
