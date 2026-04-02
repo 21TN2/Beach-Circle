@@ -16,6 +16,12 @@ dependencies:
   firebase_auth: ^5.0.0
   cloud_firestore: ^5.0.0
 
+  # Used by eb_details, expanded_eb_event, dorm_details, expanded_dorm_event
+  url_launcher: ^6.2.0
+
+  # Used by eb_cloudinary, dl_cloudinary (Cloudinary image uploads)
+  http: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

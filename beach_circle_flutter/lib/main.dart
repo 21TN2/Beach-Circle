@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'auth_screen.dart'; 
 import 'signup_screen.dart';
 import 'dashboard_screen.dart';
+import 'eventboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
