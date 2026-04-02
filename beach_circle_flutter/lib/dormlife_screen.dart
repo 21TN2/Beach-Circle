@@ -9,7 +9,6 @@ import '../community_goods/dorm_life/widgets/dorm_calendar.dart';
 import '../community_goods/dorm_life/widgets/dorm_events.dart';
 import '../community_goods/dorm_life/services/interested_dorm_service.dart';
 
-// grabbing the current date & interested info
 class DormlifeScreen extends StatefulWidget {
   const DormlifeScreen({super.key});
 
@@ -21,7 +20,6 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
   DateTime selectedDate = DateTime.now();
   bool interestedOnly = false;
 
-  // grab event time info
   // getEvents: returns events for the selected day ──
   Stream<QuerySnapshot<Map<String, dynamic>>> getEvents() {
     final startOfDay = DateTime(
