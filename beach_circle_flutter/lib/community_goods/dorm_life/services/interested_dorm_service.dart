@@ -1,5 +1,6 @@
 // Work Review 3
 // Made by Giselle
+// interested+dorm_service.dart
 // Interested Star + Interested Count
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,9 +21,14 @@ class InterestedDormService {
   }
 
   static Stream<Set<String>> interestedEventIdsStream() {
-    return interestedRef().snapshots().map(
-      (snap) => snap.docs.map((doc) => doc.id).toSet(),
-    );
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value({});  // ← return empty set, no crash
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('interestedDormEvents')
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => doc.id).toSet());
   }
 
   static Future<void> toggleInterested({

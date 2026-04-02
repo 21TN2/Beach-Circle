@@ -1,9 +1,6 @@
 // TIFF
 
 // dorm_homepg.dart
-// Main Dorm Life home screen — ties together DormCalendar, DormEvents,
-// InterestedDormService, DormServices, and navigates to DormCreatePage.
-
 import 'package:flutter/material.dart';
 
 import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
@@ -13,8 +10,6 @@ import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_cale
 import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_events.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_create.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_interested.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/screens/dorm_create.dart';
-
 
 class DormHomePage extends StatefulWidget {
   const DormHomePage({super.key});
@@ -28,15 +23,9 @@ class _DormHomePageState extends State<DormHomePage> {
   static const Color kYellowBtn = Color(0xFFD4A800);
   static const Color kPurple    = Color(0xFF3B3599);
 
-  // ── State ──────────────────────────────────────────────────────────────────
   DateTime _selectedDate = DateTime.now();
   DateTime _displayMonth = DateTime.now();
-
-  // eventDates drives the colored dots on the calendar
-  // key = "yyyy-MM-dd", value = list of category colors
   Map<String, List<Color>> _eventDates = {};
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   String _dateKey(DateTime d) {
     final m   = d.month.toString().padLeft(2, '0');
@@ -53,11 +42,9 @@ class _DormHomePageState extends State<DormHomePage> {
     return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
   }
 
-  // Reload dot map whenever displayed month changes
   Future<void> _loadEventDatesForMonth(DateTime month) async {
     final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
     final Map<String, List<Color>> result = {};
-
     for (int d = 1; d <= daysInMonth; d++) {
       final day  = DateTime(month.year, month.month, d);
       final cats = await DormServices.categoriesOnDay(day);
@@ -65,11 +52,8 @@ class _DormHomePageState extends State<DormHomePage> {
         result[_dateKey(day)] = cats.map((c) => c.color).toList();
       }
     }
-
     if (mounted) setState(() => _eventDates = result);
   }
-
-  // ── Month navigation ───────────────────────────────────────────────────────
 
   void _goToPreviousMonth() {
     final prev = DateTime(_displayMonth.year, _displayMonth.month - 1);
@@ -82,8 +66,6 @@ class _DormHomePageState extends State<DormHomePage> {
     setState(() => _displayMonth = next);
     _loadEventDatesForMonth(next);
   }
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
 
   void _openCreatePage() {
     Navigator.push(
@@ -99,88 +81,93 @@ class _DormHomePageState extends State<DormHomePage> {
     );
   }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
-
   @override
   void initState() {
     super.initState();
     _loadEventDatesForMonth(_displayMonth);
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
-    debugPrint('=== DormHomePage build called');  // ← add this
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
 
-      // ── Yellow top bar ────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: kYellow,
         elevation: 0,
         automaticallyImplyLeading: false,
         toolbarHeight: 64,
         titleSpacing: 12,
-        title: Row(
-          children: [
-            // Search / channel pill
-            Expanded(
-              child: Container(
-                height: 42,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF9D6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Dorm Life',
-                        style: TextStyle(
-                            color: Color(0xFF555555), fontSize: 15),
-                      ),
+        title: StreamBuilder<Set<String>>(
+          // ← wrap the whole title in a StreamBuilder so the star stays live
+          stream: InterestedDormService.interestedEventIdsStream(),
+          builder: (context, intSnap) {
+            final hasInterested = (intSnap.data ?? {}).isNotEmpty;
+
+            return Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF9D6),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    Icon(Icons.chevron_right, color: kPurple),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            // Interested button
-            GestureDetector(
-              onTap: _openInterestedPage,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: kYellowBtn,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.star_border, size: 18, color: Colors.black),
-                    SizedBox(width: 6),
-                    Text(
-                      'Interested',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Colors.black),
+                    child: const Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Dorm Life',
+                            style: TextStyle(
+                                color: Color(0xFF555555), fontSize: 15),
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: kPurple),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+                const SizedBox(width: 10),
+                // Interested button — filled star when user has starred events
+                GestureDetector(
+                  onTap: _openInterestedPage,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: kYellowBtn,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          hasInterested ? Icons.star : Icons.star_border,
+                          size: 18,
+                          color: hasInterested
+                              ? const Color(0xFFFFD700)
+                              : Colors.black,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Interested',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
 
-      // ── Body ─────────────────────────────────────────────────────────────
       body: Column(
         children: [
-          // Calendar widget (week / month toggle)
           DormCalendar(
             selectedDate: _selectedDate,
             onDateSelected: (d) => setState(() => _selectedDate = d),
@@ -191,7 +178,6 @@ class _DormHomePageState extends State<DormHomePage> {
 
           const SizedBox(height: 8),
 
-          // Event list for selected date
           Expanded(
             child: StreamBuilder<List<DormEvent>>(
               stream: DormServices.eventsForDateStream(_selectedDate),
@@ -217,14 +203,12 @@ class _DormHomePageState extends State<DormHomePage> {
                     final interestedIds = intSnap.data ?? {};
 
                     return ListView.builder(
-                      padding:
-                          const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                       itemCount: events.length,
                       itemBuilder: (context, i) {
-                        final event      = events[i];
-                        final isInterested =
-                            interestedIds.contains(event.id);
-                        
+                        final event = events[i];
+                        final isInterested = interestedIds.contains(event.id);
+
                         return DormEvents(
                           title: event.title,
                           location: event.location,
@@ -234,7 +218,7 @@ class _DormHomePageState extends State<DormHomePage> {
                           isInterested: isInterested,
                           color: event.category.color,
                           eventId: event.id,
-                          eventOwnerId: event.id,
+                          eventOwnerId: event.createdBy ?? '', // ← fix
                           flyerLink: event.links == 'null' ? null : event.links,
                           imageUrl: event.imageUrl,
                           interestedCount: event.interestedCount,
@@ -248,7 +232,7 @@ class _DormHomePageState extends State<DormHomePage> {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(const SnackBar(
-                                  content:Text('Sign in to mark interest.'),
+                                  content: Text('Sign in to mark interest.'),
                                   behavior: SnackBarBehavior.floating,
                                 ));
                               }
@@ -265,7 +249,6 @@ class _DormHomePageState extends State<DormHomePage> {
         ],
       ),
 
-      // ── FAB → Add Dorm Details ────────────────────────────────────────────
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreatePage,
         backgroundColor: kYellow,
@@ -274,7 +257,6 @@ class _DormHomePageState extends State<DormHomePage> {
         child: const Icon(Icons.edit, color: Colors.black),
       ),
 
-      // ── Bottom nav ────────────────────────────────────────────────────────
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,

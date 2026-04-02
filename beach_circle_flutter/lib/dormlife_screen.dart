@@ -22,33 +22,33 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
   bool interestedOnly = false;
 
   // grab event time info
+  // getEvents: returns events for the selected day ──
   Stream<QuerySnapshot<Map<String, dynamic>>> getEvents() {
     final startOfDay = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
     );
-        // calculates the end of day
+    // calculates the end of day
     final endOfDay = startOfDay.add(const Duration(days: 1));
-        // firebase info fields
+    // firebase info fields
     return FirebaseFirestore.instance
         .collection('dorm_events')
         .where('status', isEqualTo: 'approved')
-        .where(
-          'startTime',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-        )
-        .where('startTime', isLessThan: Timestamp.fromDate(endOfDay))
-        .orderBy('startTime')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where('date', isLessThan: Timestamp.fromDate(endOfDay))
+        .orderBy('date')
         .snapshots();
   }
+
   // calculating date & spacing
   String dateKey(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
   }
-  // getting months of events
+
+  // ── getMonthEventDates: returns dot colors for the calendar ──
   Stream<Map<String, List<Color>>> getMonthEventDates() {
     final monthStart = DateTime(selectedDate.year, selectedDate.month, 1);
     final nextMonthStart = DateTime(
@@ -56,27 +56,22 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
       selectedDate.month + 1,
       1,
     );
-        // returns the firebase details of events
+    // returns the firebase details of events
     return FirebaseFirestore.instance
         .collection('dorm_events')
         .where('status', isEqualTo: 'approved')
-        .where(
-          'startTime',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart),
-        )
-        .where('startTime', isLessThan: Timestamp.fromDate(nextMonthStart))
-        .snapshots() // calculates day based off start time
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart))
+        .where('date', isLessThan: Timestamp.fromDate(nextMonthStart))
+        .snapshots()
         .map((snapshot) {
           final Map<String, List<Color>> eventMap = {};
           for (final doc in snapshot.docs) {
             final data = doc.data();
-            final dynamic startRaw = data['startTime'];
+            final dynamic startRaw = data['date'];
             final category = (data['category'] ?? 'Other').toString();
-            // Student Work Review 3: made by Giselle
             if (startRaw is Timestamp) {
               final key = dateKey(startRaw.toDate());
               final color = eventColor(category);
-              // grabs the color of event to put on calendar
               eventMap.putIfAbsent(key, () => []);
               if (!eventMap[key]!.contains(color)) {
                 eventMap[key]!.add(color);
@@ -87,26 +82,24 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         });
   }
 
-  // Work Review 3: connected to firebase about users' pref of Interested events
   Stream<Set<String>> interestedEventIdsStream() {
     return InterestedDormService.interestedEventIdsStream();
   }
 
   Color eventColor(String category) {
-        // the categories have colors to tell them apart
     switch (category) {
       case 'Social':
-        return const Color.fromARGB(255, 249, 228, 155); // social events
+        return const Color.fromARGB(255, 249, 228, 155);
       case 'Academic':
-        return const Color(0xFFF5A623); // academic events
+        return const Color(0xFFF5A623);
       case 'Meetings':
-        return const Color.fromARGB(255, 255, 188, 144); // meetings
+        return const Color.fromARGB(255, 255, 188, 144);
       case 'Announcements':
-        return const Color(0xFF8DB600); // announcments
+        return const Color(0xFF8DB600);
       case 'Tips':
-        return const Color.fromARGB(255, 202, 196, 148); // tips
+        return const Color.fromARGB(255, 202, 196, 148);
       case 'Other':
-        return const Color.fromRGBO(136, 131, 83, 1); // others
+        return const Color.fromRGBO(136, 131, 83, 1);
       default:
         return const Color.fromRGBO(231, 148, 88, 1);
     }
@@ -135,13 +128,11 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2F2),
-
       // ── FAB ──────────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton(
         // pencil icon
         backgroundColor: const Color(0xFFF2C200),
         onPressed: () {
-          // MADE BY TIFF
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const DormCreatePage()),
@@ -149,12 +140,11 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
         },
         child: const Icon(Icons.edit, color: Colors.black),
       ),
-         // CHANGES BY TIFF END HERE
       body: SafeArea(
         child: Column(
           children: [
 
-            // ── Header ────────────────────────────────────────────────────
+            // ── Header ─────────────────────────────────────────────────────
             Container(
               color: const Color(0xFFFFD500),
               padding: const EdgeInsets.all(12),
@@ -186,10 +176,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 10),
-
-                  // CHANGED BY TIFF
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -202,7 +189,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE6841A), // always orange
+                        color: const Color(0xFFE6841A),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Row(
@@ -227,20 +214,17 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                 ],
               ),
             ),
-            // CHANGEs BY TIFF END HERE
-            // ── Calendar ──────────────────────────────────────────────────
+
+            // ── Calendar ───────────────────────────────────────────────────
             StreamBuilder<Map<String, List<Color>>>(
               stream: getMonthEventDates(),
               builder: (context, snapshot) {
                 final eventDates = snapshot.data ?? <String, List<Color>>{};
                 return DormCalendar(
-                   // the selected date
                   selectedDate: selectedDate,
                   eventDates: eventDates,
                   onDateSelected: (date) {
-                    setState(() {
-                      selectedDate = date;
-                    });
+                    setState(() => selectedDate = date);
                   },
                   onPreviousMonth: () {
                     setState(() {
@@ -251,7 +235,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                       );
                     });
                   },
-                 // display previous month
+                  // display previous month
                   onNextMonth: () {
                     setState(() {
                       selectedDate = DateTime(
@@ -267,7 +251,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
 
             const SizedBox(height: 12),
 
-            // ── Event list ────────────────────────────────────────────────
+            // ── Event list ─────────────────────────────────────────────────
             Expanded(
               child: StreamBuilder<Set<String>>(
                 stream: interestedEventIdsStream(),
@@ -278,15 +262,10 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                     stream: getEvents(),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error: ${snapshot.error}'),
-                        );
+                        return Center(child: Text('Error: ${snapshot.error}'));
                       }
-
                       if (!snapshot.hasData) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
+                        return const Center(child: CircularProgressIndicator());
                       }
 
                       var docs = snapshot.data!.docs;
@@ -296,7 +275,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             .where((doc) => interestedIds.contains(doc.id))
                             .toList();
                       }
-                      // when there are no events posted, display message
+
                       if (docs.isEmpty) {
                         return const Center(
                           child: Text(
@@ -308,7 +287,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                           ),
                         );
                       }
-                      // fixing format to avoid crashes
+
                       return ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: docs.length,
@@ -316,47 +295,39 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                           final doc = docs[index];
                           final data = doc.data();
 
-                          final dynamic startRaw = data['startTime'];
-                          final dynamic endRaw =
-                              data['endTime'] ?? data['endTime '];
-                          // Work Review 3: Handle format errors
-                          if (startRaw == null || endRaw == null) {
+                          // use 'date' + startHour/startMinute fields
+                          final dynamic dateRaw = data['date'];
+                          final int startHour = data['startHour'] ?? 0;
+                          final int startMinute = data['startMinute'] ?? 0;
+                          final int? endHour = data['endHour'];
+                          final int? endMinute = data['endMinute'];
+
+                          if (dateRaw is! Timestamp) {
                             return const Card(
                               child: Padding(
                                 padding: EdgeInsets.all(12),
-                                child: Text('Missing startTime or endTime'),
+                                child: Text('Missing or invalid date field'),
                               ),
                             );
                           }
 
-                          if (startRaw is! Timestamp ||
-                              endRaw is! Timestamp) {
-                            return const Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  'startTime or endTime is not a Timestamp',
-                                ),
-                              ),
-                            );
-                          }
-                          // when events are added, display info
-                          final start = startRaw.toDate();
-                          final end = endRaw.toDate();
-                          final isInterested =
-                              interestedIds.contains(doc.id);
+                          final baseDate = dateRaw.toDate();
+                          final start = DateTime(
+                            baseDate.year, baseDate.month, baseDate.day,
+                            startHour, startMinute,
+                          );
+                          final timeText = endHour != null
+                              ? '${formatTime(start)} - ${formatTime(DateTime(baseDate.year, baseDate.month, baseDate.day, endHour, endMinute ?? 0))}'
+                              : formatTime(start);
+
+                          final isInterested = interestedIds.contains(doc.id);
 
                           return DormEvents(
-                            title: (data['title'] ??
-                                    data['title '] ??
-                                    '(No title)')
-                                .toString(),
-                            location: (data['location'] ?? 'No location')
-                                .toString(),
+                            title: (data['title'] ?? data['title '] ?? '(No title)').toString(),
+                            location: (data['location'] ?? 'No location').toString(),
                             body: (data['description'] ?? '').toString(),
                             dateLabel: verticalDate(start),
-                            timeText:
-                                '${formatTime(start)} - ${formatTime(end)}',
+                            timeText: timeText,
                             isInterested: isInterested,
                             onInterestedTap: () async {
                               try {
@@ -367,44 +338,25 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                               } catch (e) {
                                 if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Could not update interested: $e',
-                                    ),
-                                  ),
+                                  SnackBar(content: Text('Could not update interested: $e')),
                                 );
                               }
                             },
-                            color: eventColor(
-                              (data['category'] ?? 'Other').toString(),
-                            ),
+                            color: eventColor((data['category'] ?? 'Other').toString()),
                             eventId: doc.id,
-                            eventOwnerId: (data['createdBy'] ??
-                                    data['authorId'] ??
-                                    '')
-                                .toString(),
+                            eventOwnerId: (data['createdBy'] ?? data['authorId'] ?? '').toString(),
                             imageUrl: data['imageUrl']?.toString(),
                             highlights: data['highlights'] != null
                                 ? List<String>.from(data['highlights'])
                                 : null,
                             flyerLink: data['links']?.toString(),
-                            registrationLink:
-                                data['registrationLink']?.toString(),
+                            registrationLink: data['registrationLink']?.toString(),
                             websiteLink: data['websiteLink']?.toString(),
-                            instagramLink:
-                                data['instagramLink']?.toString(),
-                            contactEmail:
-                                data['contactEmail']?.toString(),
-                            interestedCount:
-                                data['interestedCount'] is num
-                                    ? (data['interestedCount'] as num)
-                                        .toInt()
-                                    : int.tryParse(
-                                          data['interestedCount']
-                                                  ?.toString() ??
-                                              '',
-                                        ) ??
-                                        0,
+                            instagramLink: data['instagramLink']?.toString(),
+                            contactEmail: data['contactEmail']?.toString(),
+                            interestedCount: data['interestedCount'] is num
+                                ? (data['interestedCount'] as num).toInt()
+                                : int.tryParse(data['interestedCount']?.toString() ?? '') ?? 0,
                           );
                         },
                       );

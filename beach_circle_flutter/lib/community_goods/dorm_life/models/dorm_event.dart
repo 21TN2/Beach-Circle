@@ -50,6 +50,7 @@ class DormEvent {
   final String links;
   final DormCategory category;
   final String? imageUrl;   // ← new
+  final String? createdBy;
   bool isInterested;
   final int? interestedCount;
 
@@ -66,7 +67,8 @@ class DormEvent {
     this.description = '',
     this.links = '',
     required this.category,
-    this.imageUrl,           // ← new
+    this.imageUrl,       
+    this.createdBy ='',    // ← new
     this.interestedCount,
     this.isInterested = false,
   });
@@ -154,6 +156,7 @@ class DormEvent {
         : rawLinks.toString().trim(),
       category: DormCategory.values[m['category'] ?? 0],
       imageUrl: m['imageUrl'],
+      createdBy: (m['createdBy'] ?? '').toString(), // ↓ ADD THIS
       interestedCount: m['interestedCount'] as int?,
       isInterested: m['isInterested'] ?? false,
     );
