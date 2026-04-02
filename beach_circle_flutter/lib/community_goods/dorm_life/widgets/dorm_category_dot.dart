@@ -77,24 +77,35 @@ class DormCategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
-      children: DormCategory.values.map((cat) {
-        return GestureDetector(
-          onTap: () => onChanged(cat),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Tooltip(
-              message: cat.label,
-              child: DormCategoryDot(
-                category: cat,
-                size: dotSize,
-                isSelected: cat == selected,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: DormCategory.values.map((cat) {
+            return GestureDetector(
+              onTap: () => onChanged(cat),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: DormCategoryDot(
+                  category: cat,
+                  size: dotSize,
+                  isSelected: cat == selected,
+                ),
               ),
-            ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          selected.label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: selected.color,
           ),
-        );
-      }).toList(),
+        ),
+      ],
     );
   }
 }
