@@ -222,6 +222,7 @@ class _DormHomePageState extends State<DormHomePage> {
                           flyerLink: event.links == 'null' ? null : event.links,
                           imageUrl: event.imageUrl,
                           interestedCount: event.interestedCount,
+                          roomNumber: event.roomNumber.isEmpty ? null : event.roomNumber,
                           onInterestedTap: () async {
                             try {
                               await InterestedDormService.toggleInterested(

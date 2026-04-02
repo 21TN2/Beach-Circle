@@ -27,6 +27,7 @@ class DormEvents extends StatelessWidget {
     this.websiteLink,
     this.instagramLink,
     this.contactEmail,
+    this.roomNumber,
   });
 
   // event fields
@@ -48,6 +49,7 @@ class DormEvents extends StatelessWidget {
   final String? websiteLink;
   final String? instagramLink;
   final String? contactEmail;
+  final String? roomNumber;
 
   // Work Review 3: To create star button more user friendly
   @override
@@ -167,6 +169,7 @@ class DormEvents extends StatelessWidget {
                                 websiteLink: websiteLink,
                                 instagramLink: instagramLink,
                                 contactEmail: contactEmail,
+                                roomNumber: roomNumber,
                                 isInterested: isInterested,       // ← add
                                 onInterestedTap: onInterestedTap, // ← add
                               ),

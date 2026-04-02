@@ -1,5 +1,4 @@
 // TIFF
-
 // dorm_create.dart
 // Add Dorm Details form — wired to DormServices & DormEvent model
 
@@ -29,13 +28,11 @@ class _DormCreatePageState extends State<DormCreatePage> {
   static const Color kPurple    = Color(0xFF3B3599);
   static const Color kBg        = Color(0xFFF0F0F0);
 
-  // ── Form state ─────────────────────────────────────────────────────────────
   String?      _selectedBuildingCode;
   DormCategory _selectedCategory = DormCategory.athletics;
   bool         _isAllDay         = false;
   bool         _isSubmitting     = false;
 
-  // Image state — XFile for both platforms, bytes for web preview
   XFile?     _pickedFile;
   Uint8List? _imageBytes;
 
@@ -44,7 +41,6 @@ class _DormCreatePageState extends State<DormCreatePage> {
   final _eventDescController  = TextEditingController();
   final _eventLinksController = TextEditingController();
 
-  // ── Date / time picker state ───────────────────────────────────────────────
   late final List<DateTime> _days;
   int  _selectedDayIndex = 0;
   int  _selectedHour     = 9;
@@ -71,8 +67,6 @@ class _DormCreatePageState extends State<DormCreatePage> {
     super.dispose();
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
   TimeOfDay _toTimeOfDay(int hour12, int minute, bool isAM) {
     int hour24 = hour12 % 12;
     if (!isAM) hour24 += 12;
@@ -88,16 +82,12 @@ class _DormCreatePageState extends State<DormCreatePage> {
     return '${names[d.weekday - 1]} ${months[d.month - 1]} ${d.day}';
   }
 
-  // ── Image picker ───────────────────────────────────────────────────────────
-
   Future<void> _pickImage() async {
     final XFile? picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
     if (picked == null) return;
-
     final bytes = kIsWeb ? await picked.readAsBytes() : null;
-
     setState(() {
       _pickedFile = picked;
       _imageBytes = bytes;
@@ -139,12 +129,16 @@ class _DormCreatePageState extends State<DormCreatePage> {
       }
 
       final selectedDay = _days[_selectedDayIndex];
-      final building = DormServices.buildings.firstWhere(
+      final buildings = await DormServices.fetchBuildings();
+      final building = buildings.firstWhere(
         (b) => b['code'] == _selectedBuildingCode,
+        orElse: () => {'code': _selectedBuildingCode!, 'name': _selectedBuildingCode!},
       );
-      final locationDisplay = '${building['code']} - ${building['name']}';
+      final locationDisplay = building['code']!.isEmpty
+        ? building['name']!
+        : '${building['code']} - ${building['name']}';
 
-      final event = DormEvent(
+      final event = DormEvent(          // ← this line was missing
         id: '',
         title: _eventNameController.text.trim(),
         location: locationDisplay,
@@ -500,51 +494,91 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  Widget _buildBuildingDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Building Location',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFD8D8D8), width: 1.5),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedBuildingCode,
-              hint: const Text(
-                'Select Building',
-                style: TextStyle(color: Color(0xFFBBBBBB), fontSize: 15),
-              ),
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-              items: DormServices.buildings
-                  .map(
-                    (b) => DropdownMenuItem<String>(
-                      value: b['code'],
-                      child: Text(
-                        '${b['code']} – ${b['name']}',
-                        style: const TextStyle(fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
+  // ← only ONE _buildBuildingDropdown, using FutureBuilder
+Widget _buildBuildingDropdown() {
+    return FutureBuilder<List<Map<String, String>>>(
+      future: DormServices.fetchBuildings(),
+      builder: (context, snap) {
+        final buildings = snap.data ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Building Location',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Autocomplete<Map<String, String>>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) return buildings;
+                final query = textEditingValue.text.toLowerCase();
+                return buildings.where((b) =>
+                  b['name']!.toLowerCase().contains(query) ||
+                  b['code']!.toLowerCase().contains(query),
+                );
+              },
+              displayStringForOption: (b) => b['code']!.isEmpty
+                  ? b['name']!
+                  : '${b['code']} – ${b['name']}',
+              onSelected: (b) {
+                setState(() => _selectedBuildingCode = b['code']);
+              },
+              fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD8D8D8), width: 1.5),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    style: const TextStyle(fontSize: 15),
+                    decoration: const InputDecoration(
+                      hintText: 'Search building or abbreviation...',
+                      hintStyle: TextStyle(color: Color(0xFFBBBBBB)),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                      border: InputBorder.none,
+                      suffixIcon: Icon(Icons.search, color: Colors.grey),
+                    ),
+                  ),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(10),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final b = options.elementAt(index);
+                          final display = b['code']!.isEmpty
+                              ? b['name']!
+                              : '${b['code']} – ${b['name']}';
+                          return ListTile(
+                            title: Text(display,
+                                style: const TextStyle(fontSize: 14)),
+                            onTap: () => onSelected(b),
+                          );
+                        },
                       ),
                     ),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedBuildingCode = val),
+                  ),
+                );
+              },
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
-
   Widget _buildTextField({
     required String label,
     required String hint,
@@ -589,8 +623,6 @@ class _DormCreatePageState extends State<DormCreatePage> {
       ],
     );
   }
-
-  // ── Image picker section ───────────────────────────────────────────────────
 
   Widget _buildImagePicker() {
     final hasImage = _pickedFile != null;

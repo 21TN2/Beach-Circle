@@ -355,6 +355,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                             interestedCount: data['interestedCount'] is num
                                 ? (data['interestedCount'] as num).toInt()
                                 : int.tryParse(data['interestedCount']?.toString() ?? '') ?? 0,
+                            roomNumber: data['roomNumber']?.toString(), // ← ADD
                           );
                         },
                       );

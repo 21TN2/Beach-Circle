@@ -24,6 +24,7 @@ class ExpandedDormEventPg extends StatelessWidget {
     this.websiteLink,
     this.instagramLink,
     this.contactEmail,
+    this.roomNumber,
     required this.isInterested,
     required this.onInterestedTap,
   });
@@ -43,6 +44,7 @@ class ExpandedDormEventPg extends StatelessWidget {
   final String? websiteLink;
   final String? instagramLink;
   final String? contactEmail;
+  final String? roomNumber;
   final bool isInterested;
   final VoidCallback onInterestedTap;
 
@@ -319,7 +321,22 @@ class ExpandedDormEventPg extends StatelessWidget {
                     fontWeight: FontWeight.w600),
               ),
             ),
-
+            // ↓ ADD THIS
+            if (roomNumber != null && roomNumber!.isNotEmpty) ...[
+              const SizedBox(height: 22),
+              _sectionCard(
+                title: "Room",
+                child: Text(
+                  roomNumber!,
+                  style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+            // ↑ ADD THIS
             if (hasHighlights) ...[
               const SizedBox(height: 22),
               _sectionCard(
