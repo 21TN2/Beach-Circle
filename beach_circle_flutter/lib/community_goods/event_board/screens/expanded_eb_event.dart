@@ -1,7 +1,6 @@
 // expanded_eb_event.dart
 // Purpose: when users want to see more details of an Event Board event
 
-import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -447,14 +446,10 @@ class ExpandedEbEventPg extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ReportIssuePage(
-                        targetId: eventId,
-                        reportedUserId: eventOwnerId,
-                        targetType: 'event',
-                      ),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Report feature coming soon.'),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },

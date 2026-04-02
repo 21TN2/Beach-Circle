@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/interested_eb_service.dart';
-import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 
 class EbDetailsPage extends StatelessWidget {
   const EbDetailsPage({
@@ -224,14 +223,10 @@ class EbDetailsPage extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ReportIssuePage(
-                        targetId: event.id,
-                        reportedUserId: event.id,
-                        targetType: 'event',
-                      ),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Report feature coming soon.'),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
