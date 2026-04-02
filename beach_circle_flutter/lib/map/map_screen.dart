@@ -411,6 +411,7 @@ class _MapScreenState extends State<MapScreen> {
                 },
               )
               : null,
+      // -------
       body: Stack(
         children: [
           MapWidget(
@@ -466,18 +467,6 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
           ),
-          // NEW from Giselle: show + button for study hall and outlets
-          if (_activeFilter == 'study' || _activeFilter == 'charging')
-            Positioned(
-              right: 16,
-              bottom: 310,
-              child: FloatingActionButton(
-                onPressed: _onAddTapped,
-                backgroundColor: const Color(0xFFD4C400),
-                foregroundColor: Colors.black,
-                child: const Icon(Icons.add),
-              ),
-            ),
 
           Positioned(
             bottom: 40,
@@ -622,13 +611,169 @@ class _ParkingSheetContent extends StatelessWidget {
   );
 }
 
+/// NEW FROM GISELLE: STUDY HALL
 class _StudySheetContent extends StatelessWidget {
   const _StudySheetContent();
+
   @override
-  Widget build(BuildContext context) => const _SheetPlaceholder(
-    icon: Icons.menu_book,
-    label: 'Study spaces and libraries',
-  );
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('study_halls')
+              .where('status', isEqualTo: 'approved')
+              .orderBy('buildingAbbrev')
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('Could not load study halls.'),
+          );
+        }
+
+        final docs = snapshot.data?.docs ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+              child: Text(
+                "Available Classrooms for Study Hall",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            if (docs.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Text(
+                  'No study halls added yet.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+
+            if (docs.isNotEmpty)
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 5, bottom: 8),
+                itemCount: docs.length,
+                separatorBuilder:
+                    (context, index) =>
+                        Divider(color: Colors.grey.shade200, height: 1),
+                itemBuilder: (context, index) {
+                  final data = docs[index].data();
+
+                  final building = (data['buildingAbbrev'] ?? '').toString();
+                  final room = (data['roomNumber'] ?? '').toString();
+                  final startTime = (data['startTime'] ?? '').toString();
+                  final endTime = (data['endTime'] ?? '').toString();
+                  final seats = data['seatCapacity'];
+                  final amenities = List<String>.from(data['amenities'] ?? []);
+
+                  final title = '$building $room';
+                  final subtitleParts = <String>[];
+
+                  if (startTime.isNotEmpty && endTime.isNotEmpty) {
+                    subtitleParts.add('$startTime - $endTime');
+                  }
+
+                  if (seats != null) {
+                    subtitleParts.add('Seats: $seats');
+                  }
+
+                  if (amenities.isNotEmpty) {
+                    subtitleParts.add('Amenities: ${amenities.join(', ')}');
+                  }
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8F0FE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.menu_book,
+                        color: Colors.black87,
+                        size: 22,
+                      ),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      subtitleParts.join('\n'),
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+
+            Divider(color: Colors.grey.shade300, height: 20),
+
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 4,
+              ),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF4B3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: Colors.black, size: 22),
+              ),
+              title: const Text(
+                'Add Study Hall',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddStudyHallScreen(),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _ChargingSheetContent extends StatelessWidget {
