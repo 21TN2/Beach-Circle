@@ -55,6 +55,46 @@ class _MapScreenState extends State<MapScreen> {
   Position? _simulatedPosition;
 
   String? _activeFilter;
+  String _selectedStudyBuildingFilter = 'All';
+  String? _selectedExactStudyBuilding;
+
+  // study hall
+  PointAnnotationManager? _studyHallPinManager;
+  final Map<String, Map<String, dynamic>> _studyHallPinData = {};
+
+  // NEW FROM GISELLE
+  String _mapBuildingToStudyFilter(String building) {
+    final code = building.toUpperCase().trim();
+
+    if (code.startsWith('LA')) return 'LA';
+    if (code.startsWith('EN') || code.startsWith('ENGR')) return 'ENGR';
+    if (code.startsWith('FA')) return 'FA';
+    if (code == 'COB') return 'COB';
+    if (code == 'KIN') return 'KIN';
+    if (code == 'HHS') return 'HHS';
+    if (code == 'PSY') return 'PSY';
+    if (code == 'HSCI' || code.contains('SCI')) return 'HSCI';
+
+    return 'All';
+  }
+
+  // FILTERS TO BUILDING
+  void _handleStudyHallPinTap(Map<String, dynamic> data) {
+    final building = (data['buildingAbbrev'] ?? '').toString().trim();
+    final mappedFilter = _mapBuildingToStudyFilter(building);
+
+    setState(() {
+      _activeFilter = 'study';
+
+      if (mappedFilter == 'All') {
+        _selectedStudyBuildingFilter = 'All';
+        _selectedExactStudyBuilding = building;
+      } else {
+        _selectedStudyBuildingFilter = mappedFilter;
+        _selectedExactStudyBuilding = null;
+      }
+    });
+  }
 
   //food alert form creation stuff
   _FoodAlertStep _foodAlertStep = _FoodAlertStep.none;
@@ -91,7 +131,6 @@ class _MapScreenState extends State<MapScreen> {
       icon: Icons.menu_book,
       label: 'Study',
       hasBottomSheet: true,
-      sheetContent: _StudySheetContent(),
     ),
     FilterOption(
       key: 'charging',
@@ -143,6 +182,112 @@ class _MapScreenState extends State<MapScreen> {
     );
     return byteData!.buffer.asUint8List();
   }
+
+  // NEW FROM GISELLE
+  Future<Uint8List> _createStudyHallMarker() async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint backgroundPaint = Paint()..color = const Color(0xFFE8F0FE);
+
+    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, backgroundPaint);
+
+    final TextPainter textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.menu_book.codePoint),
+      style: TextStyle(
+        fontSize: 28.0,
+        fontFamily: Icons.menu_book.fontFamily,
+        package: Icons.menu_book.fontPackage,
+        color: Colors.black87,
+      ),
+    );
+
+    textPainter.layout();
+
+    final double xCenter = (48.0 - textPainter.width) / 2.0;
+    final double yCenter = (48.0 - textPainter.height) / 2.0;
+    textPainter.paint(canvas, Offset(xCenter, yCenter));
+
+    final ui.Image image = await pictureRecorder.endRecording().toImage(48, 48);
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
+    return byteData!.buffer.asUint8List();
+  }
+
+  /// ALSO NEW FROM GISELLE
+  Future<void> _loadStudyHallPins() async {
+    try {
+      if (_studyHallPinManager == null) return;
+
+      await _studyHallPinManager!.deleteAll();
+      _studyHallPinData.clear();
+
+      final Uint8List customIconBytes = await _createStudyHallMarker();
+
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('study_halls')
+              .where('status', isEqualTo: 'approved')
+              .get();
+
+      final Map<String, int> coordCounts = {};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final coords = data['coords'];
+
+        if (coords is List && coords.isNotEmpty) {
+          final firstPoint = coords.first;
+
+          if (firstPoint is Map<String, dynamic> &&
+              firstPoint['lat'] != null &&
+              firstPoint['lng'] != null) {
+            double lat = (firstPoint['lat'] as num).toDouble();
+            double lng = (firstPoint['lng'] as num).toDouble();
+
+            final coordKey =
+                '${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}';
+            final duplicateIndex = coordCounts[coordKey] ?? 0;
+            coordCounts[coordKey] = duplicateIndex + 1;
+
+            // Slightly offset duplicate pins so they do not fully overlap
+            if (duplicateIndex > 0) {
+              const double offsetStep = 0.00003;
+              lat += offsetStep * duplicateIndex;
+              lng += offsetStep * duplicateIndex;
+            }
+
+            final annotation = await _studyHallPinManager!.create(
+              PointAnnotationOptions(
+                geometry: Point(coordinates: Position(lng, lat)),
+                image: customIconBytes,
+                iconSize: 1.0,
+              ),
+            );
+
+            _studyHallPinData[annotation.id] = {
+              'buildingAbbrev': (data['buildingAbbrev'] ?? '').toString(),
+              'buildingName': (data['buildingName'] ?? '').toString(),
+              'roomNumber': (data['roomNumber'] ?? '').toString(),
+              'startTime': (data['startTime'] ?? '').toString(),
+              'endTime': (data['endTime'] ?? '').toString(),
+              'seatCapacity': data['seatCapacity'],
+              'amenities': List<String>.from(data['amenities'] ?? []),
+            };
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading study hall pins: $e');
+    }
+  }
+
+  /// --------
 
   Future<void> _loadBuildingBathrooms() async {
     try {
@@ -209,22 +354,29 @@ class _MapScreenState extends State<MapScreen> {
     await mapboxMap!.location.updateSettings(
       LocationComponentSettings(enabled: true, pulsingEnabled: true),
     );
-    await mapboxMap?.annotations.createPointAnnotationManager().then((
-      manager,
-    ) async {
-      pointAnnotationManager = manager;
-      await _loadBuildingBathrooms();
-      pointAnnotationManager?.addOnPointAnnotationClickListener(
-        _BathroomClickListener(context),
-      );
-      _updateMapPins();
-    });
+
+    pointAnnotationManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    pointAnnotationManager?.addOnPointAnnotationClickListener(
+      _BathroomClickListener(context),
+    );
+
     _devPinManager =
-        await mapboxMap?.annotations.createPointAnnotationManager();
+        await mapboxMap!.annotations.createPointAnnotationManager();
     _devCircleManager =
-        await mapboxMap?.annotations.createCircleAnnotationManager();
+        await mapboxMap!.annotations.createCircleAnnotationManager();
     _foodAlertPinManager =
-        await mapboxMap?.annotations.createPointAnnotationManager();
+        await mapboxMap!.annotations.createPointAnnotationManager();
+
+    _studyHallPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _studyHallPinManager?.addOnPointAnnotationClickListener(
+      _StudyHallClickListener(_handleStudyHallPinTap, _studyHallPinData),
+    );
+
+    await _loadBuildingBathrooms();
+    await _loadStudyHallPins();
+    await _updateMapPins();
   }
 
   void _onMapTapped(MapContentGestureContext context) async {
@@ -347,7 +499,13 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onFilterTapped(FilterOption filter) {
     setState(() {
-      _activeFilter = (_activeFilter == filter.key) ? null : filter.key;
+      final wasSameFilter = _activeFilter == filter.key;
+      _activeFilter = wasSameFilter ? null : filter.key;
+
+      if (!wasSameFilter && filter.key == 'study') {
+        _selectedStudyBuildingFilter = 'All';
+        _selectedExactStudyBuilding = null;
+      }
     });
     _updateMapPins();
   }
@@ -361,6 +519,8 @@ class _MapScreenState extends State<MapScreen> {
       );
 
       if (result == true) {
+        await _loadStudyHallPins();
+        await _updateMapPins();
         setState(() {});
       }
       // } else if (_activeFilter == 'charging') {
@@ -378,14 +538,24 @@ class _MapScreenState extends State<MapScreen> {
   // --------
   Future<void> _updateMapPins() async {
     if (pointAnnotationManager == null) return;
-    await pointAnnotationManager?.deleteAll();
+
+    await pointAnnotationManager!.deleteAll();
+
     if (_activeFilter == 'restroom' && _bathroomPinOptions.isNotEmpty) {
-      await pointAnnotationManager?.createMulti(_bathroomPinOptions);
+      await pointAnnotationManager!.createMulti(_bathroomPinOptions);
+    }
+
+    if (_studyHallPinManager != null) {
+      if (_activeFilter == 'study') {
+        await _loadStudyHallPins();
+      } else {
+        await _studyHallPinManager!.deleteAll();
+        _studyHallPinData.clear();
+      }
     }
   }
 
   Widget? get _activeSheetContent {
-    // Food alert form takes priority over regular filter sheet
     if (_foodAlertStep == _FoodAlertStep.fillingForm) {
       return _CreateFoodAlertSheet(
         pinPosition: _foodAlertPinPosition!,
@@ -395,9 +565,9 @@ class _MapScreenState extends State<MapScreen> {
         },
       );
     }
+
     if (_activeFilter == null) return null;
 
-    // Fixed null safety access for lng and lat
     final Position locationToUse =
         (_isDevMode && _simulatedPosition != null)
             ? _simulatedPosition!
@@ -409,10 +579,30 @@ class _MapScreenState extends State<MapScreen> {
         currentPosition: locationToUse,
       );
     }
+
+    if (_activeFilter == 'study') {
+      return _StudySheetContent(
+        selectedBuildingFilter: _selectedStudyBuildingFilter,
+        selectedExactBuilding: _selectedExactStudyBuilding,
+        onBuildingFilterChanged: (value) {
+          setState(() {
+            _selectedStudyBuildingFilter = value;
+            _selectedExactStudyBuilding = null;
+          });
+        },
+        onStudyHallAdded: () async {
+          await _loadStudyHallPins();
+          await _updateMapPins();
+          setState(() {});
+        },
+      );
+    }
+
     final filter = _filters.firstWhere(
       (f) => f.key == _activeFilter,
       orElse: () => _filters.first,
     );
+
     return filter.hasBottomSheet ? filter.sheetContent : null;
   }
 
@@ -788,10 +978,59 @@ class _ParkingSheetContent extends StatelessWidget {
 
 /// NEW FROM GISELLE: STUDY HALL
 class _StudySheetContent extends StatelessWidget {
-  const _StudySheetContent();
+  const _StudySheetContent({
+    required this.selectedBuildingFilter,
+    required this.selectedExactBuilding,
+    required this.onBuildingFilterChanged,
+    required this.onStudyHallAdded,
+  });
+
+  final String selectedBuildingFilter;
+  final String? selectedExactBuilding;
+  final ValueChanged<String> onBuildingFilterChanged;
+  final Future<void> Function() onStudyHallAdded;
+
+  bool _matchesBuildingFilter(String buildingAbbrev) {
+    if (selectedBuildingFilter == 'All') return true;
+
+    final code = buildingAbbrev.trim().toUpperCase();
+
+    switch (selectedBuildingFilter) {
+      case 'LA':
+        return code.startsWith('LA');
+      case 'ENGR':
+        return code.startsWith('EN') || code.startsWith('ENGR');
+      case 'FA':
+        return code.startsWith('FA');
+      case 'HSCI':
+        return code == 'HSCI' || code.contains('SCI');
+      case 'PSY':
+        return code == 'PSY' || code.startsWith('PSY');
+      case 'HHS':
+        return code.startsWith('HHS');
+      case 'COB':
+        return code == 'COB';
+      case 'KIN':
+        return code == 'KIN';
+      default:
+        return code == selectedBuildingFilter;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final buildingFilters = [
+      'All',
+      'COB',
+      'KIN',
+      'LA',
+      'HSCI',
+      'ENGR',
+      'FA',
+      'PSY',
+      'HHS',
+    ];
+
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream:
           FirebaseFirestore.instance
@@ -815,6 +1054,20 @@ class _StudySheetContent extends StatelessWidget {
 
         final docs = snapshot.data?.docs ?? [];
 
+        final filteredDocs =
+            docs.where((doc) {
+              final data = doc.data();
+              final building = (data['buildingAbbrev'] ?? '').toString().trim();
+
+              if (selectedExactBuilding != null &&
+                  selectedExactBuilding!.isNotEmpty) {
+                return building.toUpperCase() ==
+                    selectedExactBuilding!.toUpperCase();
+              }
+
+              return _matchesBuildingFilter(building);
+            }).toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -829,6 +1082,60 @@ class _StudySheetContent extends StatelessWidget {
                 ),
               ),
             ),
+
+            const SizedBox(height: 6),
+
+            SizedBox(
+              height: 42,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: buildingFilters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final filter = buildingFilters[index];
+                  final isSelected =
+                      selectedExactBuilding == null &&
+                      selectedBuildingFilter == filter;
+
+                  return ChoiceChip(
+                    label: Text(filter),
+                    selected: isSelected,
+                    onSelected: (_) => onBuildingFilterChanged(filter),
+                    selectedColor: const Color(0xFFF2D21B),
+                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: Colors.black87,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            if (selectedExactBuilding != null &&
+                selectedExactBuilding!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                child: Text(
+                  'Showing: ${selectedExactBuilding!}',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
 
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
@@ -849,37 +1156,49 @@ class _StudySheetContent extends StatelessWidget {
               ),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () async {
-                await Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const AddStudyHallScreen(),
                   ),
                 );
+
+                if (result == true) {
+                  await onStudyHallAdded();
+                }
               },
             ),
 
             Divider(color: Colors.grey.shade300, height: 20),
 
-            if (docs.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            if (filteredDocs.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 child: Text(
-                  'No study halls added yet.',
-                  style: TextStyle(color: Colors.grey),
+                  selectedExactBuilding != null &&
+                          selectedExactBuilding!.isNotEmpty
+                      ? 'No study halls found for ${selectedExactBuilding!}.'
+                      : selectedBuildingFilter == 'All'
+                      ? 'No study halls added yet.'
+                      : 'No study halls found for $selectedBuildingFilter.',
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
 
-            if (docs.isNotEmpty)
+            if (filteredDocs.isNotEmpty)
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
-                itemCount: docs.length,
+                itemCount: filteredDocs.length,
                 separatorBuilder:
                     (context, index) =>
                         Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
-                  final data = docs[index].data();
+                  final data = filteredDocs[index].data();
 
                   final building =
                       (data['buildingAbbrev'] ?? '').toString().trim();
@@ -1577,5 +1896,20 @@ class _BathroomClickListener extends OnPointAnnotationClickListener {
       context,
       MaterialPageRoute(builder: (context) => const BathroomFinder()),
     );
+  }
+}
+
+// NEW FROM GISELLE
+class _StudyHallClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _StudyHallClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
   }
 }
