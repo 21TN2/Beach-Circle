@@ -10,6 +10,14 @@ import '../bathroom_finder.dart';
 
 import '../map_features/add_study_hall_screen.dart';
 import '../map_features/add_outlet_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
+//to do, remove sheet when placing pin
+// fix adding indication for pin
+// add active pins (or phase out?)
+
+enum _FoodAlertStep { none, placingPin, fillingForm }
 
 class FilterOption {
   final String key;
@@ -47,6 +55,12 @@ class _MapScreenState extends State<MapScreen> {
   Position? _simulatedPosition;
 
   String? _activeFilter;
+
+  //food alert form creation stuff
+  _FoodAlertStep _foodAlertStep = _FoodAlertStep.none;
+  Position? _foodAlertPinPosition;
+  PointAnnotationManager? _foodAlertPinManager;
+  PointAnnotation? _foodAlertPin;
 
   static const double _centerLat = 33.7820;
   static const double _centerLng = -118.1126;
@@ -209,9 +223,15 @@ class _MapScreenState extends State<MapScreen> {
         await mapboxMap?.annotations.createPointAnnotationManager();
     _devCircleManager =
         await mapboxMap?.annotations.createCircleAnnotationManager();
+    _foodAlertPinManager =
+        await mapboxMap?.annotations.createPointAnnotationManager();
   }
 
   void _onMapTapped(MapContentGestureContext context) async {
+    if (_foodAlertStep == _FoodAlertStep.placingPin) {
+      await _placeFoodAlertPin(context.point);
+      return;
+    }
     if (!_isDevMode) return;
     _simulatedPosition = context.point.coordinates;
     if (_devPin != null) await _devPinManager?.delete(_devPin!);
@@ -236,6 +256,47 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
     setState(() {});
+  }
+
+  //actually saving the position and coords for food alert. in future consider incporating buildings if matching (if useful)
+  Future<void> _placeFoodAlertPin(Point point) async {
+    if (_foodAlertPin != null) await _foodAlertPinManager?.delete(_foodAlertPin!);
+    _foodAlertPin = await _foodAlertPinManager?.create(
+      PointAnnotationOptions(
+        geometry: point,
+        iconSize: 1.5,
+        iconImage: "marker-15",
+      ),
+    );
+    setState(() {
+      _foodAlertPinPosition = point.coordinates;
+    });
+  }
+ 
+ //initate placing pin for food alert
+  void _startFoodAlertFlow() {
+    setState(() {
+      _foodAlertStep = _FoodAlertStep.placingPin;
+      _foodAlertPinPosition = null;
+    });
+  }
+ 
+ //confirm food alert pin placement and intiate filling out the form
+  void _confirmFoodAlertPin() {
+    if (_foodAlertPinPosition == null) return;
+    setState(() {
+      _foodAlertStep = _FoodAlertStep.fillingForm;
+    });
+  }
+ 
+ //cancel food alert placement and reset variables
+  Future<void> _cancelFoodAlertFlow() async {
+    if (_foodAlertPin != null) await _foodAlertPinManager?.delete(_foodAlertPin!);
+    setState(() {
+      _foodAlertStep = _FoodAlertStep.none;
+      _foodAlertPin = null;
+      _foodAlertPinPosition = null;
+    });
   }
 
   void _locateUser() {
@@ -322,6 +383,16 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget? get _activeSheetContent {
+    // Food alert form takes priority over regular filter sheet
+    if (_foodAlertStep == _FoodAlertStep.fillingForm) {
+      return _CreateFoodAlertSheet(
+        pinPosition: _foodAlertPinPosition!,
+        onClose: _cancelFoodAlertFlow,
+        onSubmitted: () {
+          _cancelFoodAlertFlow();
+        },
+      );
+    }
     if (_activeFilter == null) return null;
 
     // Fixed null safety access for lng and lat
@@ -401,13 +472,18 @@ class _MapScreenState extends State<MapScreen> {
           automaticallyImplyLeading: false,
         ),
       ),
+    
       bottomSheet:
           sheetContent != null
               ? _FilterBottomSheet(
                 child: sheetContent,
                 onClose: () {
-                  setState(() => _activeFilter = null);
-                  _updateMapPins();
+                  if (_foodAlertStep == _FoodAlertStep.fillingForm) {
+                    _cancelFoodAlertFlow();
+                  } else {
+                    setState(() => _activeFilter = null);
+                    _updateMapPins();
+                  }
                 },
               )
               : null,
@@ -421,108 +497,193 @@ class _MapScreenState extends State<MapScreen> {
             onMapCreated: _onMapCreated,
             onTapListener: _onMapTapped,
           ),
-          Positioned(
-            top: 20,
-            bottom: 370,
-            right: 12,
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(
-                context,
-              ).copyWith(scrollbars: false),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children:
-                      _filters
-                          .map(
-                            (f) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: RawMaterialButton(
-                                onPressed: () => _onFilterTapped(f),
-                                fillColor:
-                                    _activeFilter == f.key
-                                        ? const Color(0xFFFFCC00)
-                                        : const ui.Color.fromARGB(
-                                          255,
-                                          243,
-                                          250,
-                                          255,
-                                        ),
-                                shape: const CircleBorder(),
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 55,
-                                  height: 55,
-                                ),
-                                elevation: 4,
-                                child: Icon(
-                                  f.icon,
-                                  color: Colors.black87,
-                                  size: 30,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
+
+          //Pin placement instructions
+           if (_foodAlertStep == _FoodAlertStep.placingPin)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.touch_app, color: Colors.red, size: 20),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          "Tap the map to place your food alert pin",
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _cancelFoodAlertFlow,
+                        child: const Icon(Icons.close, size: 20, color: Colors.black45),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+ 
+          // Filter buttons (hidden during food alert flow)
+          if (_foodAlertStep == _FoodAlertStep.none)
+            Positioned(
+              top: 20,
+              bottom: 370,
+              right: 12,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children:
+                        _filters
+                            .map(
+                              (f) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: RawMaterialButton(
+                                  onPressed: () => _onFilterTapped(f),
+                                  fillColor:
+                                      _activeFilter == f.key
+                                          ? const Color(0xFFFFCC00)
+                                          : const ui.Color.fromARGB(
+                                            255,
+                                            243,
+                                            250,
+                                            255,
+                                          ),
+                                  shape: const CircleBorder(),
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 55,
+                                    height: 55,
+                                  ),
+                                  elevation: 4,
+                                  child: Icon(
+                                    f.icon,
+                                    color: Colors.black87,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  ),
+                ),
+              ),
+            ),
 
-          Positioned(
-            bottom: 40,
-            left: 15,
-            child: Column(
-              children: [
-                RawMaterialButton(
-                  onPressed: _zoomIn,
-                  fillColor: Colors.grey.shade300,
-                  shape: const CircleBorder(),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 46,
-                    height: 46,
+            // Zoom / locate controls (hidden during food alert flow)
+            if (_foodAlertStep == _FoodAlertStep.none)
+              Positioned(
+                bottom: 40,
+                left: 15,
+                child: Column(
+                  children: [
+                    RawMaterialButton(
+                      onPressed: _zoomIn,
+                      fillColor: Colors.grey.shade300,
+                      shape: const CircleBorder(),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 46,
+                        height: 46,
+                      ),
+                      elevation: 10,
+                      child: const Icon(Icons.add, color: Colors.black),
+                    ),
+                    const SizedBox(height: 5),
+                    RawMaterialButton(
+                      onPressed: _zoomOut,
+                      fillColor: Colors.grey.shade300,
+                      shape: const CircleBorder(),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 46,
+                        height: 46,
+                      ),
+                      elevation: 10,
+                      child: const Icon(Icons.remove, color: Colors.black),
+                    ),
+                    const SizedBox(height: 5),
+                    RawMaterialButton(
+                      onPressed: _resetView,
+                      fillColor: Colors.grey.shade300,
+                      shape: const CircleBorder(),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 50,
+                        height: 50,
+                      ),
+                      elevation: 10,
+                      child: const Icon(Icons.home, color: Colors.black),
+                    ),
+                    const SizedBox(height: 5),
+                    RawMaterialButton(
+                      onPressed: _locateUser,
+                      fillColor: Colors.blueAccent,
+                      shape: const CircleBorder(),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 50,
+                        height: 50,
+                      ),
+                      elevation: 10,
+                      child: const Icon(Icons.my_location, color: Colors.white),
                   ),
-                  elevation: 10,
-                  child: const Icon(Icons.add, color: Colors.black),
-                ),
-                const SizedBox(height: 5),
-                RawMaterialButton(
-                  onPressed: _zoomOut,
-                  fillColor: Colors.grey.shade300,
-                  shape: const CircleBorder(),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 46,
-                    height: 46,
-                  ),
-                  elevation: 10,
-                  child: const Icon(Icons.remove, color: Colors.black),
-                ),
-                const SizedBox(height: 5),
-                RawMaterialButton(
-                  onPressed: _resetView,
-                  fillColor: Colors.grey.shade300,
-                  shape: const CircleBorder(),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 50,
-                    height: 50,
-                  ),
-                  elevation: 10,
-                  child: const Icon(Icons.home, color: Colors.black),
-                ),
-                const SizedBox(height: 5),
-                RawMaterialButton(
-                  onPressed: _locateUser,
-                  fillColor: Colors.blueAccent,
-                  shape: const CircleBorder(),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 50,
-                    height: 50,
-                  ),
-                  elevation: 10,
-                  child: const Icon(Icons.my_location, color: Colors.white),
-                ),
               ],
             ),
           ),
+
+          //food alert button creation
+           if (_activeFilter == 'food' && _foodAlertStep == _FoodAlertStep.none)
+            Positioned(
+              bottom: 310,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: _startFoodAlertFlow,
+                backgroundColor: Colors.red,
+                elevation: 6,
+                child: const Icon(Icons.add, color: Colors.white, size: 28),
+              ),
+            ),
+
+          //food alert pin placement (START OF THE WHOLE WORK FLOW) (need to somehow add this button to top)
+           if (_foodAlertStep == _FoodAlertStep.placingPin)
+            Positioned(
+              bottom: 40,
+              left: 24,
+              right: 24,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _foodAlertPinPosition != null ? _confirmFoodAlertPin : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        disabledBackgroundColor: Colors.red.shade200,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 6,
+                      ),
+                      child: const Text(
+                        "Confirm Location",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
         ],
       ),
     );
@@ -785,59 +946,294 @@ class _ChargingSheetContent extends StatelessWidget {
   );
 }
 
+//class for food alert creation (movee thissss)
+class _CreateFoodAlertSheet extends StatefulWidget {
+  final Position pinPosition;
+  final VoidCallback onClose;
+  final VoidCallback onSubmitted;
+ 
+  const _CreateFoodAlertSheet({
+    required this.pinPosition,
+    required this.onClose,
+    required this.onSubmitted,
+  });
+ 
+  @override
+  State<_CreateFoodAlertSheet> createState() => _CreateFoodAlertSheetState();
+}
+
+
+//class to the actual food alert creation (move this too)
+class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
+  //controlers and states for the stuff on the screen
+  final _titleController = TextEditingController(); 
+  final _descController = TextEditingController(); 
+  // food tag controller here
+  bool _isSubmitting = false;
+ 
+  @override
+  void dispose() {
+    _titleController.dispose(); 
+    _descController.dispose(); 
+    super.dispose();
+  }
+ 
+  //submitting the food alert form details
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    final desc = _descController.text.trim();
+    if (title.isEmpty || desc.isEmpty) return;
+ 
+    setState(() => _isSubmitting = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+          throw Exception("User not logged in");
+        }
+      
+      await FirebaseFirestore.instance.collection('food_alerts').add({
+        'userId': user.uid,
+        'title': title,
+        'description': desc,
+        'lat': widget.pinPosition.lat,
+        'lng': widget.pinPosition.lng,
+        'createdAt': FieldValue.serverTimestamp(),
+        'active': true,
+      });
+      debugPrint("User UID: ${user.uid}");
+
+      widget.onSubmitted();
+    } catch (e) {
+      debugPrint('Error submitting food alert: $e');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 4,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Create Food Alert",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 16),
+ 
+          // Title field
+          const Text(
+            "Title (<50 characters)*",
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _titleController,
+            maxLength: 50,
+            decoration: InputDecoration(
+              hintText: "Ex: Free sandwiches and cookies",
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              filled: true,
+              fillColor: Colors.grey.shade100,
+              counterText: '',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 14),
+ 
+          // Description field
+          const Text(
+            "Description (<200 characters)*",
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _descController,
+            maxLength: 200,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: "Ex: Free food and snacks at the entrance of COB near Wall StreEat Cafe.",
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              filled: true,
+              fillColor: Colors.grey.shade100,
+              counterText: '',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          //food alert tag stuff here
+ 
+          // Submit button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                disabledBackgroundColor: Colors.red.shade200,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 4,
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Text(
+                      "Submit Alert",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FoodAlertSheetContent extends StatelessWidget {
   const _FoodAlertSheetContent();
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
-          child: Text(
-            "Food Alerts",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: 5, bottom: 20),
-          itemCount: 3,
-          separatorBuilder:
-              (context, index) =>
-                  Divider(color: Colors.grey.shade200, height: 1),
-          itemBuilder: (context, index) {
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 2,
-              ),
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE8F0FE),
-                  shape: BoxShape.circle,
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('food_alerts')
+          .where('active', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        // Loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Error
+        if (snapshot.hasError) {
+          return const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('Could not load food alerts.'),
+          );
+        }
+
+        final docs = snapshot.data?.docs ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+              child: Text(
+                "Food Alerts",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                child: const Icon(Icons.pin_drop, color: Colors.red, size: 22),
               ),
-              title: const Text(
-                "Recent Alert",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
+
+            if (docs.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Text(
+                  'No active food alerts right now.',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
-              subtitle: const Text(
-                "Details coming soon",
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+
+            if (docs.isNotEmpty)
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 5, bottom: 20),
+                itemCount: docs.length,
+                separatorBuilder: (context, index) =>
+                    Divider(color: Colors.grey.shade200, height: 1),
+                itemBuilder: (context, index) {
+                  final data = docs[index].data();
+                  final title = (data['title'] ?? 'Untitled').toString();
+                  final description = (data['description'] ?? '').toString();
+
+                  // Format timestamp if available
+                  String timeStr = '';
+                  final ts = data['createdAt'];
+                  if (ts is Timestamp) {
+                    final dt = ts.toDate();
+                    final diff = DateTime.now().difference(dt);
+                    if (diff.inMinutes < 60) {
+                      timeStr = '${diff.inMinutes}m ago';
+                    } else if (diff.inHours < 24) {
+                      timeStr = '${diff.inHours}h ago';
+                    } else {
+                      timeStr = '${diff.inDays}d ago';
+                    }
+                  }
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 2,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8F0FE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.pin_drop, color: Colors.red, size: 22),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      timeStr.isNotEmpty ? '$description · $timeStr' : description,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () {
+                      // TODO: fly map camera to pin location
+                      // final lat = data['lat'], lng = data['lng'];
+                    },
+                  );
+                },
               ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-            );
-          },
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
