@@ -12,17 +12,29 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
   final StudyHallService _studyHallService = StudyHallService();
   final TextEditingController _roomController = TextEditingController();
 
-  late Future<List<Map<String, dynamic>>> _buildingsFuture;
+  late Future<List<Map<String, String>>> _buildingsFuture;
 
   final List<String> _allAmenities = [
-    'Outlets',
-    'Open Lab',
-    'Projector',
-    'Printer',
-    'Quiet Zone',
+    '💻 Open Lab',
+    '📽️ Projector',
+    '🖨️ Printer',
+    '🤫 Quiet Zone',
+    '📶 High-Speed Wi-Fi',
+    '🪑 Comfortable Seating',
+    '🚪 Private Study Rooms',
+    '🥤 Vending Machine Nearby',
+    '🧽 Whiteboards',
+    '📚 Study Space',
+    '🍎 Mac Computers',
+    '🪟 Windows Computers',
+    '🔋 Power Strips/Outlets',
+    '❄️ Air Conditioning',
   ];
 
-  Map<String, dynamic>? _selectedBuilding;
+  String? _selectedBuildingId;
+  String? _selectedBuildingCode;
+  String? _selectedBuildingName;
+
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   int _seatCapacity = 15;
@@ -57,6 +69,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
           isStart
               ? (_startTime ?? const TimeOfDay(hour: 10, minute: 30))
               : (_endTime ?? const TimeOfDay(hour: 14, minute: 0)),
+      initialEntryMode: TimePickerEntryMode.inputOnly,
     );
 
     if (picked == null) return;
@@ -83,7 +96,9 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
   Future<void> _submit() async {
     final roomNumber = _roomController.text.trim();
 
-    if (_selectedBuilding == null ||
+    if (_selectedBuildingId == null ||
+        _selectedBuildingCode == null ||
+        _selectedBuildingName == null ||
         roomNumber.isEmpty ||
         _startTime == null ||
         _endTime == null) {
@@ -99,8 +114,9 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
 
     try {
       await _studyHallService.addStudyHall(
-        buildingId: _selectedBuilding!['id'],
-        buildingAbbrev: _selectedBuilding!['abbrev'],
+        buildingId: _selectedBuildingId!,
+        buildingCode: _selectedBuildingCode!,
+        buildingName: _selectedBuildingName!,
         roomNumber: roomNumber,
         startTime: _formatTime(_startTime),
         endTime: _formatTime(_endTime),
@@ -174,6 +190,103 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     );
   }
 
+  Widget _buildBuildingSearch(List<Map<String, String>> buildings) {
+    return Autocomplete<Map<String, String>>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return buildings;
+        }
+
+        final query = textEditingValue.text.toLowerCase();
+
+        return buildings.where((b) {
+          final code = (b['code'] ?? '').toLowerCase();
+          final name = (b['name'] ?? '').toLowerCase();
+          return code.contains(query) || name.contains(query);
+        });
+      },
+      displayStringForOption: (b) {
+        final code = b['code'] ?? '';
+        final name = b['name'] ?? '';
+        return code.isEmpty ? name : '$code - $name';
+      },
+      onSelected: (b) {
+        setState(() {
+          _selectedBuildingId = b['id'];
+          _selectedBuildingCode = b['code'];
+          _selectedBuildingName = b['name'];
+        });
+      },
+      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+        if (_selectedBuildingCode != null && controller.text.isEmpty) {
+          final code = _selectedBuildingCode ?? '';
+          final name = _selectedBuildingName ?? '';
+          controller.text = code.isEmpty ? name : '$code - $name';
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFD8D8D8), width: 1.5),
+          ),
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 15),
+            decoration: const InputDecoration(
+              hintText: 'Search building or abbreviation...',
+              hintStyle: TextStyle(color: Color(0xFFBBBBBB)),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 13,
+              ),
+              border: InputBorder.none,
+              suffixIcon: Icon(Icons.search, color: Colors.grey),
+            ),
+            onChanged: (_) {
+              if (_selectedBuildingId != null) {
+                setState(() {
+                  _selectedBuildingId = null;
+                  _selectedBuildingCode = null;
+                  _selectedBuildingName = null;
+                });
+              }
+            },
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(10),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final b = options.elementAt(index);
+                  final code = b['code'] ?? '';
+                  final name = b['name'] ?? '';
+                  final display = code.isEmpty ? name : '$code - $name';
+
+                  return ListTile(
+                    title: Text(display, style: const TextStyle(fontSize: 14)),
+                    onTap: () => onSelected(b),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +297,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
         elevation: 0,
       ),
       backgroundColor: const Color(0xFFF7F7F7),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<Map<String, String>>>(
         future: _buildingsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -218,61 +331,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                 const SizedBox(height: 24),
 
                 _buildSectionLabel('Building Location'),
-                DropdownButtonFormField<Map<String, dynamic>>(
-                  value: _selectedBuilding,
-                  isExpanded: true,
-                  menuMaxHeight: 250,
-                  decoration: InputDecoration(
-                    hintText: 'Select Building',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  items:
-                      buildings.map((building) {
-                        final abbrev = building['abbrev'] ?? '';
-                        final name = building['name'] ?? '';
-                        final label =
-                            name.toString().isNotEmpty
-                                ? '$abbrev - $name'
-                                : abbrev.toString();
-
-                        return DropdownMenuItem<Map<String, dynamic>>(
-                          value: building,
-                          child: Text(
-                            label,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        );
-                      }).toList(),
-                  selectedItemBuilder: (context) {
-                    return buildings.map((building) {
-                      final abbrev = building['abbrev'] ?? '';
-                      final name = building['name'] ?? '';
-                      final label =
-                          name.toString().isNotEmpty
-                              ? '$abbrev - $name'
-                              : abbrev.toString();
-
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          label,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      );
-                    }).toList();
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedBuilding = value;
-                    });
-                  },
-                ),
+                _buildBuildingSearch(buildings),
                 const SizedBox(height: 20),
 
                 _buildSectionLabel('Room Number'),
@@ -357,6 +416,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                   ),
                 if (_selectedAmenities.isNotEmpty) const SizedBox(height: 10),
                 Container(
+                  height: 220,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
@@ -366,17 +426,20 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                     border: Border.all(color: Colors.grey.shade400),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Column(
-                    children:
-                        _allAmenities.map((amenity) {
-                          return CheckboxListTile(
-                            value: _selectedAmenities.contains(amenity),
-                            onChanged: (_) => _toggleAmenity(amenity),
-                            title: Text(amenity),
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        }).toList(),
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: ListView(
+                      children:
+                          _allAmenities.map((amenity) {
+                            return CheckboxListTile(
+                              value: _selectedAmenities.contains(amenity),
+                              onChanged: (_) => _toggleAmenity(amenity),
+                              title: Text(amenity),
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            );
+                          }).toList(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),

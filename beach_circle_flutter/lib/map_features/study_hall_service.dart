@@ -5,25 +5,54 @@ class StudyHallService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<List<Map<String, dynamic>>> fetchBuildings() async {
-    final snapshot = await _db.collection('buildings').get();
+  Future<List<Map<String, String>>> fetchBuildings() async {
+    final snapshot =
+        await _db
+            .collection('buildings')
+            .where('feature_type', isEqualTo: 'building')
+            .get();
 
     final buildings =
-        snapshot.docs.map((doc) {
-          final data = doc.data();
+        snapshot.docs
+            .map((doc) {
+              final data = doc.data();
 
-          return {
-            'id': doc.id,
-            'abbrev': (data['abbrev'] ?? '').toString(),
-            'name': (data['name'] ?? '').toString(),
-            'coords': data['coords'],
-          };
-        }).toList();
+              return {
+                'id': doc.id,
+                'code': (data['abbrev'] ?? '').toString().trim(),
+                'name': (data['name'] ?? '').toString().trim(),
+              };
+            })
+            .where((building) {
+              final code = (building['code'] ?? '').toLowerCase().trim();
+              final name = (building['name'] ?? '').toLowerCase().trim();
+
+              final isExcludedCode = code == 'g12' || code == 'g14';
+
+              final isExcludedName =
+                  name == 'g12' ||
+                  name == 'g14' ||
+                  name.contains('sand courts') ||
+                  name.contains('softball complex') ||
+                  name.contains('tennis center') ||
+                  name.contains('soccer and softball clubhouse') ||
+                  name.contains('parking') ||
+                  name.contains('structure') ||
+                  name.contains('lot') ||
+                  name.contains('field') ||
+                  name.contains('fields') ||
+                  name.contains('stadium') ||
+                  name.contains('track') ||
+                  name.contains('diamond');
+
+              return !isExcludedCode && !isExcludedName;
+            })
+            .toList();
 
     buildings.sort((a, b) {
-      final aLabel = (a['abbrev'] ?? '').toString();
-      final bLabel = (b['abbrev'] ?? '').toString();
-      return aLabel.compareTo(bLabel);
+      final aName = (a['name'] ?? '').toLowerCase();
+      final bName = (b['name'] ?? '').toLowerCase();
+      return aName.compareTo(bName);
     });
 
     return buildings;
@@ -31,7 +60,8 @@ class StudyHallService {
 
   Future<void> addStudyHall({
     required String buildingId,
-    required String buildingAbbrev,
+    required String buildingCode,
+    required String buildingName,
     required String roomNumber,
     required String startTime,
     required String endTime,
@@ -54,8 +84,8 @@ class StudyHallService {
 
     await _db.collection('study_halls').add({
       'buildingId': buildingId,
-      'buildingAbbrev': buildingAbbrev,
-      'buildingName': (buildingData['name'] ?? '').toString(),
+      'buildingAbbrev': buildingCode,
+      'buildingName': buildingName,
       'coords': buildingData['coords'],
       'roomNumber': roomNumber,
       'startTime': startTime,

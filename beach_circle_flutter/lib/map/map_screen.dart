@@ -11,7 +11,7 @@ import '../bathroom_finder.dart';
 import '../map_features/add_study_hall_screen.dart';
 import '../map_features/add_outlet_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import '../map_features/expanded_study_hall_screen.dart';
 
 //to do, remove sheet when placing pin
 // fix adding indication for pin
@@ -260,7 +260,8 @@ class _MapScreenState extends State<MapScreen> {
 
   //actually saving the position and coords for food alert. in future consider incporating buildings if matching (if useful)
   Future<void> _placeFoodAlertPin(Point point) async {
-    if (_foodAlertPin != null) await _foodAlertPinManager?.delete(_foodAlertPin!);
+    if (_foodAlertPin != null)
+      await _foodAlertPinManager?.delete(_foodAlertPin!);
     _foodAlertPin = await _foodAlertPinManager?.create(
       PointAnnotationOptions(
         geometry: point,
@@ -272,26 +273,27 @@ class _MapScreenState extends State<MapScreen> {
       _foodAlertPinPosition = point.coordinates;
     });
   }
- 
- //initate placing pin for food alert
+
+  //initate placing pin for food alert
   void _startFoodAlertFlow() {
     setState(() {
       _foodAlertStep = _FoodAlertStep.placingPin;
       _foodAlertPinPosition = null;
     });
   }
- 
- //confirm food alert pin placement and intiate filling out the form
+
+  //confirm food alert pin placement and intiate filling out the form
   void _confirmFoodAlertPin() {
     if (_foodAlertPinPosition == null) return;
     setState(() {
       _foodAlertStep = _FoodAlertStep.fillingForm;
     });
   }
- 
- //cancel food alert placement and reset variables
+
+  //cancel food alert placement and reset variables
   Future<void> _cancelFoodAlertFlow() async {
-    if (_foodAlertPin != null) await _foodAlertPinManager?.delete(_foodAlertPin!);
+    if (_foodAlertPin != null)
+      await _foodAlertPinManager?.delete(_foodAlertPin!);
     setState(() {
       _foodAlertStep = _FoodAlertStep.none;
       _foodAlertPin = null;
@@ -472,7 +474,7 @@ class _MapScreenState extends State<MapScreen> {
           automaticallyImplyLeading: false,
         ),
       ),
-    
+
       bottomSheet:
           sheetContent != null
               ? _FilterBottomSheet(
@@ -499,7 +501,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
 
           //Pin placement instructions
-           if (_foodAlertStep == _FoodAlertStep.placingPin)
+          if (_foodAlertStep == _FoodAlertStep.placingPin)
             Positioned(
               top: 16,
               left: 16,
@@ -509,7 +511,10 @@ class _MapScreenState extends State<MapScreen> {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.white,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.touch_app, color: Colors.red, size: 20),
@@ -517,19 +522,26 @@ class _MapScreenState extends State<MapScreen> {
                       const Expanded(
                         child: Text(
                           "Tap the map to place your food alert pin",
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       GestureDetector(
                         onTap: _cancelFoodAlertFlow,
-                        child: const Icon(Icons.close, size: 20, color: Colors.black45),
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.black45,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
- 
+
           // Filter buttons (hidden during food alert flow)
           if (_foodAlertStep == _FoodAlertStep.none)
             Positioned(
@@ -579,66 +591,66 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-            // Zoom / locate controls (hidden during food alert flow)
-            if (_foodAlertStep == _FoodAlertStep.none)
-              Positioned(
-                bottom: 40,
-                left: 15,
-                child: Column(
-                  children: [
-                    RawMaterialButton(
-                      onPressed: _zoomIn,
-                      fillColor: Colors.grey.shade300,
-                      shape: const CircleBorder(),
-                      constraints: const BoxConstraints.tightFor(
-                        width: 46,
-                        height: 46,
-                      ),
-                      elevation: 10,
-                      child: const Icon(Icons.add, color: Colors.black),
+          // Zoom / locate controls (hidden during food alert flow)
+          if (_foodAlertStep == _FoodAlertStep.none)
+            Positioned(
+              bottom: 40,
+              left: 15,
+              child: Column(
+                children: [
+                  RawMaterialButton(
+                    onPressed: _zoomIn,
+                    fillColor: Colors.grey.shade300,
+                    shape: const CircleBorder(),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 46,
+                      height: 46,
                     ),
-                    const SizedBox(height: 5),
-                    RawMaterialButton(
-                      onPressed: _zoomOut,
-                      fillColor: Colors.grey.shade300,
-                      shape: const CircleBorder(),
-                      constraints: const BoxConstraints.tightFor(
-                        width: 46,
-                        height: 46,
-                      ),
-                      elevation: 10,
-                      child: const Icon(Icons.remove, color: Colors.black),
-                    ),
-                    const SizedBox(height: 5),
-                    RawMaterialButton(
-                      onPressed: _resetView,
-                      fillColor: Colors.grey.shade300,
-                      shape: const CircleBorder(),
-                      constraints: const BoxConstraints.tightFor(
-                        width: 50,
-                        height: 50,
-                      ),
-                      elevation: 10,
-                      child: const Icon(Icons.home, color: Colors.black),
-                    ),
-                    const SizedBox(height: 5),
-                    RawMaterialButton(
-                      onPressed: _locateUser,
-                      fillColor: Colors.blueAccent,
-                      shape: const CircleBorder(),
-                      constraints: const BoxConstraints.tightFor(
-                        width: 50,
-                        height: 50,
-                      ),
-                      elevation: 10,
-                      child: const Icon(Icons.my_location, color: Colors.white),
+                    elevation: 10,
+                    child: const Icon(Icons.add, color: Colors.black),
                   ),
-              ],
+                  const SizedBox(height: 5),
+                  RawMaterialButton(
+                    onPressed: _zoomOut,
+                    fillColor: Colors.grey.shade300,
+                    shape: const CircleBorder(),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 46,
+                      height: 46,
+                    ),
+                    elevation: 10,
+                    child: const Icon(Icons.remove, color: Colors.black),
+                  ),
+                  const SizedBox(height: 5),
+                  RawMaterialButton(
+                    onPressed: _resetView,
+                    fillColor: Colors.grey.shade300,
+                    shape: const CircleBorder(),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 50,
+                      height: 50,
+                    ),
+                    elevation: 10,
+                    child: const Icon(Icons.home, color: Colors.black),
+                  ),
+                  const SizedBox(height: 5),
+                  RawMaterialButton(
+                    onPressed: _locateUser,
+                    fillColor: Colors.blueAccent,
+                    shape: const CircleBorder(),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 50,
+                      height: 50,
+                    ),
+                    elevation: 10,
+                    child: const Icon(Icons.my_location, color: Colors.white),
+                  ),
+                ],
+              ),
             ),
-          ),
 
           //food alert button creation
-           if (_activeFilter == 'food' && _foodAlertStep == _FoodAlertStep.none)
+          if (_activeFilter == 'food' && _foodAlertStep == _FoodAlertStep.none)
             Positioned(
               bottom: 310,
               right: 16,
@@ -651,7 +663,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
 
           //food alert pin placement (START OF THE WHOLE WORK FLOW) (need to somehow add this button to top)
-           if (_foodAlertStep == _FoodAlertStep.placingPin)
+          if (_foodAlertStep == _FoodAlertStep.placingPin)
             Positioned(
               bottom: 40,
               left: 24,
@@ -660,7 +672,10 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _foodAlertPinPosition != null ? _confirmFoodAlertPin : null,
+                      onPressed:
+                          _foodAlertPinPosition != null
+                              ? _confirmFoodAlertPin
+                              : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         disabledBackgroundColor: Colors.red.shade200,
@@ -683,7 +698,6 @@ class _MapScreenState extends State<MapScreen> {
                 ],
               ),
             ),
-
         ],
       ),
     );
@@ -783,7 +797,6 @@ class _StudySheetContent extends StatelessWidget {
           FirebaseFirestore.instance
               .collection('study_halls')
               .where('status', isEqualTo: 'approved')
-              .orderBy('buildingAbbrev')
               .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -794,9 +807,9 @@ class _StudySheetContent extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return const Padding(
-            padding: EdgeInsets.all(20),
-            child: Text('Could not load study halls.'),
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text('Could not load study halls: ${snapshot.error}'),
           );
         }
 
@@ -816,90 +829,6 @@ class _StudySheetContent extends StatelessWidget {
                 ),
               ),
             ),
-
-            if (docs.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Text(
-                  'No study halls added yet.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-
-            if (docs.isNotEmpty)
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 5, bottom: 8),
-                itemCount: docs.length,
-                separatorBuilder:
-                    (context, index) =>
-                        Divider(color: Colors.grey.shade200, height: 1),
-                itemBuilder: (context, index) {
-                  final data = docs[index].data();
-
-                  final building = (data['buildingAbbrev'] ?? '').toString();
-                  final room = (data['roomNumber'] ?? '').toString();
-                  final startTime = (data['startTime'] ?? '').toString();
-                  final endTime = (data['endTime'] ?? '').toString();
-                  final seats = data['seatCapacity'];
-                  final amenities = List<String>.from(data['amenities'] ?? []);
-
-                  final title = '$building $room';
-                  final subtitleParts = <String>[];
-
-                  if (startTime.isNotEmpty && endTime.isNotEmpty) {
-                    subtitleParts.add('$startTime - $endTime');
-                  }
-
-                  if (seats != null) {
-                    subtitleParts.add('Seats: $seats');
-                  }
-
-                  if (amenities.isNotEmpty) {
-                    subtitleParts.add('Amenities: ${amenities.join(', ')}');
-                  }
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 4,
-                    ),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFE8F0FE),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.menu_book,
-                        color: Colors.black87,
-                        size: 22,
-                      ),
-                    ),
-                    title: Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      subtitleParts.join('\n'),
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 13,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
-              ),
-
-            Divider(color: Colors.grey.shade300, height: 20),
 
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
@@ -929,13 +858,149 @@ class _StudySheetContent extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 20),
+            Divider(color: Colors.grey.shade300, height: 20),
+
+            if (docs.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Text(
+                  'No study halls added yet.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+
+            if (docs.isNotEmpty)
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 5, bottom: 20),
+                itemCount: docs.length,
+                separatorBuilder:
+                    (context, index) =>
+                        Divider(color: Colors.grey.shade200, height: 1),
+                itemBuilder: (context, index) {
+                  final data = docs[index].data();
+
+                  final building =
+                      (data['buildingAbbrev'] ?? '').toString().trim();
+                  final room = (data['roomNumber'] ?? '').toString().trim();
+                  final startTime = (data['startTime'] ?? '').toString();
+                  final endTime = (data['endTime'] ?? '').toString();
+                  final seats = data['seatCapacity'];
+                  final amenities = List<String>.from(data['amenities'] ?? []);
+
+                  final cleanRoom =
+                      room.toLowerCase().startsWith('room ')
+                          ? room.substring(5).trim()
+                          : room;
+
+                  final title =
+                      building.isNotEmpty
+                          ? '$building Room $cleanRoom'
+                          : 'Room $cleanRoom';
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 6,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8F0FE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.menu_book,
+                        color: Colors.black87,
+                        size: 22,
+                      ),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (startTime.isNotEmpty && endTime.isNotEmpty)
+                            Text(
+                              '$startTime - $endTime',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          if (seats != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                'Seats: $seats',
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          if (amenities.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                amenities.length > 3
+                                    ? 'Amenities: ${amenities.take(3).join(', ')} +${amenities.length - 3} more'
+                                    : 'Amenities: ${amenities.join(', ')}',
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 13,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => ExpandedStudyHallScreen(
+                                title: title,
+                                buildingName:
+                                    (data['buildingName'] ?? '').toString(),
+                                startTime: startTime,
+                                endTime: endTime,
+                                seats:
+                                    seats is int
+                                        ? seats
+                                        : int.tryParse('$seats'),
+                                amenities: amenities,
+                              ),
+                        ),
+                      );
+                    },
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
           ],
         );
       },
     );
   }
 }
+// ----------
 
 class _ChargingSheetContent extends StatelessWidget {
   const _ChargingSheetContent();
@@ -951,47 +1016,46 @@ class _CreateFoodAlertSheet extends StatefulWidget {
   final Position pinPosition;
   final VoidCallback onClose;
   final VoidCallback onSubmitted;
- 
+
   const _CreateFoodAlertSheet({
     required this.pinPosition,
     required this.onClose,
     required this.onSubmitted,
   });
- 
+
   @override
   State<_CreateFoodAlertSheet> createState() => _CreateFoodAlertSheetState();
 }
 
-
 //class to the actual food alert creation (move this too)
 class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
   //controlers and states for the stuff on the screen
-  final _titleController = TextEditingController(); 
-  final _descController = TextEditingController(); 
+  final _titleController = TextEditingController();
+  final _descController = TextEditingController();
   // food tag controller here
   bool _isSubmitting = false;
- 
+
   @override
   void dispose() {
-    _titleController.dispose(); 
-    _descController.dispose(); 
+    _titleController.dispose();
+    _descController.dispose();
     super.dispose();
   }
- 
+
   //submitting the food alert form details
   Future<void> _submit() async {
     final title = _titleController.text.trim();
     final desc = _descController.text.trim();
     if (title.isEmpty || desc.isEmpty) return;
- 
+
     setState(() => _isSubmitting = true);
     try {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
-          throw Exception("User not logged in");
-        }
-      
+        throw Exception("User not logged in");
+      }
+
       await FirebaseFirestore.instance.collection('food_alerts').add({
         'userId': user.uid,
         'title': title,
@@ -1010,7 +1074,7 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -1026,14 +1090,22 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
         children: [
           const Text(
             "Create Food Alert",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 16),
- 
+
           // Title field
           const Text(
             "Title (<50 characters)*",
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 6),
           TextField(
@@ -1049,15 +1121,22 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 14),
- 
+
           // Description field
           const Text(
             "Description (<200 characters)*",
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 6),
           TextField(
@@ -1065,7 +1144,8 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
             maxLength: 200,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: "Ex: Free food and snacks at the entrance of COB near Wall StreEat Cafe.",
+              hintText:
+                  "Ex: Free food and snacks at the entrance of COB near Wall StreEat Cafe.",
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               filled: true,
               fillColor: Colors.grey.shade100,
@@ -1074,13 +1154,16 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 20),
 
           //food alert tag stuff here
- 
+
           // Submit button
           SizedBox(
             width: double.infinity,
@@ -1095,20 +1178,24 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
                 ),
                 elevation: 4,
               ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Text(
-                      "Submit Alert",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+              child:
+                  _isSubmitting
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : const Text(
+                        "Submit Alert",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
             ),
           ),
         ],
@@ -1122,11 +1209,12 @@ class _FoodAlertSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('food_alerts')
-          .where('active', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('food_alerts')
+              .where('active', isEqualTo: true)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
       builder: (context, snapshot) {
         // Loading
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1175,8 +1263,9 @@ class _FoodAlertSheetContent extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
                 itemCount: docs.length,
-                separatorBuilder: (context, index) =>
-                    Divider(color: Colors.grey.shade200, height: 1),
+                separatorBuilder:
+                    (context, index) =>
+                        Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
                   final data = docs[index].data();
                   final title = (data['title'] ?? 'Untitled').toString();
@@ -1208,7 +1297,11 @@ class _FoodAlertSheetContent extends StatelessWidget {
                         color: Color(0xFFE8F0FE),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.pin_drop, color: Colors.red, size: 22),
+                      child: const Icon(
+                        Icons.pin_drop,
+                        color: Colors.red,
+                        size: 22,
+                      ),
                     ),
                     title: Text(
                       title,
@@ -1218,12 +1311,20 @@ class _FoodAlertSheetContent extends StatelessWidget {
                       ),
                     ),
                     subtitle: Text(
-                      timeStr.isNotEmpty ? '$description · $timeStr' : description,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      timeStr.isNotEmpty
+                          ? '$description · $timeStr'
+                          : description,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
                     onTap: () {
                       // TODO: fly map camera to pin location
                       // final lat = data['lat'], lng = data['lng'];
