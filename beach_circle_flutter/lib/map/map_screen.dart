@@ -429,6 +429,7 @@ class _MapScreenState extends State<MapScreen> {
   //initate placing pin for food alert
   void _startFoodAlertFlow() {
     setState(() {
+      _activeFilter = null;
       _foodAlertStep = _FoodAlertStep.placingPin;
       _foodAlertPinPosition = null;
     });
