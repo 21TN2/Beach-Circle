@@ -1,0 +1,100 @@
+Academic Services | AS | 1
+Amazon @ The Beach | None | 1
+Anna W. Ngai Alumni Center | ANAC | 1
+Atlantic | None | 1
+Barrett Athletic Administration Center (BAC) | BAC | 1
+Beach Building Services | BBS | 1
+Beachside Dining | None | 1
+Bob Cole Conservatory of Music | None | 2
+Bob and Barbara Ellis Education | EED | 2
+Bookstore Convenience Store | None | 1
+Brotman Hall | BH | 6
+Carolyn Campagna Kleefeld Contemporary Art Museum | KCAM | 1
+Carpenter Performing Arts Center | CPAC | 1
+Central Plant | CP | 1
+Child Development Center | CDC | 1
+Cinematic Arts | CA | 1
+College of Business | COB | 2
+College of Liberal Arts | CLA | 1
+College of Professional and Continuing Education | CPaCE | 2
+Corporation Yard | CORP | 1
+Dance Center | DC | 1
+Design | DESN | 2
+Education 2 | ED2 | 2
+Engineering 2 | EN2 | 2
+Engineering 3 | EN3 | 2
+Engineering 4 | EN4 | 2
+Engineering Technology  | ET | 1
+Engineering and Computer Science | ECS | 6
+FIne Arts 3 | FA3 | 2
+Faculty Office 2 | FO2 | 1
+Faculty Office 3 | FO3 | 1
+Faculty Office 4 | FO4 | 1
+Faculty Office 5 | FO5 | 1
+Family and Consumer Services | FCS | 1
+Fine Arts 1 | FA1 | 2
+Fine Arts 2 | FA2 | 2
+Fine Arts 4 | FA4 | 2
+Hall of Science | HSCI | 3
+Health and Human Services 1 Classrooms | HHS1 | 1
+Health and Human Services 2 Offices | HHS2 | 1
+Hillside A | None | 1
+Hillside B | None | 1
+Hillside C | None | 1
+Hillside Commons | None | 1
+Hillside D | None | 1
+Hillside E | None | 1
+Hillside F | None | 1
+Horn Center | HC | 1
+Human Services and Design | HSD | 2
+International House | IH | 1
+Kinesiology | KIN | 2
+Language Arts Building | LAB | 1
+Lecture Halls 150/151 | LH | 1
+Liberal Arts 1 | LA1 | 3
+Liberal Arts 2 | LA2 | 3
+Liberal Arts 3 | LA3 | 3
+Liberal Arts 4 | LA4 | 3
+Liberal Arts 5 | LA5 | 5
+Library | LIB | 5
+Los Alamitos Hall | LAH | 1
+Los Cerritos Hall | LCH | 1
+Mail Services | MS | 1
+McIntosh Humanities | MHB | 1
+Microbiology | MIC | 1
+Molecular and Life Sciences Center | MLSC | 3
+Multi-Media Center | MMC | 1
+Outpost Convenience Store | None | 1
+Outpost | OP | 1
+Pacific | None | 1
+Parking and Transportation Svc | PTS | 1
+Parkside Common | None | 1
+Parkside Dining | None | 1
+Parkside G | None | 1
+Parkside H | None | 1
+Parkside J | None | 1
+Parkside K | None | 1
+Parkside L | None | 1
+Parkside M | None | 1
+Parkside N | None | 1
+Parkside North | None | 1
+Parkside P | None | 1
+Parkside Q | None | 1
+Parkside Service Center | None | 1
+Peterson Hall 1 | PH1 | 3
+Psychology | PSY | 4
+Research Foundation | FND | 2
+Shakarian Student Success Center | SSSC | 2
+Shipping and Receiving | REC | 1
+Social Sciences / Public Administration | SSPA | 1
+Student Health Services | SHS | 2
+Student Recreation and Wellness Center (SRWC) | SRWC | 2
+Theatre Arts | TA | 1
+University Bookstore | BKS | 2
+University Music Center | UMC | 1
+University Police Department | UP | 1
+University Print Shop | UPS | 1
+University Student Union | USU | 3
+Visitor Information Center | VIC | 1
+Vivian Engineering Center | VEC | 3
+Walter Pyramid | PYR | 3

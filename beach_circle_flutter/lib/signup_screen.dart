@@ -4,18 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'auth_screen.dart'; 
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-//to do list:
-//- when unselect options in major, interests, and year, etc, does not actually unselect
-//- can add on interests, not just choose 1
-//- double check pfp sleection works
-//- change the nav when a succesfuly able tp sign in to the actual home screen
-//- implement adding pfp to data base
-//- idk why, but the top app bar is transparent
-//- make this screen not a pop up and an actual screen plz
-// - for secuirty make sure that users can only change their own account profile settings. idk whether to make sure thats a thing tho
-// - add more majors, interests, and year options
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -30,7 +18,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController1 = TextEditingController();
   final _passwordController2 = TextEditingController(); 
 
-  
   bool _isLoading = false;
 
   String? selectedYear;
@@ -43,7 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final interests = ['Sports', 'Music', 'Art', 'Tech'];
   final years = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Alumni', 'NA'];
 
-  //reuseable widget for the drop downs (shoukd do another one for the password and email maybe)
+  //reuseable widget for the drop downs
   Widget inputBox({required Widget child}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -126,9 +113,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   return inputBox(
     child: InkWell(
       onTap: _pickProfileImage, 
-      // onTap: () {
-      //   debugPrint('Profile pic tapped');
-      // },
       child: SizedBox(
         height: 56, 
         child: Row(
@@ -138,7 +122,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               backgroundColor: Colors.grey.shade400,
               backgroundImage:
                   _profileImage != null ? FileImage(_profileImage!) : null,
-              child: _profileImage == null //if no pic, default icon, else show the pic
+              child: _profileImage == null 
                   ? const Icon(Icons.person, color: Colors.white)
                   : null,
             ),
@@ -163,8 +147,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   );
 }
 
-  //stuff that opens image gallery to choose a pic
-  ///uhhh gotta test if this works w andriod and stuff. wont work on chrome tho
   Future<void> _pickProfileImage() async{
     final XFile? pickedProfile = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -175,77 +157,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  // --- UPDATED BACKEND LOGIC HERE ---
   Future<void> _submit() async {
     final email = _emailController.text.trim();
     final password1 = _passwordController1.text.trim();
     final password2 = _passwordController2.text.trim();  
+    
     bool isValidEmail(String email) {
-      return RegExp(
-        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-      ).hasMatch(email);
+      return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
     }
-    //make sure email vvalid
+
     if (!isValidEmail(email)) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: const Text('Please enter a valid email address'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      _showErrorDialog('Please enter a valid email address');
       return;
     }
 
-    //check if passwords match
-    if (password1 != password2)
-    {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: const Text('Passwords do not match'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+    if (password1 != password2) {
+      _showErrorDialog('Passwords do not match');
       return;
     }
 
     setState(() => _isLoading = true);
+    
     try {
-      final userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // 1. Create User in Auth
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password1,
       );
 
       final uid = userCredential.user!.uid;
 
+      // 2. Prepare Data for Database
+      // We align these keys with ProfileScreen expectations
       final data = {
+        'name': email.split('@')[0], // Default name from email since we don't have a field
         'email': email,
-        'createdAt': FieldValue.serverTimestamp(),
+        'major': selectedMajor ?? 'Undeclared',
+        'year': selectedYear ?? 'Freshman',
+        'interests': selectedInterest ?? '', // Changed key to 'interests' (plural) to match Profile
+        'bio': '', // Default empty bio
+        'created_at': FieldValue.serverTimestamp(),
       };
 
-      if (selectedMajor != null) data['major'] = selectedMajor!;
-      if (selectedYear != null) data['year'] = selectedYear!;
-      if (selectedInterest != null) data['interest'] = selectedInterest!;
-      //modify to add profile img data as well
-
-      // Save profile data
+      // 3. Save to Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
-          .set(data);
+          .set(data, SetOptions(merge: true));
+
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Sign Up failed')),
@@ -254,16 +214,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) setState(() => _isLoading = false);
       
       if (mounted) {
-        Navigator.of(context).pop(); //gotta change this when make an actual home screen
+        // Pop back to login or dashboard
+        Navigator.of(context).pop(); 
       }
     }
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     final screenWidth = MediaQuery.of(context).size.width;
-
 
     return Scaffold(
       appBar: AppBar(toolbarHeight: 20, backgroundColor: Colors.white, elevation: 0),
@@ -356,7 +331,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     const SizedBox(height: 40),
                     //conatiner for major, year, interests, and profile pic
-                    //these options are bugged btw. if you selected and then unselect then the old option will still be registered
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final columnWidth = (constraints.maxWidth - 12) / 2;

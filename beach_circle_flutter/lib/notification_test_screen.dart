@@ -62,9 +62,6 @@ class NotificationTestScreen extends StatelessWidget {
               ),
             ),
           ),
-    );
-
-    // 2. Insert it into the screen
     Overlay.of(context).insert(overlayEntry);
 
     // 3. Remove it automatically after 3 seconds

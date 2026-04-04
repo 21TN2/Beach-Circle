@@ -13,9 +13,12 @@ import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.d
 class MiscScreen extends StatefulWidget {
   const MiscScreen({
     super.key,
-    required ForumService forumService,
-    required Null Function(ForumCategory c) onOpenCategory,
+    this.forumService,
+    this.onOpenCategory,
   });
+
+  final ForumService? forumService;
+  final Null Function(ForumCategory c)? onOpenCategory;
 
   @override
   State<MiscScreen> createState() => _MiscScreenState();
@@ -23,10 +26,8 @@ class MiscScreen extends StatefulWidget {
 
 class _MiscScreenState extends State<MiscScreen> {
   bool isInterested = false;
-
   Set<String> starredCategoryIds = {};
-
-  final ForumService _forumService = ForumService();
+  late final ForumService _forumService;
 
   // built-in categories
   final List<_CategoryItem> builtInCategories = const [
@@ -84,6 +85,7 @@ class _MiscScreenState extends State<MiscScreen> {
   @override
   void initState() {
     super.initState();
+    _forumService = widget.forumService ?? ForumService();
     _loadPrefs();
   }
 
@@ -98,23 +100,26 @@ class _MiscScreenState extends State<MiscScreen> {
     final savedInterested = data['interested'];
     final savedStarIds = data['starredCategoryIds'];
 
-    setState(() {
-      if (savedInterested is bool) isInterested = savedInterested;
+    if (mounted) {
+      setState(() {
+        if (savedInterested is bool) isInterested = savedInterested;
 
-      if (savedStarIds is List) {
-        starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
-      }
-
-      if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
-        final oldList =
-            (data['starredCategories'] as List).map((e) => e == true).toList();
-
-        for (int i = 0; i < builtInCategories.length; i++) {
-          final isStar = i < oldList.length ? oldList[i] : false;
-          if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+        if (savedStarIds is List) {
+          starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
         }
-      }
-    });
+
+        if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
+          final oldList = (data['starredCategories'] as List)
+              .map((e) => e == true)
+              .toList();
+
+          for (int i = 0; i < builtInCategories.length; i++) {
+            final isStar = i < oldList.length ? oldList[i] : false;
+            if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+          }
+        }
+      });
+    }
   }
 
   Future<void> _savePrefs() async {
@@ -147,16 +152,19 @@ class _MiscScreenState extends State<MiscScreen> {
       title: cat.title.replaceAll('\n', ' '),
     );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => ForumCategoryPg(
-              category: category,
-              forumService: _forumService,
-            ),
-      ),
-    );
+    if (widget.onOpenCategory != null) {
+      widget.onOpenCategory!(category);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ForumCategoryPg(
+            category: category,
+            forumService: _forumService,
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildGrid(List<_CategoryItem> visible) {
@@ -205,11 +213,10 @@ class _MiscScreenState extends State<MiscScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (_) => CreateForumPage(
-                    onClose: () => Navigator.pop(context),
-                    onSubmitted: () => Navigator.pop(context),
-                  ),
+              builder: (_) => CreateForumPage(
+                onClose: () => Navigator.pop(context),
+                onSubmitted: () => Navigator.pop(context),
+              ),
             ),
           );
         },
@@ -238,10 +245,9 @@ class _MiscScreenState extends State<MiscScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            isInterested
-                                ? const Color(0xFFFFC107)
-                                : const Color(0xFFE59A00),
+                        color: isInterested
+                            ? const Color(0xFFFFC107)
+                            : const Color(0xFFE59A00),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -264,12 +270,10 @@ class _MiscScreenState extends State<MiscScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: StreamBuilder<QuerySnapshot>(
-                  // shows approved categories from forumCategories
-                  stream:
-                      FirebaseFirestore.instance
-                          .collection("forumCategories")
-                          .orderBy("title")
-                          .snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection("forum_requests")
+                      .where("status", isEqualTo: "approved")
+                      .snapshots(),
                   builder: (context, snapshot) {
                     // built-in + approved categories shown in homepage
                     final List<_CategoryItem> all = List<_CategoryItem>.from(
@@ -315,7 +319,7 @@ class _HeaderPill extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.only(left: 13, right: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Stack(
@@ -333,7 +337,6 @@ class _HeaderPill extends StatelessWidget {
               ),
             ),
           ),
-
           const Positioned(
             right: 0,
             child: Icon(Icons.chevron_right, color: Colors.black54),
@@ -344,7 +347,6 @@ class _HeaderPill extends StatelessWidget {
   }
 }
 
-// CATEGORY CARD WITH DARK OVERLAY
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.title,
@@ -366,20 +368,23 @@ class _CategoryCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Stack(
         children: [
-          Positioned.fill(child: Image.asset(imagePath, fit: BoxFit.cover)),
-
-          // DARK OVERLAY FIXED
           Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.45)),
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  Container(color: Colors.grey),
+            ),
           ),
-
+          Positioned.fill(
+            child: Container(color: Colors.black.withValues(alpha: 0.45)),
+          ),
           Positioned.fill(
             child: Material(
               color: Colors.transparent,
               child: InkWell(onTap: onTap),
             ),
           ),
-
           Positioned(
             top: 8,
             right: 8,
@@ -391,10 +396,10 @@ class _CategoryCard extends StatelessWidget {
               ),
             ),
           ),
-
           Center(
             child: Text(
               title,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

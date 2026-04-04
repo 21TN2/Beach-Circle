@@ -9,7 +9,7 @@ import 'mapbox.dart';
 import 'firebase_options.dart';
 import 'auth_screen.dart';
 import 'signup_screen.dart';
-import 'map_screen.dart';
+import 'map/map_screen.dart';
 import 'events_screen.dart';
 import 'misc_screen.dart';
 import 'dormlife_screen.dart';
@@ -23,16 +23,15 @@ import 'community_goods/smf/service/moderation_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (!kIsWeb) {
-    MapboxOptions.setAccessToken(mapboxAccessToken);
-  }
   if (kIsWeb) {
     // WEB: Use the keys from the separate file
-
-    await Firebase.initializeApp(options: firebaseConfigWeb);
+    FirebaseOptions? firebaseConfigWeb;
+    await Firebase.initializeApp(
+      options: firebaseConfigWeb, 
+    );
   } else {
     // ANDROID/iOS: Use the google-services.json file automatically
+    MapboxOptions.setAccessToken(mapboxAccessToken);
     await Firebase.initializeApp();
   }
 

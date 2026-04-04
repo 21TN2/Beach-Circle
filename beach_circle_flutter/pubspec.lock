@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: archive
-      sha256: "2fde1607386ab523f7a36bb3e7edb43bd58e6edaf2ffb29d8a6d578b297fdbbd"
+      sha256: a96e8b390886ee8abb49b7bd3ac8df6f451c621619f52a26e815fdcf568959ff
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.7"
+    version: "4.0.9"
   args:
     dependency: transitive
     description:
@@ -29,10 +29,10 @@ packages:
     dependency: transitive
     description:
       name: async
-      sha256: "758e6d74e971c3e5aceb4110bfd6698efc7f501675bcfe0c775459a8140750eb"
+      sha256: e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37
       url: "https://pub.dev"
     source: hosted
-    version: "2.13.0"
+    version: "2.13.1"
   benchmark:
     dependency: transitive
     description:
@@ -109,10 +109,10 @@ packages:
     dependency: transitive
     description:
       name: cross_file
-      sha256: "701dcfc06da0882883a2657c445103380e53e647060ad8d9dfb710c100996608"
+      sha256: "28bb3ae56f117b5aec029d702a90f57d285cd975c3c5c281eaca38dbc47c5937"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.5+1"
+    version: "0.3.5+2"
   crypto:
     dependency: transitive
     description:
@@ -125,10 +125,10 @@ packages:
     dependency: "direct main"
     description:
       name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
+      sha256: "41e005c33bd814be4d3096aff55b1908d419fde52ca656c8c47719ec745873cd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.8"
+    version: "1.0.9"
   dart_sort_queue:
     dependency: transitive
     description:
@@ -237,10 +237,10 @@ packages:
     dependency: transitive
     description:
       name: firebase_core_platform_interface
-      sha256: cccb4f572325dc14904c02fcc7db6323ad62ba02536833dddb5c02cac7341c64
+      sha256: "0ecda14c1bfc9ed8cac303dd0f8d04a320811b479362a9a4efb14fd331a473ce"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.2"
+    version: "6.0.3"
   firebase_core_web:
     dependency: transitive
     description:
@@ -249,6 +249,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.24.1"
+  firebase_storage:
+    dependency: "direct main"
+    description:
+      name: firebase_storage
+      sha256: "958fc88a7ef0b103e694d30beed515c8f9472dde7e8459b029d0e32b8ff03463"
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.4.10"
+  firebase_storage_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_storage_platform_interface
+      sha256: d2661c05293c2a940c8ea4bc0444e1b5566c79dd3202c2271140c082c8cd8dd4
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.10"
+  firebase_storage_web:
+    dependency: transitive
+    description:
+      name: firebase_storage_web
+      sha256: "629a557c5e1ddb97a3666cbf225e97daa0a66335dbbfdfdce113ef9f881e833f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.10.17"
   fixnum:
     dependency: transitive
     description:
@@ -274,10 +298,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_plugin_android_lifecycle
-      sha256: ee8068e0e1cd16c4a82714119918efdeed33b3ba7772c54b5d094ab53f9b7fd1
+      sha256: "38d1c268de9097ff59cf0e844ac38759fc78f76836d37edad06fa21e182055a0"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.33"
+    version: "2.0.34"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -468,10 +492,10 @@ packages:
     dependency: transitive
     description:
       name: image_picker_android
-      sha256: "5e9bf126c37c117cf8094215373c6d561117a3cfb50ebc5add1a61dc6e224677"
+      sha256: "66810af8e99b2657ee98e5c6f02064f69bb63f7a70e343937f70946c5f8c6622"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.13+10"
+    version: "0.8.13+16"
   image_picker_for_web:
     dependency: transitive
     description:
@@ -484,10 +508,10 @@ packages:
     dependency: transitive
     description:
       name: image_picker_ios
-      sha256: "956c16a42c0c708f914021666ffcd8265dde36e673c9fa68c81f7d085d9774ad"
+      sha256: b9c4a438a9ff4f60808c9cf0039b93a42bb6c2211ef6ebb647394b2b3fa84588
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.13+3"
+    version: "0.8.13+6"
   image_picker_linux:
     dependency: transitive
     description:
@@ -524,10 +548,10 @@ packages:
     dependency: transitive
     description:
       name: json_annotation
-      sha256: "805fa86df56383000f640384b282ce0cb8431f1a7a2396de92fb66186d8c57df"
+      sha256: cb09e7dac6210041fad964ed7fbee004f14258b4eca4040f72d1234062ace4c8
       url: "https://pub.dev"
     source: hosted
-    version: "4.10.0"
+    version: "4.11.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -556,10 +580,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
+      sha256: "12f842a479589fea194fe5c5a3095abc7be0c1f2ddfa9a0e76aed1dbd26a87df"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "6.1.0"
   logging:
     dependency: transitive
     description:
@@ -580,10 +604,10 @@ packages:
     dependency: "direct main"
     description:
       name: mapbox_maps_flutter
-      sha256: ce30fa8f5553f42b415ae93b62a7e976667bf36ebc75137e1d6e7388925eb712
+      sha256: a1fa382bec039ffe05f0a18de20def70dae5b332b15e98d15922cf785de89531
       url: "https://pub.dev"
     source: hosted
-    version: "2.18.0"
+    version: "2.21.0"
   matcher:
     dependency: transitive
     description:
@@ -636,10 +660,10 @@ packages:
     dependency: transitive
     description:
       name: package_info_plus
-      sha256: f69da0d3189a4b4ceaeb1a3defb0f329b3b352517f52bed4290f83d4f06bc08d
+      sha256: "468c26b4254ab01979fa5e4a98cb343ea3631b9acee6f21028997419a80e1a20"
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "9.0.1"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -732,10 +756,10 @@ packages:
     dependency: transitive
     description:
       name: posix
-      sha256: "6323a5b0fa688b6a010df4905a56b00181479e6d10534cecfecede2aa55add61"
+      sha256: "185ef7606574f789b40f289c233efa52e96dead518aed988e040a10737febb07"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.3"
+    version: "6.5.0"
   pub_semver:
     dependency: transitive
     description:
@@ -761,10 +785,10 @@ packages:
     dependency: transitive
     description:
       name: source_span
-      sha256: "254ee5351d6cb365c859e20ee823c3bb479bf4a293c22d17a9f1bf144ce86f7c"
+      sha256: "56a02f1f4cd1a2d96303c0144c93bd6d909eea6bee6bf5a0e0b685edbd4c47ab"
       url: "https://pub.dev"
     source: hosted
-    version: "1.10.1"
+    version: "1.10.2"
   stack_trace:
     dependency: transitive
     description:
@@ -857,18 +881,18 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_android
-      sha256: "767344bf3063897b5cf0db830e94f904528e6dd50a6dfaf839f0abf509009611"
+      sha256: "3bb000251e55d4a209aa0e2e563309dc9bb2befea2295fd0cec1f51760aac572"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.28"
+    version: "6.3.29"
   url_launcher_ios:
     dependency: transitive
     description:
       name: url_launcher_ios
-      sha256: cfde38aa257dae62ffe79c87fab20165dfdf6988c1d31b58ebf59b9106062aad
+      sha256: "580fe5dfb51671ae38191d316e027f6b76272b026370708c2d898799750a02b0"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.6"
+    version: "6.4.1"
   url_launcher_linux:
     dependency: transitive
     description:
@@ -913,10 +937,10 @@ packages:
     dependency: transitive
     description:
       name: uuid
-      sha256: a11b666489b1954e01d992f3d601b1804a33937b5a8fe677bd26b8a9f96f96e8
+      sha256: "1fef9e8e11e2991bb773070d4656b7bd5d850967a2456cfc83cf47925ba79489"
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.2"
+    version: "4.5.3"
   vector_math:
     dependency: transitive
     description:
