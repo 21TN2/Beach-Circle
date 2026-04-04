@@ -395,6 +395,7 @@ class FoodAlertSheetContent extends StatelessWidget {
                   final data = docs[index].data();
                   final title = (data['title'] ?? 'Untitled').toString();
                   final description = (data['description'] ?? '').toString();
+                  final foodTags = List<String>.from(data['foodTags'] ?? []);
 
                   // Format timestamp if available
                   String timeStr = '';
@@ -435,16 +436,52 @@ class FoodAlertSheetContent extends StatelessWidget {
                         fontSize: 16,
                       ),
                     ),
-                    subtitle: Text(
-                      timeStr.isNotEmpty
-                          ? '$description · $timeStr'
-                          : description,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 13,
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            timeStr.isNotEmpty
+                                ? '$description · $timeStr'
+                                : description,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (foodTags.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children:
+                                  foodTags.map((tag) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEAF4EA),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Text(
+                                        tag,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF2E7D32),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ],
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     trailing: const Icon(
                       Icons.chevron_right,
