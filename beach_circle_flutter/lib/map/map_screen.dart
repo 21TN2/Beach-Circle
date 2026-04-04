@@ -227,41 +227,146 @@ class _MapScreenState extends State<MapScreen> {
     return byteData!.buffer.asUint8List();
   }
 
-  // NEW FROM GISELLE
-  Future<Uint8List> _createStudyHallMarker() async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint backgroundPaint = Paint()..color = const Color(0xFFE8F0FE);
+  // NEW FROM GISELLE: calculate the time to grab what's available / unavailable
+  TimeOfDay? _parseTimeOfDay(String value) {
+    try {
+      final parts = value.trim().split(' ');
+      if (parts.length != 2) return null;
 
-    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, backgroundPaint);
+      final timePart = parts[0];
+      final periodPart = parts[1].toUpperCase();
 
-    final TextPainter textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
+      final timePieces = timePart.split(':');
+      if (timePieces.length != 2) return null;
+
+      int hour = int.parse(timePieces[0]);
+      final minute = int.parse(timePieces[1]);
+
+      if (periodPart == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (periodPart == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      return TimeOfDay(hour: hour, minute: minute);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isCurrentlyAvailable(String startTime, String endTime) {
+    final start = _parseTimeOfDay(startTime);
+    final end = _parseTimeOfDay(endTime);
+
+    if (start == null || end == null) return false;
+
+    final now = TimeOfDay.now();
+
+    final nowMinutes = now.hour * 60 + now.minute;
+    final startMinutes = start.hour * 60 + start.minute;
+    final endMinutes = end.hour * 60 + end.minute;
+
+    // normal same-day range
+    if (startMinutes <= endMinutes) {
+      return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+    }
+
+    // overnight range like 11:00 PM - 2:00 AM
+    return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
+  }
+
+  Future<Uint8List> _createCountMarker({
+    required IconData icon,
+    required Color circleColor,
+    required String badgeText,
+    required Color badgeColor,
+  }) async {
+    const double width = 108;
+    const double height = 128;
+    const double circleRadius = 38;
+    const Offset circleCenter = Offset(54, 60);
+
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    final Paint shadowPaint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.18)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
+
+    canvas.drawCircle(
+      Offset(circleCenter.dx, circleCenter.dy + 3),
+      circleRadius,
+      shadowPaint,
     );
 
-    textPainter.text = TextSpan(
-      text: String.fromCharCode(Icons.menu_book.codePoint),
-      style: TextStyle(
-        fontSize: 28.0,
-        fontFamily: Icons.menu_book.fontFamily,
-        package: Icons.menu_book.fontPackage,
-        color: Colors.black87,
+    final Paint circlePaint = Paint()..color = circleColor;
+    canvas.drawCircle(circleCenter, circleRadius, circlePaint);
+
+    final TextPainter iconPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: 38,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          color: Colors.black87,
+        ),
       ),
     );
 
-    textPainter.layout();
+    iconPainter.layout();
+    iconPainter.paint(
+      canvas,
+      Offset(
+        circleCenter.dx - iconPainter.width / 2,
+        circleCenter.dy - iconPainter.height / 2,
+      ),
+    );
 
-    final double xCenter = (48.0 - textPainter.width) / 2.0;
-    final double yCenter = (48.0 - textPainter.height) / 2.0;
-    textPainter.paint(canvas, Offset(xCenter, yCenter));
+    final Rect badgeRect = Rect.fromLTWH(16, 6, 52, 28);
+    final RRect badgeRRect = RRect.fromRectAndRadius(
+      badgeRect,
+      const Radius.circular(14),
+    );
 
-    final ui.Image image = await pictureRecorder.endRecording().toImage(48, 48);
+    final Paint badgePaint = Paint()..color = badgeColor;
+    canvas.drawRRect(badgeRRect, badgePaint);
+
+    final TextPainter badgePainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: badgeText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    badgePainter.layout();
+    badgePainter.paint(
+      canvas,
+      Offset(
+        badgeRect.left + (badgeRect.width - badgePainter.width) / 2,
+        badgeRect.top + (badgeRect.height - badgePainter.height) / 2,
+      ),
+    );
+
+    final ui.Image image = await recorder.endRecording().toImage(
+      width.toInt(),
+      height.toInt(),
+    );
     final ByteData? byteData = await image.toByteData(
       format: ui.ImageByteFormat.png,
     );
 
     return byteData!.buffer.asUint8List();
   }
+
+  // -------
 
   /// ALSO NEW FROM GISELLE: LOAD STUDY HALL PINS
   Future<void> _loadStudyHallPins() async {
@@ -270,8 +375,6 @@ class _MapScreenState extends State<MapScreen> {
 
       await _studyHallPinManager!.deleteAll();
       _studyHallPinData.clear();
-
-      final Uint8List customIconBytes = await _createStudyHallMarker();
 
       final snapshot =
           await FirebaseFirestore.instance
@@ -286,28 +389,52 @@ class _MapScreenState extends State<MapScreen> {
         final buildingAbbrev = (data['buildingAbbrev'] ?? '').toString().trim();
         final buildingName = (data['buildingName'] ?? '').toString().trim();
         final coords = data['coords'];
+        final startTime = (data['startTime'] ?? '').toString();
+        final endTime = (data['endTime'] ?? '').toString();
 
         if (buildingAbbrev.isEmpty) continue;
-        if (buildingsMap.containsKey(buildingAbbrev)) continue;
 
-        if (coords is List && coords.isNotEmpty) {
-          final firstPoint = coords.first;
+        if (!buildingsMap.containsKey(buildingAbbrev)) {
+          if (coords is List && coords.isNotEmpty) {
+            final firstPoint = coords.first;
 
-          if (firstPoint is Map<String, dynamic> &&
-              firstPoint['lat'] != null &&
-              firstPoint['lng'] != null) {
-            buildingsMap[buildingAbbrev] = {
-              'buildingAbbrev': buildingAbbrev,
-              'buildingName': buildingName,
-              'lat': (firstPoint['lat'] as num).toDouble(),
-              'lng': (firstPoint['lng'] as num).toDouble(),
-            };
+            if (firstPoint is Map<String, dynamic> &&
+                firstPoint['lat'] != null &&
+                firstPoint['lng'] != null) {
+              buildingsMap[buildingAbbrev] = {
+                'buildingAbbrev': buildingAbbrev,
+                'buildingName': buildingName,
+                'lat': (firstPoint['lat'] as num).toDouble(),
+                'lng': (firstPoint['lng'] as num).toDouble(),
+                'totalCount': 0,
+                'availableNowCount': 0,
+              };
+            }
+          }
+        }
+
+        if (buildingsMap.containsKey(buildingAbbrev)) {
+          buildingsMap[buildingAbbrev]!['totalCount'] =
+              (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
+
+          if (_isCurrentlyAvailable(startTime, endTime)) {
+            buildingsMap[buildingAbbrev]!['availableNowCount'] =
+                (buildingsMap[buildingAbbrev]!['availableNowCount'] as int) + 1;
           }
         }
       }
 
       for (final entry in buildingsMap.entries) {
         final buildingData = entry.value;
+        final badgeText =
+            '${buildingData['availableNowCount']}/${buildingData['totalCount']}';
+
+        final markerBytes = await _createCountMarker(
+          icon: Icons.menu_book,
+          circleColor: const Color(0xFFE8F0FE),
+          badgeText: badgeText,
+          badgeColor: const Color(0xFF5F6B8C),
+        );
 
         final annotation = await _studyHallPinManager!.create(
           PointAnnotationOptions(
@@ -317,7 +444,7 @@ class _MapScreenState extends State<MapScreen> {
                 buildingData['lat'] as double,
               ),
             ),
-            image: customIconBytes,
+            image: markerBytes,
             iconSize: 1.0,
           ),
         );
@@ -340,8 +467,6 @@ class _MapScreenState extends State<MapScreen> {
       await _outletPinManager!.deleteAll();
       _outletPinData.clear();
 
-      final Uint8List customIconBytes = await _createOutletMarker();
-
       final snapshot =
           await FirebaseFirestore.instance
               .collection('outlets')
@@ -357,26 +482,41 @@ class _MapScreenState extends State<MapScreen> {
         final coords = data['coords'];
 
         if (buildingAbbrev.isEmpty) continue;
-        if (buildingsMap.containsKey(buildingAbbrev)) continue;
 
-        if (coords is List && coords.isNotEmpty) {
-          final firstPoint = coords.first;
+        if (!buildingsMap.containsKey(buildingAbbrev)) {
+          if (coords is List && coords.isNotEmpty) {
+            final firstPoint = coords.first;
 
-          if (firstPoint is Map<String, dynamic> &&
-              firstPoint['lat'] != null &&
-              firstPoint['lng'] != null) {
-            buildingsMap[buildingAbbrev] = {
-              'buildingAbbrev': buildingAbbrev,
-              'buildingName': buildingName,
-              'lat': (firstPoint['lat'] as num).toDouble(),
-              'lng': (firstPoint['lng'] as num).toDouble(),
-            };
+            if (firstPoint is Map<String, dynamic> &&
+                firstPoint['lat'] != null &&
+                firstPoint['lng'] != null) {
+              buildingsMap[buildingAbbrev] = {
+                'buildingAbbrev': buildingAbbrev,
+                'buildingName': buildingName,
+                'lat': (firstPoint['lat'] as num).toDouble(),
+                'lng': (firstPoint['lng'] as num).toDouble(),
+                'totalCount': 0,
+              };
+            }
           }
+        }
+
+        if (buildingsMap.containsKey(buildingAbbrev)) {
+          buildingsMap[buildingAbbrev]!['totalCount'] =
+              (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
         }
       }
 
       for (final entry in buildingsMap.entries) {
         final buildingData = entry.value;
+        final badgeText = '${buildingData['totalCount']}';
+
+        final markerBytes = await _createCountMarker(
+          icon: Icons.electric_bolt,
+          circleColor: const Color(0xFFFFF4B3),
+          badgeText: badgeText,
+          badgeColor: const Color(0xFF5F6B8C),
+        );
 
         final annotation = await _outletPinManager!.create(
           PointAnnotationOptions(
@@ -386,7 +526,7 @@ class _MapScreenState extends State<MapScreen> {
                 buildingData['lat'] as double,
               ),
             ),
-            image: customIconBytes,
+            image: markerBytes,
             iconSize: 1.0,
           ),
         );
@@ -400,44 +540,7 @@ class _MapScreenState extends State<MapScreen> {
       debugPrint('Error loading outlet pins: $e');
     }
   }
-
-  /// --------
-  /// NEW FROM GISELLE: OUTLET MARKER
-  Future<Uint8List> _createOutletMarker() async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint backgroundPaint = Paint()..color = const Color(0xFFFFF4B3);
-
-    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, backgroundPaint);
-
-    final TextPainter textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
-
-    textPainter.text = TextSpan(
-      text: String.fromCharCode(Icons.electric_bolt.codePoint),
-      style: TextStyle(
-        fontSize: 28.0,
-        fontFamily: Icons.electric_bolt.fontFamily,
-        package: Icons.electric_bolt.fontPackage,
-        color: Colors.black87,
-      ),
-    );
-
-    textPainter.layout();
-
-    final double xCenter = (48.0 - textPainter.width) / 2.0;
-    final double yCenter = (48.0 - textPainter.height) / 2.0;
-    textPainter.paint(canvas, Offset(xCenter, yCenter));
-
-    final ui.Image image = await pictureRecorder.endRecording().toImage(48, 48);
-    final ByteData? byteData = await image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-
-    return byteData!.buffer.asUint8List();
-  }
-  // -------
+  // ---------
 
   Future<void> _loadBuildingBathrooms() async {
     try {
@@ -1208,6 +1311,51 @@ class _StudySheetContent extends StatelessWidget {
     }
   }
 
+  TimeOfDay? _parseTimeOfDay(String value) {
+    try {
+      final parts = value.trim().split(' ');
+      if (parts.length != 2) return null;
+
+      final timePart = parts[0];
+      final periodPart = parts[1].toUpperCase();
+
+      final timePieces = timePart.split(':');
+      if (timePieces.length != 2) return null;
+
+      int hour = int.parse(timePieces[0]);
+      final minute = int.parse(timePieces[1]);
+
+      if (periodPart == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (periodPart == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      return TimeOfDay(hour: hour, minute: minute);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isCurrentlyAvailable(String startTime, String endTime) {
+    final start = _parseTimeOfDay(startTime);
+    final end = _parseTimeOfDay(endTime);
+
+    if (start == null || end == null) return false;
+
+    final now = TimeOfDay.now();
+
+    final nowMinutes = now.hour * 60 + now.minute;
+    final startMinutes = start.hour * 60 + start.minute;
+    final endMinutes = end.hour * 60 + end.minute;
+
+    if (startMinutes <= endMinutes) {
+      return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+    }
+
+    return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
+  }
+
   @override
   Widget build(BuildContext context) {
     final buildingFilters = [
@@ -1398,6 +1546,10 @@ class _StudySheetContent extends StatelessWidget {
                   final endTime = (data['endTime'] ?? '').toString();
                   final seats = data['seatCapacity'];
                   final amenities = List<String>.from(data['amenities'] ?? []);
+                  final isAvailableNow = _isCurrentlyAvailable(
+                    startTime,
+                    endTime,
+                  );
 
                   final cleanRoom =
                       room.toLowerCase().startsWith('room ')
@@ -1439,6 +1591,31 @@ class _StudySheetContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (isAvailableNow)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Available Now',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           if (startTime.isNotEmpty && endTime.isNotEmpty)
                             Text(
                               '$startTime - $endTime',
@@ -1610,7 +1787,7 @@ class _ChargingSheetContent extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
               child: Text(
-                "View Outlet Information",
+                "Outlets in Classrooms ",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

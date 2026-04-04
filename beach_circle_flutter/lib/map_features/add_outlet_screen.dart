@@ -26,11 +26,17 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     '🪛 Built-In Outlet',
     '🪑 Table Outlet',
     '🔌 Power Strip Nearby',
+    '🔋 USB-A Ports',
+    '🪫 USB-C Ports',
+    '🧲 MagSafe Outlet',
   ];
 
   final List<String> _allAccessibilityLevels = [
     '✅ Easy Access',
+    '⚡ Easy To Charge Devices',
+    '⛔ Limited Outlets',
     '⚠️ Hard To Reach',
+    '⛓️‍💥 Faulty Outlets',
     '🚧 Obstruction',
   ];
 

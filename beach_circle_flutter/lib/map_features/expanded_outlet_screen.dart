@@ -18,6 +18,34 @@ class ExpandedOutletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedAccessibility =
+        accessibilityLevels.map((e) => e.toLowerCase()).toList();
+
+    final bool hasPlentiful =
+        (outletCount ?? 0) > 5 &&
+        normalizedAccessibility.any((e) => e.contains('easy access')) &&
+        outletTypes.length > 1;
+
+    final bool hasLimited =
+        normalizedAccessibility.any((e) => e.contains('limited outlets')) ||
+        normalizedAccessibility.any((e) => e.contains('hard to reach')) ||
+        normalizedAccessibility.any((e) => e.contains('obstruction'));
+
+    final String outletStatus =
+        hasPlentiful
+            ? 'Plentiful Outlets'
+            : hasLimited
+            ? 'Limited Access'
+            : 'Standard Access';
+    Color statusColor;
+    if (outletStatus == 'Plentiful Outlets') {
+      statusColor = const Color(0xFF43A047);
+    } else if (outletStatus == 'Limited Access') {
+      statusColor = const Color(0xFFEF6C00);
+    } else {
+      statusColor = const Color(0xFF5C6BC0);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Outlet Details'),
@@ -92,6 +120,30 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 18),
+
+            _SectionCard(
+              title: 'Outlet Access',
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(
+                  outletStatus,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
 
             _SectionCard(
               title: 'Number of Outlets',
