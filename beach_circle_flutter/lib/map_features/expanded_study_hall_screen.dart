@@ -56,7 +56,13 @@ class ExpandedStudyHallScreen extends StatelessWidget {
     final startMinutes = start.hour * 60 + start.minute;
     final endMinutes = end.hour * 60 + end.minute;
 
-    return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+    // normal same-day range
+    if (startMinutes <= endMinutes) {
+      return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+    }
+
+    // overnight range, like 11:00 PM - 2:00 AM
+    return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
   }
 
   @override

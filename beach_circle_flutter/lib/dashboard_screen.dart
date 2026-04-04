@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'notification_test_screen.dart'; 
+import 'notification_test_screen.dart';
 import 'dormlife_screen.dart';
 import 'events_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';
-import 'addres_screen.dart'; 
+import 'addres_screen.dart';
 import 'settings_screen.dart';
-import 'bathroom_finder.dart'; 
-// Fixed map import
-import 'map/map_screen.dart'; 
+import 'bathroom_finder.dart';
+import 'map/map_screen.dart';
 
-// Forum imports
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
@@ -27,7 +25,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
-  String _homePage = "home"; 
+  String _homePage = "home";
   String? _mapFilter;
 
   final ForumService _forumService = ForumService();
@@ -37,8 +35,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
-  // --- HELPER METHODS ---
-
   Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
@@ -47,7 +43,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          // Fixed deprecation warning
           hoverColor: Colors.blue.withValues(alpha: 0.25),
           splashColor: Colors.blue.withValues(alpha: 0.25),
           onTap: onTap,
@@ -107,7 +102,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // CSULB Image
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
@@ -129,7 +123,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // -------- DASHBOARD TILES --------------
           const Text(
             'Map Features',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -144,24 +137,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
             }),
             _tileOpen(Icons.directions_car, 'Parking', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "parking";
+              });
             }),
             _tileOpen(Icons.power, 'Outlets', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "charging";
+              });
             }),
-            // Bathroom Tile
             _tileOpen(Icons.family_restroom, 'Bathrooms', () {
-              //  Navigator.push(
-              //   context, 
-              //   MaterialPageRoute(builder: (_) => const BathroomFinder())
-              // );
               setState(() {
                 _currentIndex = 1;
                 _mapFilter = "restroom";
               });
             }),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "study";
+              });
             }),
           ]),
 
@@ -232,10 +229,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onGenerateRoute: (settings) {
         if (settings.name == '/' || settings.name == null) {
           return MaterialPageRoute(
-            builder: (_) => MiscScreen(
+            builder:
+                (_) => MiscScreen(
                   forumService: _forumService,
                   onOpenCategory: (ForumCategory c) {
-                    _forumNavKey.currentState?.pushNamed('/category', arguments: c);
+                    _forumNavKey.currentState?.pushNamed(
+                      '/category',
+                      arguments: c,
+                    );
                   },
                 ),
           );
@@ -243,7 +244,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (settings.name == '/category') {
           final category = settings.arguments as ForumCategory;
           return MaterialPageRoute(
-            builder: (_) => ForumCategoryPg(
+            builder:
+                (_) => ForumCategoryPg(
                   category: category,
                   forumService: _forumService,
                 ),
@@ -251,17 +253,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
         if (settings.name == '/createForum') {
           return MaterialPageRoute(
-            builder: (_) => CreateForumPage(
+            builder:
+                (_) => CreateForumPage(
                   onClose: () => _forumNavKey.currentState?.pop(),
                   onSubmitted: () => _forumNavKey.currentState?.pop(),
                 ),
           );
         }
         return MaterialPageRoute(
-          builder: (_) => MiscScreen(
+          builder:
+              (_) => MiscScreen(
                 forumService: _forumService,
                 onOpenCategory: (ForumCategory c) {
-                  _forumNavKey.currentState?.pushNamed('/category', arguments: c);
+                  _forumNavKey.currentState?.pushNamed(
+                    '/category',
+                    arguments: c,
+                  );
                 },
               ),
         );
@@ -272,23 +279,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
-        case "events": return const EventsScreen();
-        case "dormlife": return const DormlifeScreen();
-        case "hourscap": return const HourscapScreen();
-        case "feedback": return const FeedbackanalyticsScreen();
+        case "events":
+          return const EventsScreen();
+        case "dormlife":
+          return const DormlifeScreen();
+        case "hourscap":
+          return const HourscapScreen();
+        case "feedback":
+          return const FeedbackanalyticsScreen();
         case "home":
-        default: return _dashboardBody(context);
+        default:
+          return _dashboardBody(context);
       }
     }
+
     if (_currentIndex == 1 && (_mapFilter != null)) {
       return MapScreen(initialFilter: _mapFilter);
-    }
-    else if (_currentIndex == 1) {
+    } else if (_currentIndex == 1) {
       return MapScreen();
     }
 
     if (_currentIndex == 2) return _buildForumTab();
-    if (_currentIndex == 3) return const AddresScreen(); 
+    if (_currentIndex == 3) return const AddresScreen();
     return const SettingsScreen();
   }
 
@@ -299,24 +311,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          if (user?.email == 'teef@gmail.com') 
+          if (user?.email == 'teef@gmail.com')
             IconButton(
-              icon: const Icon(Icons.bug_report, color: Colors.red), 
+              icon: const Icon(Icons.bug_report, color: Colors.red),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationTestScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationTestScreen(),
+                  ),
+                );
               },
             ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logOut,
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logOut),
         ],
       );
     }
     return null;
   }
 
-  // --- THE BUILD METHOD (This was missing!) ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentIndex = index;
             if (index == 0) _homePage = "home";
-            if (index != 1) _mapFilter = null; // reset when leaving map
+            if (index != 1) _mapFilter = null;
           });
         },
         items: const [
