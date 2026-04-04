@@ -11,7 +11,8 @@ import '../bathroom_finder.dart';
 import '../map_features/add_study_hall_screen.dart';
 import '../map_features/add_outlet_screen.dart';
 import '../map_features/expanded_study_hall_screen.dart';
-import  '../map_features/food_alert.dart';
+import '../map_features/food_alert.dart';
+import '../map_features/expanded_outlet_screen.dart';
 
 //to do, remove sheet when placing pin
 // fix adding indication for pin
@@ -54,21 +55,30 @@ class _MapScreenState extends State<MapScreen> {
   bool _isDevMode = false;
   Position? _simulatedPosition;
 
+  // NEW FROM GISELLE: to select filter building from study hall + outlet
   String? _activeFilter;
   String _selectedStudyBuildingFilter = 'All';
   String? _selectedExactStudyBuilding;
+
+  String _selectedOutletBuildingFilter = 'All';
+  String? _selectedExactOutletBuilding;
 
   // study hall
   PointAnnotationManager? _studyHallPinManager;
   final Map<String, Map<String, dynamic>> _studyHallPinData = {};
 
-  // NEW FROM GISELLE
+  // outlet
+  PointAnnotationManager? _outletPinManager;
+  final Map<String, Map<String, dynamic>> _outletPinData = {};
+
+  // NEW FROM GISELLE: STUDY HALL BUILDING FILTERS
   String _mapBuildingToStudyFilter(String building) {
     final code = building.toUpperCase().trim();
 
     if (code.startsWith('LA')) return 'LA';
     if (code.startsWith('EN') || code.startsWith('ENGR')) return 'ENGR';
     if (code.startsWith('FA')) return 'FA';
+    if (code.startsWith('HHS')) return 'HHS';
     if (code == 'COB') return 'COB';
     if (code == 'KIN') return 'KIN';
     if (code == 'HHS') return 'HHS';
@@ -95,6 +105,41 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
+
+  String _mapBuildingToOutletFilter(String building) {
+    final code = building.toUpperCase().trim();
+
+    if (code.startsWith('LA')) return 'LA';
+    if (code.startsWith('EN') || code.startsWith('ENGR')) return 'ENGR';
+    if (code.startsWith('FA')) return 'FA';
+    if (code.startsWith('HHS')) return 'HHS';
+    if (code == 'COB') return 'COB';
+    if (code == 'KIN') return 'KIN';
+    if (code == 'PSY' || code.startsWith('PSY')) return 'PSY';
+    if (code == 'HSCI' || code.contains('SCI')) return 'HSCI';
+
+    return 'All';
+  }
+
+  // NEW FROM GISELLE: OUTLET BUILDING FILTER
+  void _handleOutletPinTap(Map<String, dynamic> data) {
+    final building = (data['buildingAbbrev'] ?? '').toString().trim();
+    final mappedFilter = _mapBuildingToOutletFilter(building);
+
+    setState(() {
+      _activeFilter = 'charging';
+
+      if (mappedFilter == 'All') {
+        _selectedOutletBuildingFilter = 'All';
+        _selectedExactOutletBuilding = building;
+      } else {
+        _selectedOutletBuildingFilter = mappedFilter;
+        _selectedExactOutletBuilding = null;
+      }
+    });
+  }
+
+  // --------
 
   //food alert form creation stuff
   _FoodAlertStep _foodAlertStep = _FoodAlertStep.none;
@@ -137,7 +182,6 @@ class _MapScreenState extends State<MapScreen> {
       icon: Icons.electric_bolt,
       label: 'Charging',
       hasBottomSheet: true,
-      sheetContent: _ChargingSheetContent(),
     ),
     FilterOption(
       key: 'restroom',
@@ -219,7 +263,7 @@ class _MapScreenState extends State<MapScreen> {
     return byteData!.buffer.asUint8List();
   }
 
-  /// ALSO NEW FROM GISELLE
+  /// ALSO NEW FROM GISELLE: LOAD STUDY HALL PINS
   Future<void> _loadStudyHallPins() async {
     try {
       if (_studyHallPinManager == null) return;
@@ -235,11 +279,16 @@ class _MapScreenState extends State<MapScreen> {
               .where('status', isEqualTo: 'approved')
               .get();
 
-      final Map<String, int> coordCounts = {};
+      final Map<String, Map<String, dynamic>> buildingsMap = {};
 
       for (final doc in snapshot.docs) {
         final data = doc.data();
+        final buildingAbbrev = (data['buildingAbbrev'] ?? '').toString().trim();
+        final buildingName = (data['buildingName'] ?? '').toString().trim();
         final coords = data['coords'];
+
+        if (buildingAbbrev.isEmpty) continue;
+        if (buildingsMap.containsKey(buildingAbbrev)) continue;
 
         if (coords is List && coords.isNotEmpty) {
           final firstPoint = coords.first;
@@ -247,47 +296,148 @@ class _MapScreenState extends State<MapScreen> {
           if (firstPoint is Map<String, dynamic> &&
               firstPoint['lat'] != null &&
               firstPoint['lng'] != null) {
-            double lat = (firstPoint['lat'] as num).toDouble();
-            double lng = (firstPoint['lng'] as num).toDouble();
-
-            final coordKey =
-                '${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}';
-            final duplicateIndex = coordCounts[coordKey] ?? 0;
-            coordCounts[coordKey] = duplicateIndex + 1;
-
-            // Slightly offset duplicate pins so they do not fully overlap
-            if (duplicateIndex > 0) {
-              const double offsetStep = 0.00003;
-              lat += offsetStep * duplicateIndex;
-              lng += offsetStep * duplicateIndex;
-            }
-
-            final annotation = await _studyHallPinManager!.create(
-              PointAnnotationOptions(
-                geometry: Point(coordinates: Position(lng, lat)),
-                image: customIconBytes,
-                iconSize: 1.0,
-              ),
-            );
-
-            _studyHallPinData[annotation.id] = {
-              'buildingAbbrev': (data['buildingAbbrev'] ?? '').toString(),
-              'buildingName': (data['buildingName'] ?? '').toString(),
-              'roomNumber': (data['roomNumber'] ?? '').toString(),
-              'startTime': (data['startTime'] ?? '').toString(),
-              'endTime': (data['endTime'] ?? '').toString(),
-              'seatCapacity': data['seatCapacity'],
-              'amenities': List<String>.from(data['amenities'] ?? []),
+            buildingsMap[buildingAbbrev] = {
+              'buildingAbbrev': buildingAbbrev,
+              'buildingName': buildingName,
+              'lat': (firstPoint['lat'] as num).toDouble(),
+              'lng': (firstPoint['lng'] as num).toDouble(),
             };
           }
         }
+      }
+
+      for (final entry in buildingsMap.entries) {
+        final buildingData = entry.value;
+
+        final annotation = await _studyHallPinManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(
+              coordinates: Position(
+                buildingData['lng'] as double,
+                buildingData['lat'] as double,
+              ),
+            ),
+            image: customIconBytes,
+            iconSize: 1.0,
+          ),
+        );
+
+        _studyHallPinData[annotation.id] = {
+          'buildingAbbrev': buildingData['buildingAbbrev'],
+          'buildingName': buildingData['buildingName'],
+        };
       }
     } catch (e) {
       debugPrint('Error loading study hall pins: $e');
     }
   }
 
+  // NEW FROM GISELLE: LOADS OUTLET MAP PINS
+  Future<void> _loadOutletPins() async {
+    try {
+      if (_outletPinManager == null) return;
+
+      await _outletPinManager!.deleteAll();
+      _outletPinData.clear();
+
+      final Uint8List customIconBytes = await _createOutletMarker();
+
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('outlets')
+              .where('status', isEqualTo: 'approved')
+              .get();
+
+      final Map<String, Map<String, dynamic>> buildingsMap = {};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final buildingAbbrev = (data['buildingAbbrev'] ?? '').toString().trim();
+        final buildingName = (data['buildingName'] ?? '').toString().trim();
+        final coords = data['coords'];
+
+        if (buildingAbbrev.isEmpty) continue;
+        if (buildingsMap.containsKey(buildingAbbrev)) continue;
+
+        if (coords is List && coords.isNotEmpty) {
+          final firstPoint = coords.first;
+
+          if (firstPoint is Map<String, dynamic> &&
+              firstPoint['lat'] != null &&
+              firstPoint['lng'] != null) {
+            buildingsMap[buildingAbbrev] = {
+              'buildingAbbrev': buildingAbbrev,
+              'buildingName': buildingName,
+              'lat': (firstPoint['lat'] as num).toDouble(),
+              'lng': (firstPoint['lng'] as num).toDouble(),
+            };
+          }
+        }
+      }
+
+      for (final entry in buildingsMap.entries) {
+        final buildingData = entry.value;
+
+        final annotation = await _outletPinManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(
+              coordinates: Position(
+                buildingData['lng'] as double,
+                buildingData['lat'] as double,
+              ),
+            ),
+            image: customIconBytes,
+            iconSize: 1.0,
+          ),
+        );
+
+        _outletPinData[annotation.id] = {
+          'buildingAbbrev': buildingData['buildingAbbrev'],
+          'buildingName': buildingData['buildingName'],
+        };
+      }
+    } catch (e) {
+      debugPrint('Error loading outlet pins: $e');
+    }
+  }
+
   /// --------
+  /// NEW FROM GISELLE: OUTLET MARKER
+  Future<Uint8List> _createOutletMarker() async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint backgroundPaint = Paint()..color = const Color(0xFFFFF4B3);
+
+    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, backgroundPaint);
+
+    final TextPainter textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.electric_bolt.codePoint),
+      style: TextStyle(
+        fontSize: 28.0,
+        fontFamily: Icons.electric_bolt.fontFamily,
+        package: Icons.electric_bolt.fontPackage,
+        color: Colors.black87,
+      ),
+    );
+
+    textPainter.layout();
+
+    final double xCenter = (48.0 - textPainter.width) / 2.0;
+    final double yCenter = (48.0 - textPainter.height) / 2.0;
+    textPainter.paint(canvas, Offset(xCenter, yCenter));
+
+    final ui.Image image = await pictureRecorder.endRecording().toImage(48, 48);
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
+    return byteData!.buffer.asUint8List();
+  }
+  // -------
 
   Future<void> _loadBuildingBathrooms() async {
     try {
@@ -374,8 +524,15 @@ class _MapScreenState extends State<MapScreen> {
       _StudyHallClickListener(_handleStudyHallPinTap, _studyHallPinData),
     );
 
+    _outletPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _outletPinManager?.addOnPointAnnotationClickListener(
+      _OutletClickListener(_handleOutletPinTap, _outletPinData),
+    );
+
     await _loadBuildingBathrooms();
     await _loadStudyHallPins();
+    await _loadOutletPins();
     await _updateMapPins();
   }
 
@@ -507,6 +664,11 @@ class _MapScreenState extends State<MapScreen> {
         _selectedStudyBuildingFilter = 'All';
         _selectedExactStudyBuilding = null;
       }
+
+      if (!wasSameFilter && filter.key == 'charging') {
+        _selectedOutletBuildingFilter = 'All';
+        _selectedExactOutletBuilding = null;
+      }
     });
     _updateMapPins();
   }
@@ -524,15 +686,15 @@ class _MapScreenState extends State<MapScreen> {
         await _updateMapPins();
         setState(() {});
       }
-      // } else if (_activeFilter == 'charging') {
-      //   final result = await Navigator.push(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => const AddOutletScreen()),
-      //   );
+    } else if (_activeFilter == 'charging') {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddOutletScreen()),
+      );
 
-      // if (result == true) {
-      //   setState(() {});
-      //}
+      if (result == true) {
+        setState(() {});
+      }
     }
   }
 
@@ -554,8 +716,18 @@ class _MapScreenState extends State<MapScreen> {
         _studyHallPinData.clear();
       }
     }
+
+    if (_outletPinManager != null) {
+      if (_activeFilter == 'charging') {
+        await _loadOutletPins();
+      } else {
+        await _outletPinManager!.deleteAll();
+        _outletPinData.clear();
+      }
+    }
   }
 
+  // -----
   Widget? get _activeSheetContent {
     if (_foodAlertStep == _FoodAlertStep.fillingForm) {
       return CreateFoodAlertSheet(
@@ -593,6 +765,24 @@ class _MapScreenState extends State<MapScreen> {
         },
         onStudyHallAdded: () async {
           await _loadStudyHallPins();
+          await _updateMapPins();
+          setState(() {});
+        },
+      );
+    }
+
+    if (_activeFilter == 'charging') {
+      return _ChargingSheetContent(
+        selectedBuildingFilter: _selectedOutletBuildingFilter,
+        selectedExactBuilding: _selectedExactOutletBuilding,
+        onBuildingFilterChanged: (value) {
+          setState(() {
+            _selectedOutletBuildingFilter = value;
+            _selectedExactOutletBuilding = null;
+          });
+        },
+        onOutletAdded: () async {
+          await _loadOutletPins();
           await _updateMapPins();
           setState(() {});
         },
@@ -1320,17 +1510,344 @@ class _StudySheetContent extends StatelessWidget {
     );
   }
 }
+
 // ----------
-
+// NEW FROM GISELLE: CREATING THE OUTLET SHEET DISPLAYED ON MAP
 class _ChargingSheetContent extends StatelessWidget {
-  const _ChargingSheetContent();
-  @override
-  Widget build(BuildContext context) => const _SheetPlaceholder(
-    icon: Icons.electric_bolt,
-    label: 'EV and device charging stations',
-  );
-}
+  const _ChargingSheetContent({
+    required this.selectedBuildingFilter,
+    required this.selectedExactBuilding,
+    required this.onBuildingFilterChanged,
+    required this.onOutletAdded,
+  });
 
+  final String selectedBuildingFilter;
+  final String? selectedExactBuilding;
+  final ValueChanged<String> onBuildingFilterChanged;
+  final Future<void> Function() onOutletAdded;
+
+  bool _matchesBuildingFilter(String buildingAbbrev) {
+    if (selectedBuildingFilter == 'All') return true;
+
+    final code = buildingAbbrev.trim().toUpperCase();
+
+    switch (selectedBuildingFilter) {
+      case 'LA':
+        return code.startsWith('LA');
+      case 'ENGR':
+        return code.startsWith('EN') || code.startsWith('ENGR');
+      case 'FA':
+        return code.startsWith('FA');
+      case 'HSCI':
+        return code == 'HSCI' || code.contains('SCI');
+      case 'PSY':
+        return code == 'PSY' || code.startsWith('PSY');
+      case 'HHS':
+        return code.startsWith('HHS');
+      case 'COB':
+        return code == 'COB';
+      case 'KIN':
+        return code == 'KIN';
+      default:
+        return code == selectedBuildingFilter;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buildingFilters = [
+      'All',
+      'COB',
+      'KIN',
+      'LA',
+      'HSCI',
+      'ENGR',
+      'FA',
+      'PSY',
+      'HHS',
+    ];
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('outlets')
+              .where('status', isEqualTo: 'approved')
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text('Could not load outlets: ${snapshot.error}'),
+          );
+        }
+
+        final docs = snapshot.data?.docs ?? [];
+
+        final filteredDocs =
+            docs.where((doc) {
+              final data = doc.data();
+              final building = (data['buildingAbbrev'] ?? '').toString().trim();
+
+              if (selectedExactBuilding != null &&
+                  selectedExactBuilding!.isNotEmpty) {
+                return building.toUpperCase() ==
+                    selectedExactBuilding!.toUpperCase();
+              }
+
+              return _matchesBuildingFilter(building);
+            }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
+              child: Text(
+                "View Outlet Information",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            SizedBox(
+              height: 42,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: buildingFilters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final filter = buildingFilters[index];
+                  final isSelected =
+                      selectedExactBuilding == null &&
+                      selectedBuildingFilter == filter;
+
+                  return ChoiceChip(
+                    label: Text(filter),
+                    selected: isSelected,
+                    onSelected: (_) => onBuildingFilterChanged(filter),
+                    selectedColor: const Color(0xFFF2D21B),
+                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: Colors.black87,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            if (selectedExactBuilding != null &&
+                selectedExactBuilding!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                child: Text(
+                  'Showing: ${selectedExactBuilding!}',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 4,
+              ),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF4B3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: Colors.black, size: 22),
+              ),
+              title: const Text(
+                'Add Outlet Details',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddOutletScreen(),
+                  ),
+                );
+
+                if (result == true) {
+                  await onOutletAdded();
+                }
+              },
+            ),
+
+            Divider(color: Colors.grey.shade300, height: 20),
+
+            if (filteredDocs.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                child: Text(
+                  selectedExactBuilding != null &&
+                          selectedExactBuilding!.isNotEmpty
+                      ? 'No outlet entries found for ${selectedExactBuilding!}.'
+                      : selectedBuildingFilter == 'All'
+                      ? 'No outlet details added yet.'
+                      : 'No outlet entries found for $selectedBuildingFilter.',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+
+            if (filteredDocs.isNotEmpty)
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 5, bottom: 20),
+                itemCount: filteredDocs.length,
+                separatorBuilder:
+                    (context, index) =>
+                        Divider(color: Colors.grey.shade200, height: 1),
+                itemBuilder: (context, index) {
+                  final data = filteredDocs[index].data();
+
+                  final building =
+                      (data['buildingAbbrev'] ?? '').toString().trim();
+                  final room = (data['roomNumber'] ?? '').toString().trim();
+                  final outletCount = data['outletCount'];
+                  final outletTypes = List<String>.from(
+                    data['outletTypes'] ?? [],
+                  );
+                  final accessibilityLevels = List<String>.from(
+                    data['accessibilityLevels'] ?? [],
+                  );
+
+                  final cleanRoom =
+                      room.toLowerCase().startsWith('room ')
+                          ? room.substring(5).trim()
+                          : room;
+
+                  final title =
+                      building.isNotEmpty
+                          ? '$building Room $cleanRoom ⚡'
+                          : 'Room $cleanRoom ⚡';
+
+                  String subtitle = '';
+                  if (outletCount != null) {
+                    subtitle = 'Number of Outlets: $outletCount';
+                  }
+
+                  if (outletTypes.isNotEmpty) {
+                    subtitle =
+                        subtitle.isEmpty
+                            ? 'Type: ${outletTypes.join(', ')}'
+                            : '$subtitle\nType: ${outletTypes.join(', ')}';
+                  }
+
+                  if (accessibilityLevels.isNotEmpty) {
+                    subtitle =
+                        subtitle.isEmpty
+                            ? 'Accessibility: ${accessibilityLevels.join(', ')}'
+                            : '$subtitle\nAccessibility: ${accessibilityLevels.join(', ')}';
+                  }
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 6,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFF4B3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.electric_bolt,
+                        color: Colors.black87,
+                        size: 22,
+                      ),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => ExpandedOutletScreen(
+                                title:
+                                    building.isNotEmpty
+                                        ? '$building Room $cleanRoom'
+                                        : 'Room $cleanRoom',
+                                buildingName:
+                                    (data['buildingName'] ?? '').toString(),
+                                outletCount:
+                                    outletCount is int
+                                        ? outletCount
+                                        : int.tryParse('$outletCount'),
+                                outletTypes: outletTypes,
+                                accessibilityLevels: accessibilityLevels,
+                              ),
+                        ),
+                      );
+                    },
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
 
 class _RestroomSheetContent extends StatefulWidget {
   final Position currentPosition;
@@ -1573,12 +2090,27 @@ class _BathroomClickListener extends OnPointAnnotationClickListener {
   }
 }
 
-// NEW FROM GISELLE
+// NEW FROM GISELLE: STUDY HALL
 class _StudyHallClickListener extends OnPointAnnotationClickListener {
   final void Function(Map<String, dynamic>) onTap;
   final Map<String, Map<String, dynamic>> pinData;
 
   _StudyHallClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
+  }
+}
+
+// NEW FROM GISELLE: OUTLET
+class _OutletClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _OutletClickListener(this.onTap, this.pinData);
 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
