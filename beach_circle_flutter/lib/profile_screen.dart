@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'image_moderator.dart'; 
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,14 +11,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _majorController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _interestsController = TextEditingController();
-  
-  // Controller for the Image URL (We treat it just like text now)
   final TextEditingController _photoUrlController = TextEditingController();
 
   final User? user = FirebaseAuth.instance.currentUser;
@@ -29,10 +27,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
   }
 
-  // --- 1. LOAD DATA ---
   Future<void> _loadUserData() async {
     if (user == null) return;
-
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
           .collection('users')
@@ -47,7 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _yearController.text = data['year'] ?? '';
           _bioController.text = data['bio'] ?? '';
           _interestsController.text = data['interests'] ?? '';
-          // Load the saved URL into the controller
           _photoUrlController.text = data['photo_url'] ?? ''; 
         });
       }
@@ -58,7 +53,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // --- 2. SHOW DIALOG TO PASTE URL ---
   void _showImageUrlDialog() {
     showDialog(
       context: context,
@@ -75,7 +69,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 hintText: "https://example.com/image.png",
                 border: OutlineInputBorder(),
               ),
-              // Update the UI immediately when they type/paste
               onChanged: (value) {
                 setState(() {}); 
               },
@@ -92,16 +85,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // --- 3. SAVE TO DATABASE (TEXT ONLY) ---
   Future<void> _saveProfile() async {
     if (user == null) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saving profile...')),
-    );
+    setState(() => _isLoading = true);
 
     try {
-      // We just save the text string. No storage upload needed!
+      String imageUrl = _photoUrlController.text.trim();
+
+      // --- UPDATED MODERATION: CHECK FOR REASON ---
+      if (imageUrl.isNotEmpty) {
+        String? flagReason = await ImageModerator.isUrlSafe(imageUrl);
+        
+        if (flagReason != null) {
+          if (mounted) {
+            _showBlockedDialog(flagReason); // Pass the reason to the pop-up
+            setState(() => _isLoading = false);
+          }
+          return; 
+        }
+      }
+
       await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
         'name': _nameController.text.trim(),
         'email': user!.email,
@@ -109,16 +113,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'year': _yearController.text.trim(),
         'bio': _bioController.text.trim(),
         'interests': _interestsController.text.trim(),
-        'photo_url': _photoUrlController.text.trim(), // Saving the link
+        'photo_url': imageUrl, 
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile Saved!'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Profile Saved!'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -127,7 +128,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SnackBar(content: Text('Error saving: $e'), backgroundColor: Colors.red),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // --- UPDATED POP-UP: TELLS THE USER WHY ---
+  void _showBlockedDialog(String reason) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.report_problem, color: Colors.red),
+            SizedBox(width: 10),
+            Text("Image Blocked"),
+          ],
+        ),
+        content: Text(
+          "This image was flagged by our safety system.\n\n"
+          "Reason: $reason\n\n"
+          "Please use a different image URL."
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -136,15 +166,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // CHANGED: Background color to yellow
         backgroundColor: const Color(0xFFF5C518), 
-        // CHANGED: Icon and text color to black for contrast
         iconTheme: const IconThemeData(color: Colors.black),
         foregroundColor: Colors.black,
         title: const Text("Profile"),
         actions: [
           IconButton(
-            // CHANGED: Checkmark color to black
             icon: const Icon(Icons.check, color: Colors.black, size: 30),
             onPressed: _saveProfile,
             tooltip: 'Save Changes',
@@ -160,11 +187,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const Text("Basic Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // --- LEFT SIDE ---
                       Expanded(
                         flex: 3,
                         child: Column(
@@ -188,16 +213,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(width: 20),
-
-                      // --- RIGHT SIDE: PROFILE PICTURE ---
                       Expanded(
                         flex: 2,
                         child: Column(
                           children: [
                             const Text("Profile Picture", style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
-                            
-                            // TAP THIS BOX TO PASTE URL
                             GestureDetector(
                               onTap: _showImageUrlDialog, 
                               child: Container(
@@ -221,8 +242,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-
-                  // ... (Rest of your UI: Major, Year, Bio, Interests) ...
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -240,8 +259,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   _buildTextField(_interestsController, '"Basketball", "Coding"'),
                   const SizedBox(height: 30),
-                  
-                  // Security Section
                   const Text("Security and Account Management", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 15),
                   Row(
@@ -258,21 +275,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // --- HELPER TO DISPLAY IMAGE FROM URL ---
   Widget _buildProfileImage() {
     String url = _photoUrlController.text.trim();
-
-    if (url.isEmpty) {
-      return const Icon(Icons.person, size: 50, color: Colors.grey);
-    }
-
+    if (url.isEmpty) return const Icon(Icons.person, size: 50, color: Colors.grey);
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        // If the URL is broken/invalid, show an error icon
-        return const Center(child: Icon(Icons.broken_image, size: 40, color: Colors.red));
-      },
+      errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, size: 40, color: Colors.red)),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return const Center(child: CircularProgressIndicator(strokeWidth: 2));
@@ -280,9 +289,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildLabel(String text) {
-    return Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)));
-  }
+  Widget _buildLabel(String text) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)));
 
   Widget _buildTextField(TextEditingController controller, String hint) {
     return Container(

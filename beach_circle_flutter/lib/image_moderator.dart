@@ -6,24 +6,58 @@ import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 class ImageModerator {
   // These are the labels ML Kit uses that usually indicate NSFW or harmful content
   static const List<String> _bannedLabels = [
-    'Nudity',
-    'Underwear',
-    'Swimwear',
-    'Lingerie',
-    'Weapon',
-    'Gun',
-    'Firearm',
-    'Blood',
-    'Violence',
+    // --- WEAPONS & VIOLENCE ---
+    'Weaponry',           // This is the most common label for guns/knives
+    'Handgun',            // Specific weapon label
+    'Rifle',              // Specific weapon label
+    'Firearm',            // Specific weapon label
+    'Trigger',            // Often detected on weapon close-ups
+    'Ammunition',         // Detected near weapons
+    
+    // --- ADULT / NSFW CONTENT ---
+    'Underwear',          // Catch-all for lingerie/briefs
+    'Lingerie',           // Specific adult clothing
+    'Swimwear',           // Bikinis and trunks
+    'Bikini',             // Specific swimwear
+    'Maillot',            // One-piece swimsuits
+    'Bra',                // Undergarments
+    'Briefs',             // Undergarments
+    'Abdomen',            // High confidence here often means a shirtless/NSFW photo
+    
+    // --- DRUGS & ALCOHOL ---
+    'Cigarette',          // Smoking/Tobacco
+    'Tobacco',            // Tobacco products
+    'Beer',               // Alcohol
+    'Wine',               // Alcohol
+    'Alcoholic beverage', // General alcohol
+    'Distilled beverage', // Hard liquor
+    
+    // --- RISKY (Use with Caution) ---
+    'Blood',              // Violence/Injuries
+    'Bruise',             // Violence/Injuries
+    'Injury',             // Violence/Injuries
+    'Scab',               // Violence/Injuries
+    'gore',               // Violence/Injuries
+    'Torture',            // Violence/Injuries
+    'Death',              // Violence/Injuries
   ];
 
-  /// Downloads the URL and checks if it's safe. 
-  /// Returns [true] if clean, [false] if it contains NSFW/Banned content.
-  static Future<bool> isUrlSafe(String imageUrl) async {
+  /// Returns null if safe, or the [String] label name if it contains NSFW content.
+  static Future<String?> isUrlSafe(String imageUrl) async {
     try {
-      // 1. Download the image bytes from the URL
-      final response = await http.get(Uri.parse(imageUrl));
-      if (response.statusCode != 200) return true; // If link is dead, we treat as safe or handle elsewhere
+      // 1. Download the image with headers to prevent being blocked by the host
+      final response = await http.get(
+        Uri.parse(imageUrl),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      );
+
+      // If the site blocks the download (403) or link is dead (404), we return null
+      if (response.statusCode != 200) {
+        print("MODERATION: Download failed with status: ${response.statusCode}");
+        return null; 
+      }
 
       // 2. Save to a temporary file on the device
       final tempDir = await getTemporaryDirectory();
@@ -32,7 +66,9 @@ class ImageModerator {
 
       // 3. Initialize ML Kit Image Labeler
       final inputImage = InputImage.fromFilePath(file.path);
-      final ImageLabelerOptions options = ImageLabelerOptions(confidenceThreshold: 0.6);
+      
+      // Lowered threshold to 0.5 to be more sensitive to weapons/NSFW
+      final ImageLabelerOptions options = ImageLabelerOptions(confidenceThreshold: 0.1);
       final imageLabeler = ImageLabeler(options: options);
 
       // 4. Process the image and get labels
@@ -46,14 +82,14 @@ class ImageModerator {
       for (ImageLabel label in labels) {
         if (_bannedLabels.contains(label.label)) {
           print("MODERATION: Blocked ${label.label} (Confidence: ${label.confidence})");
-          return false; // NSFW content detected
+          return label.label; // Return the specific reason for the block
         }
       }
 
-      return true; // Image passed the scan
+      return null; // Image passed the scan
     } catch (e) {
       print("Moderation Error: $e");
-      return true; // If scan fails, we default to safe to avoid blocking valid posts
+      return null; 
     }
   }
 }

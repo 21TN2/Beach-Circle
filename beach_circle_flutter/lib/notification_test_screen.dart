@@ -62,9 +62,8 @@ class NotificationTestScreen extends StatelessWidget {
               ),
             ),
           ),
-    Overlay.of(context).insert(overlayEntry);
+    );
 
-    // 3. Remove it automatically after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       overlayEntry?.remove();
     });
