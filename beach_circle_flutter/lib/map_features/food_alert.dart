@@ -8,24 +8,25 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//class for food alert creation (movee thissss)
-class _CreateFoodAlertSheet extends StatefulWidget {
+//class for food alert creation 
+class CreateFoodAlertSheet extends StatefulWidget {
   final Position pinPosition;
   final VoidCallback onClose;
   final VoidCallback onSubmitted;
 
-  const _CreateFoodAlertSheet({
+  const CreateFoodAlertSheet({super.key, 
     required this.pinPosition,
     required this.onClose,
     required this.onSubmitted,
   });
 
   @override
-  State<_CreateFoodAlertSheet> createState() => _CreateFoodAlertSheetState();
+  State<CreateFoodAlertSheet> createState() => CreateFoodAlertSheetState();
 }
 
-//class to the actual food alert creation (move this too)
-class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
+
+//class to the actual food alert creation 
+class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
   //controlers and states for the stuff on the screen
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -201,8 +202,10 @@ class _CreateFoodAlertSheetState extends State<_CreateFoodAlertSheet> {
   }
 }
 
-class _FoodAlertSheetContent extends StatelessWidget {
-  const _FoodAlertSheetContent();
+
+//bottom sheet for food alert
+class FoodAlertSheetContent extends StatelessWidget {
+  const FoodAlertSheetContent({super.key});
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
