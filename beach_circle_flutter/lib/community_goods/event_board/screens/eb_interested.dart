@@ -66,7 +66,18 @@ class EBInterestedPage extends StatelessWidget {
         ),
       ),
 
-      body: Column(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.25,
+              child: Image.asset(
+                'assets/images/lb_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -180,6 +191,8 @@ class EBInterestedPage extends StatelessWidget {
               },
             ),
           ),
+        ],
+      ),
         ],
       ),
 

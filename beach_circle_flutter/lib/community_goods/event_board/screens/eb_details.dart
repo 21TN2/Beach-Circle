@@ -215,7 +215,7 @@ class EBDetailsPage extends StatelessWidget {
               _SectionCard(
                 title: 'Room',
                 child: Text(
-                  '${event.buildingCode} – Room ${event.roomNumber}',
+                  '${event.buildingCode} – ${event.roomNumber}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

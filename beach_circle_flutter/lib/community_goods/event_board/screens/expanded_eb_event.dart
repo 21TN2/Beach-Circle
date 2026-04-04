@@ -217,7 +217,7 @@ class ExpandedEBEventPg extends StatelessWidget {
               ),
             if (hasHighlights) const SizedBox(height: 20),
 
-            // Links
+// Links
             if (hasAnyLink)
               _SectionCard(
                 title: 'Links',
@@ -225,15 +225,30 @@ class ExpandedEBEventPg extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (hasFlyerLink)
-                      _LinkRow(label: 'Flyer', url: flyerLink!, onTap: () => _openLink(context, flyerLink!)),
+                      GestureDetector(
+                        onTap: () => _openLink(context, flyerLink!),
+                        child: Text(flyerLink!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87, height: 1.5)),
+                      ),
                     if (hasRegLink)
-                      _LinkRow(label: 'Register', url: registrationLink!, onTap: () => _openLink(context, registrationLink!)),
+                      GestureDetector(
+                        onTap: () => _openLink(context, registrationLink!),
+                        child: Text(registrationLink!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87, height: 1.5)),
+                      ),
                     if (hasWebsite)
-                      _LinkRow(label: 'Website', url: websiteLink!, onTap: () => _openLink(context, websiteLink!)),
+                      GestureDetector(
+                        onTap: () => _openLink(context, websiteLink!),
+                        child: Text(websiteLink!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87, height: 1.5)),
+                      ),
                     if (hasInstagram)
-                      _LinkRow(label: 'Instagram', url: instagramLink!, onTap: () => _openLink(context, instagramLink!)),
+                      GestureDetector(
+                        onTap: () => _openLink(context, instagramLink!),
+                        child: Text(instagramLink!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87, height: 1.5)),
+                      ),
                     if (hasEmail)
-                      _LinkRow(label: 'Contact', url: contactEmail!, onTap: () => _openLink(context, 'mailto:$contactEmail')),
+                      GestureDetector(
+                        onTap: () => _openLink(context, 'mailto:$contactEmail'),
+                        child: Text(contactEmail!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87, height: 1.5)),
+                      ),
                   ],
                 ),
               ),
@@ -244,7 +259,7 @@ class ExpandedEBEventPg extends StatelessWidget {
               _SectionCard(
                 title: 'Room',
                 child: Text(
-                  'Room $roomNumber',
+                  '$roomNumber',
                   style: const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87,
                   ),
