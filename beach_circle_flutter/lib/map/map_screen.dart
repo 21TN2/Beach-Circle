@@ -14,7 +14,7 @@ import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
 
-//to do, remove sheet when placing pin
+
 // fix adding indication for pin
 // add active pins (or phase out?)
 
@@ -146,6 +146,8 @@ class _MapScreenState extends State<MapScreen> {
   Position? _foodAlertPinPosition;
   PointAnnotationManager? _foodAlertPinManager;
   PointAnnotation? _foodAlertPin;
+  Uint8List? _foodAlertMarkerBytes;
+  
 
   static const double _centerLat = 33.7820;
   static const double _centerLng = -118.1126;
@@ -225,6 +227,33 @@ class _MapScreenState extends State<MapScreen> {
       format: ui.ImageByteFormat.png,
     );
     return byteData!.buffer.asUint8List();
+  }
+
+  Future<Uint8List> _createFoodAlertMarker() async {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    // Red circle background
+    final Paint bg = Paint()..color = Colors.red;
+    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, bg);
+
+    // White pin_drop icon on top
+    final TextPainter tp = TextPainter(textDirection: TextDirection.ltr);
+    tp.text = TextSpan(
+      text: String.fromCharCode(Icons.pin_drop.codePoint),
+      style: TextStyle(
+        fontSize: 28.0,
+        fontFamily: Icons.pin_drop.fontFamily,
+        package: Icons.pin_drop.fontPackage,
+        color: Colors.white,
+      ),
+    );
+    tp.layout();
+    tp.paint(canvas, Offset((48 - tp.width) / 2, (48 - tp.height) / 2));
+
+    final ui.Image img = await recorder.endRecording().toImage(48, 48);
+    final ByteData? bd = await img.toByteData(format: ui.ImageByteFormat.png);
+    return bd!.buffer.asUint8List();
   }
 
   // NEW FROM GISELLE: calculate the time to grab what's available / unavailable
@@ -632,6 +661,7 @@ class _MapScreenState extends State<MapScreen> {
     _outletPinManager?.addOnPointAnnotationClickListener(
       _OutletClickListener(_handleOutletPinTap, _outletPinData),
     );
+    _foodAlertMarkerBytes = await _createFoodAlertMarker();
 
     await _loadBuildingBathrooms();
     await _loadStudyHallPins();
@@ -672,13 +702,17 @@ class _MapScreenState extends State<MapScreen> {
 
   //actually saving the position and coords for food alert. in future consider incporating buildings if matching (if useful)
   Future<void> _placeFoodAlertPin(Point point) async {
+    // debugPrint('_foodAlertPinManager is null: ${_foodAlertPinManager == null}');
+    // debugPrint('_foodAlertMarkerBytes is null: ${_foodAlertMarkerBytes == null}');
     if (_foodAlertPin != null)
-      await _foodAlertPinManager?.delete(_foodAlertPin!);
+      {await _foodAlertPinManager?.delete(_foodAlertPin!);}
+    if (_foodAlertMarkerBytes == null) return;
+
     _foodAlertPin = await _foodAlertPinManager?.create(
       PointAnnotationOptions(
         geometry: point,
         iconSize: 1.5,
-        iconImage: "marker-15",
+        image: _foodAlertMarkerBytes!,
       ),
     );
     setState(() {
