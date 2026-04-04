@@ -8,13 +8,14 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//class for food alert creation 
+//class for food alert creation
 class CreateFoodAlertSheet extends StatefulWidget {
   final Position pinPosition;
   final VoidCallback onClose;
   final VoidCallback onSubmitted;
 
-  const CreateFoodAlertSheet({super.key, 
+  const CreateFoodAlertSheet({
+    super.key,
     required this.pinPosition,
     required this.onClose,
     required this.onSubmitted,
@@ -24,14 +25,98 @@ class CreateFoodAlertSheet extends StatefulWidget {
   State<CreateFoodAlertSheet> createState() => CreateFoodAlertSheetState();
 }
 
-
-//class to the actual food alert creation 
+//class to the actual food alert creation
 class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
   //controlers and states for the stuff on the screen
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  // food tag controller here
+  final List<String> _foodTagOptions = [
+    'Vegan',
+    'Vegetarian',
+    'Gluten-Free',
+    'Dairy-Free',
+    'Nut-Free',
+    'Halal',
+    'Kosher',
+    'Healthy',
+    'Sweets',
+    'Savory',
+    'Drinks',
+    'Snacks',
+  ];
+  final List<String> _selectedFoodTags = [];
   bool _isSubmitting = false;
+
+  // NEW FROM GISELLE: to toggle food tag options
+  void _toggleFoodTag(String tag) {
+    setState(() {
+      if (_selectedFoodTags.contains(tag)) {
+        _selectedFoodTags.remove(tag);
+      } else {
+        _selectedFoodTags.add(tag);
+      }
+    });
+  }
+
+  // NEW FROM GISELLE: to pick differnt food options
+  Future<void> _openFoodTagPicker() async {
+    final tempSelected = List<String>.from(_selectedFoodTags);
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Select Food Tags'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 300,
+                child: ListView(
+                  shrinkWrap: true,
+                  children:
+                      _foodTagOptions.map((tag) {
+                        return CheckboxListTile(
+                          value: tempSelected.contains(tag),
+                          onChanged: (_) {
+                            setDialogState(() {
+                              if (tempSelected.contains(tag)) {
+                                tempSelected.remove(tag);
+                              } else {
+                                tempSelected.add(tag);
+                              }
+                            });
+                          },
+                          title: Text(tag),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        );
+                      }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedFoodTags
+                        ..clear()
+                        ..addAll(tempSelected);
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -58,6 +143,7 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
         'userId': user.uid,
         'title': title,
         'description': desc,
+        'foodTags': _selectedFoodTags,
         'lat': widget.pinPosition.lat,
         'lng': widget.pinPosition.lng,
         'createdAt': FieldValue.serverTimestamp(),
@@ -160,7 +246,47 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
           ),
           const SizedBox(height: 20),
 
-          //food alert tag stuff here
+          //food alert tag stuff here by GISELLE
+          const Text(
+            "Food Tags (Optional)",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: _openFoodTagPicker,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Food Tags'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black87,
+                  side: BorderSide(color: Colors.grey.shade400),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedFoodTags.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  _selectedFoodTags.map((tag) {
+                    return Chip(
+                      label: Text(tag),
+                      onDeleted: () => _toggleFoodTag(tag),
+                    );
+                  }).toList(),
+            ),
+          ],
+          const SizedBox(height: 20),
 
           // Submit button
           SizedBox(
@@ -201,7 +327,6 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
     );
   }
 }
-
 
 //bottom sheet for food alert
 class FoodAlertSheetContent extends StatelessWidget {
