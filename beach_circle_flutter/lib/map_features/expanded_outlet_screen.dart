@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// expanded outlet page
 class ExpandedOutletScreen extends StatelessWidget {
   const ExpandedOutletScreen({
     super.key,
@@ -15,7 +16,7 @@ class ExpandedOutletScreen extends StatelessWidget {
   final int? outletCount;
   final List<String> outletTypes;
   final List<String> accessibilityLevels;
-
+  // outlet status: limited / standard / plentiful
   @override
   Widget build(BuildContext context) {
     final normalizedAccessibility =
@@ -45,7 +46,7 @@ class ExpandedOutletScreen extends StatelessWidget {
     } else {
       statusColor = const Color(0xFF5C6BC0);
     }
-
+    // title of page + ui
     return Scaffold(
       appBar: AppBar(
         title: const Text('Outlet Details'),
@@ -120,7 +121,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 18),
-
+            // section card includes outlet acccess
             _SectionCard(
               title: 'Outlet Access',
               child: Container(
@@ -144,7 +145,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-
+            // number of outlets card
             _SectionCard(
               title: 'Number of Outlets',
               child: Text(
@@ -154,7 +155,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-
+            // outlet type card
             _SectionCard(
               title: 'Outlet Type',
               child:
@@ -178,7 +179,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-
+            // acccessibility lvl section card
             _SectionCard(
               title: 'Accessibility Level',
               child:
@@ -202,7 +203,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-
+            // report outlet info button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -232,12 +233,13 @@ class ExpandedOutletScreen extends StatelessWidget {
   }
 }
 
+// required fields for section cards
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
-
+  // layout format
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -251,6 +253,7 @@ class _SectionCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        // color + font layout
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(

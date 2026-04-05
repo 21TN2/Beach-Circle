@@ -8,12 +8,13 @@ class AddStudyHallScreen extends StatefulWidget {
   State<AddStudyHallScreen> createState() => _AddStudyHallScreenState();
 }
 
+// when users want to add study hall info
 class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
   final StudyHallService _studyHallService = StudyHallService();
   final TextEditingController _roomController = TextEditingController();
 
   late Future<List<Map<String, String>>> _buildingsFuture;
-
+  // list of amentities
   final List<String> _allAmenities = [
     '💻 Open Lab',
     '📽️ Projector',
@@ -30,7 +31,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     '🔋 Power Strips/Outlets',
     '❄️ Air Conditioning',
   ];
-
+  // fields needed
   String? _selectedBuildingId;
   String? _selectedBuildingCode;
   String? _selectedBuildingName;
@@ -54,6 +55,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     super.dispose();
   }
 
+  // time format
   String _formatTime(TimeOfDay? time) {
     if (time == null) return '';
     final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
@@ -62,6 +64,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     return '$hour:$minute $period';
   }
 
+  // when users pick a time
   Future<void> _pickTime({required bool isStart}) async {
     final picked = await showTimePicker(
       context: context,
@@ -83,6 +86,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     });
   }
 
+  // when users are selecting amenities
   void _toggleAmenity(String amenity) {
     setState(() {
       if (_selectedAmenities.contains(amenity)) {
@@ -93,6 +97,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     });
   }
 
+  // when users forget to fill a field
   Future<void> _submit() async {
     final roomNumber = _roomController.text.trim();
 
@@ -111,7 +116,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     setState(() {
       _isSubmitting = true;
     });
-
+    // data field
     try {
       await _studyHallService.addStudyHall(
         buildingId: _selectedBuildingId!,
@@ -133,7 +138,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
+      // error handling
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to submit: $e')));
@@ -146,6 +151,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     }
   }
 
+  // building selection
   Widget _buildSectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -156,6 +162,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     );
   }
 
+  // how time button looks
   Widget _buildTimeButton({
     required String label,
     required TimeOfDay? value,
@@ -190,6 +197,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     );
   }
 
+  // building search to make it easier on user
   Widget _buildBuildingSearch(List<Map<String, String>> buildings) {
     return Autocomplete<Map<String, String>>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -216,14 +224,14 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
           _selectedBuildingCode = b['code'];
           _selectedBuildingName = b['name'];
         });
-      },
+      }, // building display
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
         if (_selectedBuildingCode != null && controller.text.isEmpty) {
           final code = _selectedBuildingCode ?? '';
           final name = _selectedBuildingName ?? '';
           controller.text = code.isEmpty ? name : '$code - $name';
         }
-
+        // search container
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -287,6 +295,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
     );
   }
 
+  // title card of the page
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -309,7 +318,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
           }
 
           final buildings = snapshot.data ?? [];
-
+          // page layout
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -333,7 +342,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                 _buildSectionLabel('Building Location'),
                 _buildBuildingSearch(buildings),
                 const SizedBox(height: 20),
-
+                // room selection
                 _buildSectionLabel('Room Number'),
                 TextField(
                   controller: _roomController,
@@ -352,7 +361,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                 Row(
                   children: [
                     _buildTimeButton(
-                      label: 'Start Time',
+                      label: 'Start Time', // time selection
                       value: _startTime,
                       onTap: () => _pickTime(isStart: true),
                     ),
@@ -368,7 +377,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                _buildSectionLabel('Seat Capacity'),
+                _buildSectionLabel('Seat Capacity'), // seat capacity increment
                 Row(
                   children: [
                     IconButton(
@@ -392,7 +401,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                     IconButton(
                       onPressed: () {
                         setState(() {
-                          _seatCapacity++;
+                          _seatCapacity++; // increment or decrement based on state
                         });
                       },
                       icon: const Icon(Icons.add_circle_outline),
@@ -402,6 +411,8 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                 const SizedBox(height: 20),
 
                 _buildSectionLabel('Amenities'),
+
+                /// when users pick a selection for amentities
                 if (_selectedAmenities.isNotEmpty)
                   Wrap(
                     spacing: 8,
@@ -414,7 +425,8 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                           );
                         }).toList(),
                   ),
-                if (_selectedAmenities.isNotEmpty) const SizedBox(height: 10),
+                if (_selectedAmenities.isNotEmpty)
+                  const SizedBox(height: 10), // how tags look
                 Container(
                   height: 220,
                   padding: const EdgeInsets.symmetric(
@@ -429,7 +441,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                   child: Scrollbar(
                     thumbVisibility: true,
                     child: ListView(
-                      children:
+                      children: // how selected amenities look
                           _allAmenities.map((amenity) {
                             return CheckboxListTile(
                               value: _selectedAmenities.contains(amenity),
@@ -446,6 +458,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
 
                 Row(
                   children: [
+                    // when expanded
                     Expanded(
                       child: OutlinedButton(
                         onPressed:
@@ -462,7 +475,7 @@ class _AddStudyHallScreenState extends State<AddStudyHallScreen> {
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child:
+                        child: // either submit or cancel
                             _isSubmitting
                                 ? const SizedBox(
                                   height: 18,

@@ -8,6 +8,7 @@ class AddOutletScreen extends StatefulWidget {
   State<AddOutletScreen> createState() => _AddOutletScreenState();
 }
 
+// main class to create 'add outlet details'
 class _AddOutletScreenState extends State<AddOutletScreen> {
   final OutletService _outletService = OutletService();
   final TextEditingController _roomController = TextEditingController();
@@ -17,9 +18,10 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
   String? _selectedBuildingId;
   String? _selectedBuildingCode;
   String? _selectedBuildingName;
-
+  // outlet count starts at 1
   int _outletCount = 1;
 
+  // list of outlet types
   final List<String> _allOutletTypes = [
     '🧱 Wall Outlet',
     '⬇️ Floor Outlet',
@@ -30,7 +32,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     '🪫 USB-C Ports',
     '🧲 MagSafe Outlet',
   ];
-
+  // accessibility list
   final List<String> _allAccessibilityLevels = [
     '✅ Easy Access',
     '⚡ Easy To Charge Devices',
@@ -44,7 +46,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
   final List<String> _selectedAccessibilityLevels = [];
 
   bool _isSubmitting = false;
-
+  // fetches building
   @override
   void initState() {
     super.initState();
@@ -57,6 +59,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     super.dispose();
   }
 
+  // list toggle when user picks something
   void _toggleFromList(List<String> targetList, String value) {
     setState(() {
       if (targetList.contains(value)) {
@@ -67,6 +70,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     });
   }
 
+  // how section label is display
   Widget _buildSectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -77,6 +81,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     );
   }
 
+  // building search
   Widget _buildBuildingSearch(List<Map<String, String>> buildings) {
     return Autocomplete<Map<String, String>>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -85,7 +90,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
         }
 
         final query = textEditingValue.text.toLowerCase();
-
+        // building display
         return buildings.where((b) {
           final code = (b['code'] ?? '').toLowerCase();
           final name = (b['name'] ?? '').toLowerCase();
@@ -110,7 +115,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
           final name = _selectedBuildingName ?? '';
           controller.text = code.isEmpty ? name : '$code - $name';
         }
-
+        // how users search or look for buildings
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -143,6 +148,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
           ),
         );
       },
+      // how building options are gonna display
       optionsViewBuilder: (context, onSelected, options) {
         return Align(
           alignment: Alignment.topLeft,
@@ -174,6 +180,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     );
   }
 
+  // handling: required fields must be filled
   Future<void> _submit() async {
     final roomNumber = _roomController.text.trim();
 
@@ -192,7 +199,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     setState(() {
       _isSubmitting = true;
     });
-
+    // firebase details
     try {
       await _outletService.addOutlet(
         buildingId: _selectedBuildingId!,
@@ -205,7 +212,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
       );
 
       if (!mounted) return;
-
+      // message shown to user
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Outlet details added successfully.')),
       );
@@ -213,7 +220,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
+      // error handling
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to submit: $e')));
@@ -226,6 +233,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     }
   }
 
+  // how chips are shown
   Widget _buildChipWrap(List<String> items, void Function(String) onDelete) {
     return Wrap(
       spacing: 8,
@@ -237,6 +245,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     );
   }
 
+  // check box layout
   Widget _buildCheckboxList(
     List<String> options,
     List<String> selected,
@@ -268,6 +277,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
     );
   }
 
+  // title of page
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -284,7 +294,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          // error handling
           if (snapshot.hasError) {
             return const Center(child: Text('Could not load buildings.'));
           }
@@ -314,7 +324,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
                 _buildSectionLabel('Building Location'),
                 _buildBuildingSearch(buildings),
                 const SizedBox(height: 20),
-
+                // user type room number
                 _buildSectionLabel('Room Number'),
                 TextField(
                   controller: _roomController,
@@ -328,7 +338,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
+                // how many outlets shown incrementer
                 _buildSectionLabel('Number of Outlets'),
                 Row(
                   children: [
@@ -361,7 +371,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
+                // when user selects outlet type
                 _buildSectionLabel('Outlet Type'),
                 if (_selectedOutletTypes.isNotEmpty)
                   _buildChipWrap(
@@ -375,14 +385,14 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
                   (item) => _toggleFromList(_selectedOutletTypes, item),
                 ),
                 const SizedBox(height: 20),
-
+                // when user clicks acc level
                 _buildSectionLabel('Accessibility Level'),
                 if (_selectedAccessibilityLevels.isNotEmpty)
                   _buildChipWrap(
                     _selectedAccessibilityLevels,
                     (item) =>
                         _toggleFromList(_selectedAccessibilityLevels, item),
-                  ),
+                  ), // how it displays
                 if (_selectedAccessibilityLevels.isNotEmpty)
                   const SizedBox(height: 10),
                 _buildCheckboxList(
@@ -391,7 +401,7 @@ class _AddOutletScreenState extends State<AddOutletScreen> {
                   (item) => _toggleFromList(_selectedAccessibilityLevels, item),
                 ),
                 const SizedBox(height: 28),
-
+                // when users either want to click cancel or submit
                 Row(
                   children: [
                     Expanded(

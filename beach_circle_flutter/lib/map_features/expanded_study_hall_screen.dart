@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// expanded study hall page
 class ExpandedStudyHallScreen extends StatelessWidget {
   const ExpandedStudyHallScreen({
     super.key,
@@ -10,14 +11,14 @@ class ExpandedStudyHallScreen extends StatelessWidget {
     required this.seats,
     required this.amenities,
   });
-
+  // required fields
   final String title;
   final String buildingName;
   final String startTime;
   final String endTime;
   final int? seats;
   final List<String> amenities;
-
+  // calculates time of day
   TimeOfDay? _parseTime(String value) {
     try {
       final parts = value.trim().split(' ');
@@ -44,6 +45,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
     }
   }
 
+  // is room available now based on current time
   bool _isAvailableNow() {
     final start = _parseTime(startTime);
     final end = _parseTime(endTime);
@@ -65,6 +67,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
     return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
   }
 
+  // calculate time
   @override
   Widget build(BuildContext context) {
     final availabilityText =
@@ -102,6 +105,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
                 ],
               ),
               child: Row(
+                // building layout
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -148,7 +152,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 16),
-
+            // shows whether room is available / unavailable
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
@@ -166,7 +170,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 18),
-
+            // section card for current  availability
             _SectionCard(
               title: 'Availability Hours',
               child: Text(
@@ -176,7 +180,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-
+            // section card for seat capacity
             _SectionCard(
               title: 'Seat Capacity',
               child: Text(
@@ -186,7 +190,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-
+            // section card for amentities
             _SectionCard(
               title: 'Amenities',
               child:
@@ -210,7 +214,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-
+            // report button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -240,12 +244,13 @@ class ExpandedStudyHallScreen extends StatelessWidget {
   }
 }
 
+// section card layout + fields
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
-
+  // build layout
   @override
   Widget build(BuildContext context) {
     return Container(

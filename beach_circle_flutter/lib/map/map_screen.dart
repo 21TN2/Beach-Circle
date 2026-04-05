@@ -14,7 +14,6 @@ import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
 
-
 // fix adding indication for pin
 // add active pins (or phase out?)
 
@@ -106,6 +105,7 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  // filter req
   String _mapBuildingToOutletFilter(String building) {
     final code = building.toUpperCase().trim();
 
@@ -147,7 +147,6 @@ class _MapScreenState extends State<MapScreen> {
   PointAnnotationManager? _foodAlertPinManager;
   PointAnnotation? _foodAlertPin;
   Uint8List? _foodAlertMarkerBytes;
-  
 
   static const double _centerLat = 33.7820;
   static const double _centerLng = -118.1126;
@@ -283,6 +282,7 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  // calculates availability
   bool _isCurrentlyAvailable(String startTime, String endTime) {
     final start = _parseTimeOfDay(startTime);
     final end = _parseTimeOfDay(endTime);
@@ -304,6 +304,7 @@ class _MapScreenState extends State<MapScreen> {
     return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
   }
 
+  // badge to count listings
   Future<Uint8List> _createCountMarker({
     required IconData icon,
     required Color circleColor,
@@ -441,7 +442,7 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-
+        // increment badge numbers: total count or available now
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
@@ -529,13 +530,13 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-
+        // increment badge count
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
         }
       }
-
+      // how map pin looks
       for (final entry in buildingsMap.entries) {
         final buildingData = entry.value;
         final badgeText = '${buildingData['totalCount']}';
@@ -546,7 +547,7 @@ class _MapScreenState extends State<MapScreen> {
           badgeText: badgeText,
           badgeColor: const Color(0xFF5F6B8C),
         );
-
+        // how it creates pin
         final annotation = await _outletPinManager!.create(
           PointAnnotationOptions(
             geometry: Point(
@@ -704,8 +705,9 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _placeFoodAlertPin(Point point) async {
     // debugPrint('_foodAlertPinManager is null: ${_foodAlertPinManager == null}');
     // debugPrint('_foodAlertMarkerBytes is null: ${_foodAlertMarkerBytes == null}');
-    if (_foodAlertPin != null)
-      {await _foodAlertPinManager?.delete(_foodAlertPin!);}
+    if (_foodAlertPin != null) {
+      await _foodAlertPinManager?.delete(_foodAlertPin!);
+    }
     if (_foodAlertMarkerBytes == null) return;
 
     _foodAlertPin = await _foodAlertPinManager?.create(
@@ -810,7 +812,7 @@ class _MapScreenState extends State<MapScreen> {
     _updateMapPins();
   }
 
-  /// NEW FROM GISELLE: FOR STUDY HALL + OUTLETS
+  /// NEW FROM GISELLE: FOR STUDY HALL + OUTLETS when map filter picks study or outlets
   void _onAddTapped() async {
     if (_activeFilter == 'study') {
       final result = await Navigator.push(
@@ -1304,7 +1306,7 @@ class _ParkingSheetContent extends StatelessWidget {
   );
 }
 
-/// NEW FROM GISELLE: STUDY HALL
+/// NEW FROM GISELLE: STUDY HALL Map Preview
 class _StudySheetContent extends StatelessWidget {
   const _StudySheetContent({
     required this.selectedBuildingFilter,
@@ -1322,7 +1324,7 @@ class _StudySheetContent extends StatelessWidget {
     if (selectedBuildingFilter == 'All') return true;
 
     final code = buildingAbbrev.trim().toUpperCase();
-
+    // building filter
     switch (selectedBuildingFilter) {
       case 'LA':
         return code.startsWith('LA');
@@ -1371,6 +1373,7 @@ class _StudySheetContent extends StatelessWidget {
     }
   }
 
+  // boo to calculate if study hall is available based on user time
   bool _isCurrentlyAvailable(String startTime, String endTime) {
     final start = _parseTimeOfDay(startTime);
     final end = _parseTimeOfDay(endTime);
@@ -1390,6 +1393,7 @@ class _StudySheetContent extends StatelessWidget {
     return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
   }
 
+  // filter options
   @override
   Widget build(BuildContext context) {
     final buildingFilters = [
@@ -1403,7 +1407,7 @@ class _StudySheetContent extends StatelessWidget {
       'PSY',
       'HHS',
     ];
-
+    // building study hall card
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream:
           FirebaseFirestore.instance
@@ -1440,7 +1444,7 @@ class _StudySheetContent extends StatelessWidget {
 
               return _matchesBuildingFilter(building);
             }).toList();
-
+        // title card
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1492,7 +1496,7 @@ class _StudySheetContent extends StatelessWidget {
             ),
 
             const SizedBox(height: 8),
-
+            // if building is not a filter option
             if (selectedExactBuilding != null &&
                 selectedExactBuilding!.isNotEmpty)
               Padding(
@@ -1543,7 +1547,7 @@ class _StudySheetContent extends StatelessWidget {
             ),
 
             Divider(color: Colors.grey.shade300, height: 20),
-
+            // if filter option has no study hall
             if (filteredDocs.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -1570,6 +1574,7 @@ class _StudySheetContent extends StatelessWidget {
                 separatorBuilder:
                     (context, index) =>
                         Divider(color: Colors.grey.shade200, height: 1),
+                // what  study hall description needs
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
 
@@ -1584,12 +1589,12 @@ class _StudySheetContent extends StatelessWidget {
                     startTime,
                     endTime,
                   );
-
+                  // final room presentation
                   final cleanRoom =
                       room.toLowerCase().startsWith('room ')
                           ? room.substring(5).trim()
                           : room;
-
+                  // final title presentation
                   final title =
                       building.isNotEmpty
                           ? '$building Room $cleanRoom'
@@ -1620,6 +1625,7 @@ class _StudySheetContent extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
+                    // how availabile now is gonna show when true
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Column(
@@ -1670,6 +1676,7 @@ class _StudySheetContent extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          // to adjust how amentities look
                           if (amenities.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
@@ -1741,7 +1748,7 @@ class _ChargingSheetContent extends StatelessWidget {
     if (selectedBuildingFilter == 'All') return true;
 
     final code = buildingAbbrev.trim().toUpperCase();
-
+    // building filter req
     switch (selectedBuildingFilter) {
       case 'LA':
         return code.startsWith('LA');
@@ -1764,6 +1771,7 @@ class _ChargingSheetContent extends StatelessWidget {
     }
   }
 
+  // filter building options
   @override
   Widget build(BuildContext context) {
     final buildingFilters = [
@@ -1791,7 +1799,7 @@ class _ChargingSheetContent extends StatelessWidget {
             child: Center(child: CircularProgressIndicator()),
           );
         }
-
+        // error handling
         if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(20),
@@ -1800,7 +1808,7 @@ class _ChargingSheetContent extends StatelessWidget {
         }
 
         final docs = snapshot.data?.docs ?? [];
-
+        // how to filter building
         final filteredDocs =
             docs.where((doc) {
               final data = doc.data();
@@ -1844,7 +1852,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   final isSelected =
                       selectedExactBuilding == null &&
                       selectedBuildingFilter == filter;
-
+                  // how filter chips are displayed
                   return ChoiceChip(
                     label: Text(filter),
                     selected: isSelected,
@@ -1883,7 +1891,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   ),
                 ),
               ),
-
+            // creating how 'add outlet details' button looks
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 20,
@@ -1917,7 +1925,7 @@ class _ChargingSheetContent extends StatelessWidget {
             ),
 
             Divider(color: Colors.grey.shade300, height: 20),
-
+            // if filter options are empty
             if (filteredDocs.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -1934,7 +1942,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
-
+            // how filter options look
             if (filteredDocs.isNotEmpty)
               ListView.separated(
                 shrinkWrap: true,
@@ -1962,7 +1970,7 @@ class _ChargingSheetContent extends StatelessWidget {
                       room.toLowerCase().startsWith('room ')
                           ? room.substring(5).trim()
                           : room;
-
+                  // how title is gonna be displayed
                   final title =
                       building.isNotEmpty
                           ? '$building Room $cleanRoom ⚡'
@@ -1972,14 +1980,14 @@ class _ChargingSheetContent extends StatelessWidget {
                   if (outletCount != null) {
                     subtitle = 'Number of Outlets: $outletCount';
                   }
-
+                  // outlet types
                   if (outletTypes.isNotEmpty) {
                     subtitle =
                         subtitle.isEmpty
                             ? 'Type: ${outletTypes.join(', ')}'
                             : '$subtitle\nType: ${outletTypes.join(', ')}';
                   }
-
+                  // accessibility display
                   if (accessibilityLevels.isNotEmpty) {
                     subtitle =
                         subtitle.isEmpty
@@ -2301,7 +2309,7 @@ class _BathroomClickListener extends OnPointAnnotationClickListener {
   }
 }
 
-// NEW FROM GISELLE: STUDY HALL
+// NEW FROM GISELLE: STUDY HALL click listener
 class _StudyHallClickListener extends OnPointAnnotationClickListener {
   final void Function(Map<String, dynamic>) onTap;
   final Map<String, Map<String, dynamic>> pinData;
@@ -2316,7 +2324,7 @@ class _StudyHallClickListener extends OnPointAnnotationClickListener {
   }
 }
 
-// NEW FROM GISELLE: OUTLET
+// NEW FROM GISELLE: OUTLET Click listener
 class _OutletClickListener extends OnPointAnnotationClickListener {
   final void Function(Map<String, dynamic>) onTap;
   final Map<String, Map<String, dynamic>> pinData;
