@@ -756,17 +756,17 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
  
                   // Format relative timestamp
                   String timeStr = '';
-                  if (ts != null) {
-                    final dt = ts.toDate();
-                    final diff = now.difference(dt);
-                    if (diff.inMinutes < 60) {
-                      timeStr = '${diff.inMinutes*-1}m ago';
-                    } else if (diff.inHours < 24) {
-                      timeStr = '${diff.inHours}h ago';
-                    } else {
-                      timeStr = '${diff.inDays}d ago';
-                    }
-                  }
+                  // if (ts != null) {
+                  //   final dt = ts.toDate();
+                  //   final diff = now.difference(dt);
+                  //   if (diff.inMinutes < 60) {
+                  //     timeStr = '${diff.inMinutes*-1}m ago';
+                  //   } else if (diff.inHours < 24) {
+                  //     timeStr = '${diff.inHours}h ago';
+                  //   } else {
+                  //     timeStr = '${diff.inDays}d ago';
+                  //   }
+                  // }
  
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -895,177 +895,3 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
   }
 }
  
-
-// class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
-//   // Track docs already scheduled for deletion to avoid duplicate calls.
-//   final Set<String> _scheduledForDelete = {};
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-//       stream:
-//           FirebaseFirestore.instance
-//               .collection('food_alerts')
-//               .where('active', isEqualTo: true)
-//               .orderBy('createdAt', descending: true)
-//               .snapshots(),
-//       builder: (context, snapshot) {
-//         // Loading
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const Padding(
-//             padding: EdgeInsets.all(40),
-//             child: Center(child: CircularProgressIndicator()),
-//           );
-//         }
-
-//         // Error
-//         if (snapshot.hasError) {
-//           return const Padding(
-//             padding: EdgeInsets.all(20),
-//             child: Text('Could not load food alerts.'),
-//           );
-//         }
-
-//         final docs = snapshot.data?.docs ?? [];
-//         return Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             const Padding(
-//               padding: EdgeInsets.only(left: 20, top: 0, bottom: 5),
-//               child: Text(
-//                 "Food Alerts",
-//                 style: TextStyle(
-//                   fontSize: 18,
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.black87,
-//                 ),
-//               ),
-//             ),
-
-//             if (docs.isEmpty)
-//               const Padding(
-//                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-//                 child: Text(
-//                   'No active food alerts right now.',
-//                   style: TextStyle(color: Colors.grey),
-//                 ),
-//               ),
-
-//             if (docs.isNotEmpty)
-//               ListView.separated(
-//                 shrinkWrap: true,
-//                 physics: const NeverScrollableScrollPhysics(),
-//                 padding: const EdgeInsets.only(top: 5, bottom: 20),
-//                 itemCount: docs.length,
-//                 separatorBuilder:
-//                     (context, index) =>
-//                         Divider(color: Colors.grey.shade200, height: 1),
-//                 itemBuilder: (context, index) {
-//                   final data = docs[index].data();
-//                   final title = (data['title'] ?? 'Untitled').toString();
-//                   final description = (data['description'] ?? '').toString();
-//                   final foodTags = List<String>.from(data['foodTags'] ?? []);
-
-//                   // Format timestamp if available
-//                   String timeStr = '';
-//                   final ts = data['createdAt'];
-//                   if (ts is Timestamp) {
-//                     final dt = ts.toDate();
-//                     final diff = DateTime.now().difference(dt);
-//                     if (diff.inMinutes < 60) {
-//                       timeStr = '${diff.inMinutes}m ago';
-//                     } else if (diff.inHours < 24) {
-//                       timeStr = '${diff.inHours}h ago';
-//                     } else {
-//                       timeStr = '${diff.inDays}d ago';
-//                     }
-//                   }
-
-//                   return ListTile(
-//                     contentPadding: const EdgeInsets.symmetric(
-//                       horizontal: 20,
-//                       vertical: 2,
-//                     ),
-//                     leading: Container(
-//                       padding: const EdgeInsets.all(10),
-//                       decoration: const BoxDecoration(
-//                         color: Color(0xFFE8F0FE),
-//                         shape: BoxShape.circle,
-//                       ),
-//                       child: const Icon(
-//                         Icons.pin_drop,
-//                         color: Colors.red,
-//                         size: 22,
-//                       ),
-//                     ),
-//                     title: Text(
-//                       title,
-//                       style: const TextStyle(
-//                         fontWeight: FontWeight.w600,
-//                         fontSize: 16,
-//                       ),
-//                     ),
-          //           subtitle: Padding(
-          //             padding: const EdgeInsets.only(top: 4),
-          //             child: Column(
-          //               crossAxisAlignment: CrossAxisAlignment.start,
-          //               children: [
-          //                 Text(
-          //                   timeStr.isNotEmpty
-          //                       ? '$description · $timeStr'
-          //                       : description,
-          //                   style: TextStyle(
-          //                     color: Colors.grey.shade600,
-          //                     fontSize: 13,
-          //                   ),
-          //                   maxLines: 2,
-          //                   overflow: TextOverflow.ellipsis,
-          //                 ),
-          //                 if (foodTags.isNotEmpty) ...[
-          //                   const SizedBox(height: 8),
-          //                   Wrap(
-          //                     spacing: 6,
-          //                     runSpacing: 6,
-          //                     children:
-          //                         foodTags.map((tag) {
-          //                           return Container(
-          //                             padding: const EdgeInsets.symmetric(
-          //                               horizontal: 10,
-          //                               vertical: 4,
-          //                             ),
-          //                             decoration: BoxDecoration(
-          //                               color: const Color(0xFFEAF4EA),
-          //                               borderRadius: BorderRadius.circular(14),
-          //                             ),
-          //                             child: Text(
-          //                               tag,
-          //                               style: const TextStyle(
-          //                                 fontSize: 11,
-          //                                 fontWeight: FontWeight.w500,
-          //                                 color: Color(0xFF2E7D32),
-          //                               ),
-          //                             ),
-          //                           );
-          //                         }).toList(),
-          //                   ),
-          //                 ],
-          //               ],
-          //             ),
-          //           ),
-          //           trailing: const Icon(
-          //             Icons.chevron_right,
-          //             color: Colors.grey,
-          //           ),
-          //           onTap: () {
-          //             // TODO: fly map camera to pin location
-          //             // final lat = data['lat'], lng = data['lng'];
-          //           },
-          //         );
-          //       },
-          //     ),
-          // ],
-//         );
-//       },
-//     );
-//   }
-// }

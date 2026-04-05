@@ -1315,7 +1315,7 @@ class _MapScreenState extends State<MapScreen> {
           //food alert button creation
           if (_activeFilter == 'food' && _foodAlertStep == _FoodAlertStep.none)
             Positioned(
-              bottom: 310,
+              bottom: 300,
               right: 16,
               child: FloatingActionButton(
                 onPressed: _startFoodAlertFlow,
