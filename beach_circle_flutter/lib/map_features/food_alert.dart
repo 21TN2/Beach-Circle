@@ -13,7 +13,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 // Constants
 const Duration _kFoodAlertActiveDuration = Duration(hours: 5);
 const Duration _kFoodAlertDeleteDuration = Duration(hours: 24);
- 
 
 // Helper: compute whether a food alert is still active based on age + flag
 bool isFoodAlertActive(Timestamp? createdAt, bool storedActive) {
@@ -76,7 +75,7 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
   // NEW FROM GISELLE: to pick differnt food options
   Future<void> _openFoodTagPicker() async {
     final tempSelected = List<String>.from(_selectedFoodTags);
-
+    // check box for amentities
     await showDialog(
       context: context,
       builder: (context) {
@@ -110,6 +109,7 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
                 ),
               ),
               actions: [
+                // if user wants to close box
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
@@ -272,6 +272,7 @@ class CreateFoodAlertSheetState extends State<CreateFoodAlertSheet> {
           ),
           const SizedBox(height: 6),
           Row(
+            // adds food tag option to page
             children: [
               OutlinedButton.icon(
                 onPressed: _openFoodTagPicker,
@@ -415,14 +416,14 @@ class FoodAlertDetailPage extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: isActive
-                        ? Colors.green.shade50
-                        : Colors.grey.shade100,
+                    color:
+                        isActive ? Colors.green.shade50 : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isActive
-                          ? Colors.green.shade300
-                          : Colors.grey.shade300,
+                      color:
+                          isActive
+                              ? Colors.green.shade300
+                              : Colors.grey.shade300,
                     ),
                   ),
                   child: Row(
@@ -439,9 +440,10 @@ class FoodAlertDetailPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isActive
-                              ? Colors.green.shade700
-                              : Colors.grey.shade600,
+                          color:
+                              isActive
+                                  ? Colors.green.shade700
+                                  : Colors.grey.shade600,
                         ),
                       ),
                     ],
@@ -450,10 +452,7 @@ class FoodAlertDetailPage extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   timeStr,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                 ),
               ],
             ),
@@ -498,38 +497,38 @@ class FoodAlertDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
 
             Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (foodTags.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children:
-                          foodTags.map((tag) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (foodTags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children:
+                        foodTags.map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF4EA),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              tag,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF2E7D32),
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEAF4EA),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Text(
-                                tag,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF2E7D32),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                    ),
-                  ],
+                            ),
+                          );
+                        }).toList(),
+                  ),
                 ],
-              ),
+              ],
+            ),
 
             const Spacer(),
 
@@ -539,10 +538,7 @@ class FoodAlertDetailPage extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => _deactivate(context),
-                  icon: const Icon(
-                    Icons.cancel_outlined,
-                    color: Colors.red,
-                  ),
+                  icon: const Icon(Icons.cancel_outlined, color: Colors.red),
                   label: const Text(
                     'Mark as Inactive',
                     style: TextStyle(
@@ -585,15 +581,16 @@ class FoodAlertSheetContent extends StatefulWidget {
 class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
   // Track docs already scheduled for deletion to avoid duplicate calls.
   final Set<String> _scheduledForDelete = {};
- 
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       // Fetch all alerts ordered newest-first; we sort active/inactive in-app.
-      stream: FirebaseFirestore.instance
-          .collection('food_alerts')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('food_alerts')
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -601,18 +598,18 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
             child: Center(child: CircularProgressIndicator()),
           );
         }
- 
+
         if (snapshot.hasError) {
           return const Padding(
             padding: EdgeInsets.all(20),
             child: Text('Could not load food alerts.'),
           );
         }
- 
+
         final now = DateTime.now();
         final currentUserId = FirebaseAuth.instance.currentUser?.uid;
         final allDocs = snapshot.data?.docs ?? [];
- 
+
         // ── auto-expire: mark active alerts older than 5 h as inactive ────
         for (final doc in allDocs) {
           final data = doc.data();
@@ -627,40 +624,40 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
             }
           }
         }
- 
+
         // ── auto-delete: remove inactive alerts older than 24 h ──────────
         for (final doc in allDocs) {
-        if (_scheduledForDelete.contains(doc.id)) continue;
+          if (_scheduledForDelete.contains(doc.id)) continue;
 
-        final data = doc.data();
-        final ts = data['createdAt'];
-        final storedActive = data['active'] == true;
+          final data = doc.data();
+          final ts = data['createdAt'];
+          final storedActive = data['active'] == true;
 
-        if (!storedActive && ts is Timestamp) {
-          final createdAt = ts.toDate();
-          final age = now.difference(createdAt);
+          if (!storedActive && ts is Timestamp) {
+            final createdAt = ts.toDate();
+            final age = now.difference(createdAt);
 
-          if (age >= _kFoodAlertDeleteDuration) {
-            _scheduledForDelete.add(doc.id);
-            FirebaseFirestore.instance
-                .collection('food_alerts')
-                .doc(doc.id)
-                .delete();
-          } else {
-            final remaining = _kFoodAlertDeleteDuration - age;
-            _scheduledForDelete.add(doc.id);
-
-            Future.delayed(remaining, () {
-              if (!mounted) return;
-
+            if (age >= _kFoodAlertDeleteDuration) {
+              _scheduledForDelete.add(doc.id);
               FirebaseFirestore.instance
                   .collection('food_alerts')
                   .doc(doc.id)
                   .delete();
-            });
+            } else {
+              final remaining = _kFoodAlertDeleteDuration - age;
+              _scheduledForDelete.add(doc.id);
+
+              Future.delayed(remaining, () {
+                if (!mounted) return;
+
+                FirebaseFirestore.instance
+                    .collection('food_alerts')
+                    .doc(doc.id)
+                    .delete();
+              });
+            }
           }
         }
-      }
         // for (final doc in allDocs) {
         //   if (_scheduledForDelete.contains(doc.id)) continue;
         //   final data = doc.data();
@@ -689,11 +686,11 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
         //     }
         //   }
         // }
- 
+
         // ── sort: active alerts first, then inactive ──────────────────────
         final activeDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
         final inactiveDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
- 
+
         for (final doc in allDocs) {
           final data = doc.data();
           final ts = data['createdAt'] as Timestamp?;
@@ -704,9 +701,9 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
             inactiveDocs.add(doc);
           }
         }
- 
+
         final displayDocs = [...activeDocs, ...inactiveDocs];
- 
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -721,7 +718,7 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                 ),
               ),
             ),
- 
+
             if (displayDocs.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -730,15 +727,16 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
- 
+
             if (displayDocs.isNotEmpty)
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
                 itemCount: displayDocs.length,
-                separatorBuilder: (context, index) =>
-                    Divider(color: Colors.grey.shade200, height: 1),
+                separatorBuilder:
+                    (context, index) =>
+                        Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
                   final doc = displayDocs[index];
                   final data = doc.data();
@@ -748,12 +746,12 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                   final foodTags = List<String>.from(data['foodTags'] ?? []);
                   final lat = (data['lat'] as num?)?.toDouble();
                   final lng = (data['lng'] as num?)?.toDouble();
- 
+
                   // Live active status
                   final ts = data['createdAt'] as Timestamp?;
                   final storedActive = data['active'] == true;
                   final active = isFoodAlertActive(ts, storedActive);
- 
+
                   // Format relative timestamp
                   String timeStr = '';
                   // if (ts != null) {
@@ -767,7 +765,7 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                   //     timeStr = '${diff.inDays}d ago';
                   //   }
                   // }
- 
+
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -776,9 +774,10 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                     leading: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: active
-                            ? const Color(0xFFFFEBEB)
-                            : Colors.grey.shade100,
+                        color:
+                            active
+                                ? const Color(0xFFFFEBEB)
+                                : Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -795,15 +794,16 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
-                              color: active
-                                  ? Colors.black87
-                                  : Colors.grey.shade500,
+                              color:
+                                  active
+                                      ? Colors.black87
+                                      : Colors.grey.shade500,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    
+
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Column(
@@ -814,9 +814,10 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                                 ? '$description · $timeStr'
                                 : description,
                             style: TextStyle(
-                              color: active
-                                  ? Colors.grey.shade600
-                                  : Colors.grey.shade400,
+                              color:
+                                  active
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade400,
                               fontSize: 13,
                             ),
                             maxLines: 2,
@@ -853,29 +854,27 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                         ],
                       ),
                     ),
-                    
-                    trailing: IconButton (
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey,
-                    ),
+
+                    trailing: IconButton(
+                      icon: const Icon(Icons.chevron_right, color: Colors.grey),
                       onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => FoodAlertDetailPage(
-                            docId: doc.id,
-                            title: title,
-                            description: description,
-                            isActive: active,
-                            timeStr: timeStr,
-                            currentUserId: currentUserId,
-                            alertUserId: alertUserId,
-                            foodTags: foodTags,
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => FoodAlertDetailPage(
+                                  docId: doc.id,
+                                  title: title,
+                                  description: description,
+                                  isActive: active,
+                                  timeStr: timeStr,
+                                  currentUserId: currentUserId,
+                                  alertUserId: alertUserId,
+                                  foodTags: foodTags,
+                                ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
                     onTap: () {
                       // Fly map to active alert's pin
                       if (active &&
@@ -894,4 +893,3 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
     );
   }
 }
- 
