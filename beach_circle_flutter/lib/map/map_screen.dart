@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../bathroom_finder.dart';
 
 import '../map_features/add_study_hall_screen.dart';
@@ -15,7 +16,6 @@ import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
 
 
-// fix adding indication for pin
 // add active pins (or phase out?)
 
 enum _FoodAlertStep { none, placingPin, fillingForm }
@@ -147,6 +147,12 @@ class _MapScreenState extends State<MapScreen> {
   PointAnnotationManager? _foodAlertPinManager;
   PointAnnotation? _foodAlertPin;
   Uint8List? _foodAlertMarkerBytes;
+
+  
+  // Manager and data map for live food-alert map pins (food filter)
+  PointAnnotationManager? _foodAlertMapPinManager;
+  final Map<String, Map<String, dynamic>> _foodAlertPinData = {};
+
   
 
   static const double _centerLat = 33.7820;
@@ -171,7 +177,7 @@ class _MapScreenState extends State<MapScreen> {
       icon: Icons.local_pizza,
       label: 'Food',
       hasBottomSheet: true,
-      sheetContent: FoodAlertSheetContent(),
+      // sheetContent: FoodAlertSheetContent(),
     ),
     FilterOption(
       key: 'study',
@@ -650,6 +656,14 @@ class _MapScreenState extends State<MapScreen> {
     _foodAlertPinManager =
         await mapboxMap!.annotations.createPointAnnotationManager();
 
+    _foodAlertMapPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _foodAlertMapPinManager?.addOnPointAnnotationClickListener(
+      _FoodAlertMapPinClickListener(_handleFoodAlertPinTap, _foodAlertPinData),
+    );
+
+
+
     _studyHallPinManager =
         await mapboxMap!.annotations.createPointAnnotationManager();
     _studyHallPinManager?.addOnPointAnnotationClickListener(
@@ -662,6 +676,7 @@ class _MapScreenState extends State<MapScreen> {
       _OutletClickListener(_handleOutletPinTap, _outletPinData),
     );
     _foodAlertMarkerBytes = await _createFoodAlertMarker();
+  
 
     await _loadBuildingBathrooms();
     await _loadStudyHallPins();
@@ -747,6 +762,112 @@ class _MapScreenState extends State<MapScreen> {
       _foodAlertPinPosition = null;
     });
   }
+
+    // Fly the map camera to a food alert's coordinates
+  void _flyToFoodAlert(double lat, double lng) {
+    mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(lng, lat)),
+        zoom: 17.5,
+      ),
+      MapAnimationOptions(duration: 600),
+    );
+  }
+
+  // Called when a food-alert map pin is tapped – opens the detail page
+  void _handleFoodAlertPinTap(Map<String, dynamic> data) {
+    final title = (data['title'] ?? 'Untitled').toString();
+    final description = (data['description'] ?? '').toString();
+    final docId = (data['docId'] ?? '').toString();
+    final alertUserId = (data['userId'] ?? '').toString();
+    final currentUserId = data['currentUserId'] as String?;
+    final timeStr = (data['timeStr'] ?? '').toString();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FoodAlertDetailPage(
+          docId: docId,
+          title: title,
+          description: description,
+          isActive: true,
+          timeStr: timeStr,
+          currentUserId: currentUserId,
+          alertUserId: alertUserId,
+        ),
+      ),
+    );
+  }
+
+  // Load all active food alert pins onto the map
+  Future<void> _loadFoodAlertMapPins() async {
+    if (_foodAlertMapPinManager == null) return;
+
+    await _foodAlertMapPinManager!.deleteAll();
+    _foodAlertPinData.clear();
+
+    final markerBytes = _foodAlertMarkerBytes ?? await _createFoodAlertMarker();
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('food_alerts')
+          .where('active', isEqualTo: true)
+          .get();
+
+      final now = DateTime.now();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final ts = data['createdAt'] as Timestamp?;
+
+        // Skip pins that have already passed the 5-hour active window
+        if (ts != null) {
+          final age = now.difference(ts.toDate());
+          if (age >= const Duration(hours: 5)) continue;
+        }
+
+        final lat = (data['lat'] as num?)?.toDouble();
+        final lng = (data['lng'] as num?)?.toDouble();
+        if (lat == null || lng == null) continue;
+
+        // Build relative time string for detail page
+        String timeStr = '';
+        if (ts != null) {
+          final diff = now.difference(ts.toDate());
+          if (diff.inMinutes < 60) {
+            timeStr = '${diff.inMinutes}m ago';
+          } else if (diff.inHours < 24) {
+            timeStr = '${diff.inHours}h ago';
+          } else {
+            timeStr = '${diff.inDays}d ago';
+          }
+        }
+
+        final annotation = await _foodAlertMapPinManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(lng, lat)),
+            image: markerBytes,
+            iconSize: 1.2,
+          ),
+        );
+
+        _foodAlertPinData[annotation.id] = {
+          'docId': doc.id,
+          'title': data['title'] ?? 'Untitled',
+          'description': data['description'] ?? '',
+          'userId': data['userId'] ?? '',
+          'currentUserId': currentUserId,
+          'timeStr': timeStr,
+          'lat': lat,
+          'lng': lng,
+        };
+      }
+    } catch (e) {
+      debugPrint('Error loading food alert map pins: $e');
+    }
+  }
+
+
 
   void _locateUser() {
     if (_isDevMode && _simulatedPosition != null) {
@@ -862,6 +983,17 @@ class _MapScreenState extends State<MapScreen> {
         _outletPinData.clear();
       }
     }
+
+    
+    if (_foodAlertMapPinManager != null) {
+      if (_activeFilter == 'food') {
+        await _loadFoodAlertMapPins();
+      } else {
+        await _foodAlertMapPinManager!.deleteAll();
+        _foodAlertPinData.clear();
+      }
+    }
+
   }
 
   // -----
@@ -872,6 +1004,10 @@ class _MapScreenState extends State<MapScreen> {
         onClose: _cancelFoodAlertFlow,
         onSubmitted: () {
           _cancelFoodAlertFlow();
+          // Refresh food-alert pins on the map
+          if (_activeFilter == 'food') {
+            _loadFoodAlertMapPins();
+          }
         },
       );
     }
@@ -930,6 +1066,15 @@ class _MapScreenState extends State<MapScreen> {
       (f) => f.key == _activeFilter,
       orElse: () => _filters.first,
     );
+
+    
+    if (_activeFilter == 'food') {
+      return FoodAlertSheetContent(
+        onAlertSelected: (lat, lng) => _flyToFoodAlert(lat, lng),
+      );
+    }
+
+
 
     return filter.hasBottomSheet ? filter.sheetContent : null;
   }
@@ -2323,6 +2468,20 @@ class _OutletClickListener extends OnPointAnnotationClickListener {
 
   _OutletClickListener(this.onTap, this.pinData);
 
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
+  }
+}
+
+class _FoodAlertMapPinClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+ 
+  _FoodAlertMapPinClickListener(this.onTap, this.pinData);
+ 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
     final data = pinData[annotation.id];
