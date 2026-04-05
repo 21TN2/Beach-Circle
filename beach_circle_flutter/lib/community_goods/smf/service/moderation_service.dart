@@ -4,10 +4,18 @@
 // imports related to firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:profanity_filter/profanity_filter.dart';
 
 class ModerationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+// Added moderation for inappropriate content
+  static final ProfanityFilter _filter = ProfanityFilter();
+
+  static bool containsBlockedContent(String text) {
+    return _filter.hasProfanity(text);
+  }
 
   // fields needed for firebase
   Future<void> reportPost({

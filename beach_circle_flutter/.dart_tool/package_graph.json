@@ -20,6 +20,7 @@
         "image_picker",
         "lottie",
         "mapbox_maps_flutter",
+        "profanity_filter",
         "url_launcher"
       ],
       "devDependencies": [
@@ -51,6 +52,11 @@
         "test_api",
         "vector_math"
       ]
+    },
+    {
+      "name": "profanity_filter",
+      "version": "2.0.0",
+      "dependencies": []
     },
     {
       "name": "lottie",
