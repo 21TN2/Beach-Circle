@@ -8,7 +8,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//in production restrict amount of food alerts made
+//in production restrict amount of food alerts made per user
 
 // Constants
 const Duration _kFoodAlertActiveDuration = Duration(hours: 5);
@@ -353,6 +353,7 @@ class FoodAlertDetailPage extends StatelessWidget {
   final String timeStr;
   final String? currentUserId;
   final String alertUserId;
+  final List<String> foodTags;
 
   const FoodAlertDetailPage({
     super.key,
@@ -363,6 +364,7 @@ class FoodAlertDetailPage extends StatelessWidget {
     required this.timeStr,
     required this.currentUserId,
     required this.alertUserId,
+    this.foodTags = const [],
   });
 
   Future<void> _deactivate(BuildContext context) async {
@@ -493,6 +495,42 @@ class FoodAlertDetailPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 8),
+
+            Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (foodTags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children:
+                          foodTags.map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEAF4EA),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                tag,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF2E7D32),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ],
+              ),
+
             const Spacer(),
 
             // Deactivate button – only for the alert's owner while active
@@ -592,33 +630,65 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
  
         // ── auto-delete: remove inactive alerts older than 24 h ──────────
         for (final doc in allDocs) {
-          if (_scheduledForDelete.contains(doc.id)) continue;
-          final data = doc.data();
-          final ts = data['createdAt'];
-          final storedActive = data['active'] == true;
-          if (!storedActive && ts is Timestamp) {
-            final age = now.difference(ts.toDate());
-            if (age >= _kFoodAlertDeleteDuration) {
-              // Already past threshold – delete immediately
-              _scheduledForDelete.add(doc.id);
+        if (_scheduledForDelete.contains(doc.id)) continue;
+
+        final data = doc.data();
+        final ts = data['createdAt'];
+        final storedActive = data['active'] == true;
+
+        if (!storedActive && ts is Timestamp) {
+          final createdAt = ts.toDate();
+          final age = now.difference(createdAt);
+
+          if (age >= _kFoodAlertDeleteDuration) {
+            _scheduledForDelete.add(doc.id);
+            FirebaseFirestore.instance
+                .collection('food_alerts')
+                .doc(doc.id)
+                .delete();
+          } else {
+            final remaining = _kFoodAlertDeleteDuration - age;
+            _scheduledForDelete.add(doc.id);
+
+            Future.delayed(remaining, () {
+              if (!mounted) return;
+
               FirebaseFirestore.instance
                   .collection('food_alerts')
                   .doc(doc.id)
                   .delete();
-            } else {
-              // Schedule deletion for when it crosses 24 h
-              final remaining = _kFoodAlertDeleteDuration - age;
-              _scheduledForDelete.add(doc.id);
-              Future.delayed(remaining, () {
-                if (!mounted) return;
-                FirebaseFirestore.instance
-                    .collection('food_alerts')
-                    .doc(doc.id)
-                    .delete();
-              });
-            }
+            });
           }
         }
+      }
+        // for (final doc in allDocs) {
+        //   if (_scheduledForDelete.contains(doc.id)) continue;
+        //   final data = doc.data();
+        //   final ts = data['createdAt'];
+        //   final storedActive = data['active'] == true;
+        //   if (!storedActive && ts is Timestamp) {
+        //     final age = now.difference(ts.toDate());
+        //     if (age >= _kFoodAlertDeleteDuration) {
+        //       // Already past threshold – delete immediately
+        //       _scheduledForDelete.add(doc.id);
+        //       FirebaseFirestore.instance
+        //           .collection('food_alerts')
+        //           .doc(doc.id)
+        //           .delete();
+        //     } else {
+        //       // Schedule deletion for when it crosses 24 h
+        //       final remaining = _kFoodAlertDeleteDuration - age;
+        //       _scheduledForDelete.add(doc.id);
+        //       Future.delayed(remaining, () {
+        //         if (!mounted) return;
+        //         FirebaseFirestore.instance
+        //             .collection('food_alerts')
+        //             .doc(doc.id)
+        //             .delete();
+        //       });
+        //     }
+        //   }
+        // }
  
         // ── sort: active alerts first, then inactive ──────────────────────
         final activeDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
@@ -800,6 +870,7 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                             timeStr: timeStr,
                             currentUserId: currentUserId,
                             alertUserId: alertUserId,
+                            foodTags: foodTags,
                           ),
                         ),
                       );
@@ -813,21 +884,6 @@ class _FoodAlertSheetContentState extends State<FoodAlertSheetContent> {
                           widget.onAlertSelected != null) {
                         widget.onAlertSelected!(lat, lng);
                       }
- 
-                      // Open detail page
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (_) => FoodAlertDetailPage(
-                      //       docId: doc.id,
-                      //       title: title,
-                      //       description: description,
-                      //       isActive: active,
-                      //       timeStr: timeStr,
-                      //       currentUserId: currentUserId,
-                      //       alertUserId: alertUserId,
-                      //     ),
-                      //   ),
-                      // );
                     },
                   );
                 },
