@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //Added for firebase to track pins
+import 'package:beach_circle_flutter/community_goods/smf/service/moderation_service.dart'; //Moderation for pin details
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -69,18 +70,17 @@ class _MapScreenState extends State<MapScreen> {
           if (docId == null) return;
 
           //Pin Details
-          final pinDoc =
-              await FirebaseFirestore.instance
-                  .collection('pins')
-                  .doc(docId)
-                  .get();
+          final pinDoc = await FirebaseFirestore.instance
+              .collection('pins')
+              .doc(docId)
+              .get();
 
           final pinData = pinDoc.data() ?? {};
           final String label = (pinData['label'] ?? '').toString();
           final String description = (pinData['description'] ?? '').toString();
           final String color = (pinData['color'] ?? 'blue').toString();
 
-          final shouldDelete = await showDialog<bool>(
+          final action = await showDialog<String>(
             context: context,
             builder: (context) {
               return AlertDialog(
@@ -92,17 +92,19 @@ class _MapScreenState extends State<MapScreen> {
                     if (description.isNotEmpty) Text(description),
                     if (description.isNotEmpty) const SizedBox(height: 12),
                     Text('Color: $color'),
-                    const SizedBox(height: 12),
-                    const Text('Do you want to remove this pinned location?'),
                   ],
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context, false),
+                    onPressed: () => Navigator.pop(context, 'close'),
                     child: const Text('Close'),
                   ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'edit'),
+                    child: const Text('Edit'),
+                  ),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    onPressed: () => Navigator.pop(context, 'delete'),
                     child: const Text('Delete'),
                   ),
                 ],
@@ -110,20 +112,30 @@ class _MapScreenState extends State<MapScreen> {
             },
           );
 
-          if (shouldDelete != true) return;
+          if (action == 'delete') {
+            //Deletes pin from firebase
+            await FirebaseFirestore.instance
+                .collection('pins')
+                .doc(docId)
+                .delete();
 
-          //Deletes pin from firebase
-          await FirebaseFirestore.instance
-              .collection('pins')
-              .doc(docId)
-              .delete();
+            await _refreshPinsFromFirebase();
 
-          await _refreshPinsFromFirebase();
+            if (!mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Pin deleted')));
+            return;
+          }
 
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Pin deleted')));
+          if (action == 'edit') {
+            await _showEditPinDialog(
+              docId: docId,
+              currentLabel: label,
+              currentDescription: description,
+              currentColor: color,
+            );
+          }
         },
       ),
     );
@@ -160,7 +172,7 @@ class _MapScreenState extends State<MapScreen> {
     final double lat = tapContext.point.coordinates.lat.toDouble();
     final double lng = tapContext.point.coordinates.lng.toDouble();
 
-    //Default Color Pin 
+    //Default Color Pin
     String selectedColor = 'blue';
 
     //User input for pin details
@@ -265,6 +277,16 @@ class _MapScreenState extends State<MapScreen> {
     final String label = labelController.text.trim();
     final String description = descriptionController.text.trim();
 
+    //Checks for inappropriate content
+    if (ModerationService.containsBlockedContent(label) ||
+        ModerationService.containsBlockedContent(description)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inappropriate language is not allowed.')),
+      );
+      return;
+    }
+
     CircleAnnotation? annotation;
 
     try {
@@ -305,6 +327,136 @@ class _MapScreenState extends State<MapScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to save pin: $e')));
     }
+  }
+
+  //Edit existing pin
+  Future<void> _showEditPinDialog({
+    required String docId,
+    required String currentLabel,
+    required String currentDescription,
+    required String currentColor,
+  }) async {
+    final TextEditingController labelController = TextEditingController(
+      text: currentLabel,
+    );
+    final TextEditingController descriptionController = TextEditingController(
+      text: currentDescription,
+    );
+
+    String selectedColor = currentColor;
+
+    final shouldSave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit pin'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Label'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: labelController,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Fav study spot',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Description'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Quiet, good views, near outlets',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Choose pin color'),
+                    const SizedBox(height: 6),
+                    DropdownButton<String>(
+                      value: selectedColor,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem(value: 'blue', child: Text('Blue')),
+                        DropdownMenuItem(value: 'red', child: Text('Red')),
+                        DropdownMenuItem(value: 'green', child: Text('Green')),
+                        DropdownMenuItem(
+                          value: 'purple',
+                          child: Text('Purple'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'orange',
+                          child: Text('Orange'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'yellow',
+                          child: Text('Yellow'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setDialogState(() {
+                          selectedColor = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldSave != true) return;
+
+    final String updatedLabel = labelController.text.trim();
+    final String updatedDescription = descriptionController.text.trim();
+
+    //Moderation for edited content
+    if (ModerationService.containsBlockedContent(updatedLabel) ||
+        ModerationService.containsBlockedContent(updatedDescription)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inappropriate language is not allowed.')),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance.collection('pins').doc(docId).update({
+      'label': updatedLabel,
+      'description': updatedDescription,
+      'color': selectedColor,
+    });
+
+    await _refreshPinsFromFirebase();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Pin updated')));
   }
 
   //Load pins to the map
