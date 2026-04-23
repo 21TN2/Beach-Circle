@@ -96,7 +96,7 @@ class _EBHomePageState extends State<EBHomePage> {
                           child: Text(
                             'Event Board',
                             style: TextStyle(
-                                color: Color(0xFF555555), fontSize: 15),
+                              color: Color(0xFF555555), fontSize: 15, fontWeight: FontWeight.w600),
                           ),
                         ),
                         Icon(Icons.chevron_right, color: kPurple),
@@ -112,7 +112,7 @@ class _EBHomePageState extends State<EBHomePage> {
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: kYellowBtn,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Row(
                       children: [

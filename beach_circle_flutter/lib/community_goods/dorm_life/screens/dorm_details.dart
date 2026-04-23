@@ -28,7 +28,7 @@ class DormDetailsPage extends StatelessWidget {
   static const Color kCardGrey = Color(0xFFE8E8E8);
   static const Color kPurple   = Color(0xFF3B3599);
 
-  // ── Formatted date label e.g. "Oct. 26" ──────────────────────────────────
+  // FORMATTED DATE LEBEL:  "Oct. 26"
   String get _dateLabel {
     const months = [
       'Jan.','Feb.','Mar.','Apr.','May','Jun.',
@@ -37,7 +37,7 @@ class DormDetailsPage extends StatelessWidget {
     return '${months[event.date.month - 1]} ${event.date.day}';
   }
 
-  // ── Open any URL / mailto ─────────────────────────────────────────────────
+  // OPEN ANY URL
   Future<void> _openLink(BuildContext context, String raw) async {
     final trimmed = raw.trim();
     final formatted = (trimmed.startsWith('http://') ||
@@ -63,7 +63,7 @@ class DormDetailsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ── Yellow app bar ────────────────────────────────────────────────────
+      // YELLOW APP BAR
       appBar: AppBar(
         backgroundColor: kYellow,
         elevation: 0,
@@ -100,7 +100,7 @@ class DormDetailsPage extends StatelessWidget {
             ),
           ],
         ),
-        // Star / interested button in top-right
+        // STAR / INTERESTED
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -116,14 +116,14 @@ class DormDetailsPage extends StatelessWidget {
         ],
       ),
 
-      // ── Body ─────────────────────────────────────────────────────────────
+      // BODY
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
-            // ── Event title ───────────────────────────────────────────────
+            // EVENT TITLE
             Text(
               event.title,
               textAlign: TextAlign.center,
@@ -137,7 +137,7 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // ── Event image ───────────────────────────────────────────────────────────
+            // EVENT IMAGE
           if (event.imageUrl != null && event.imageUrl!.isNotEmpty) ...[
             Image.network(
               event.imageUrl!,
@@ -147,7 +147,7 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 ],
-            // ── Date / Location / Time card ───────────────────────────────
+            // DATE / LOC / TIME CARD
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
@@ -159,21 +159,21 @@ class DormDetailsPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Date
+                  // DATE
                   _InfoCell(
                     icon: Icons.calendar_month_outlined,
                     label: 'Date',
                     value: _dateLabel,
                   ),
                   _Divider(),
-                  // Location
+                  // LOC
                   _InfoCell(
                     icon: Icons.location_on_outlined,
                     label: 'Location',
                     value: event.location,
                   ),
                   _Divider(),
-                  // Time
+                  // TIME
                   _InfoCell(
                     icon: Icons.access_time_outlined,
                     label: 'Time',
@@ -185,7 +185,7 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ── Description card ──────────────────────────────────────────
+            // DECORATION CARD
             if (hasDescription)
               _SectionCard(
                 title: 'Description',
@@ -202,7 +202,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (hasDescription) const SizedBox(height: 20),
 
-            // ── Links card ────────────────────────────────────────────────
+            // LINKS CARD
             if (hasLinks)
               _SectionCard(
                 title: 'Links',
@@ -222,7 +222,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (hasLinks) const SizedBox(height: 20),
 
-            // ── Room info  ────────────────────────────────────
+            // ROOM INFO
             if (event.roomNumber.isNotEmpty)
               _SectionCard(
                 title: 'Room',
@@ -238,7 +238,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (event.roomNumber.isNotEmpty) const SizedBox(height: 20),
 
-            // ── Report button ─────────────────────────────────────────────
+            // REFPORT BUTTON
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -277,7 +277,7 @@ class DormDetailsPage extends StatelessWidget {
         ),
       ),
 
-      // ── Bottom nav ────────────────────────────────────────────────────────
+      // BOTTOM NAV
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -298,7 +298,7 @@ class DormDetailsPage extends StatelessWidget {
   }
 }
 
-// ── Info cell (icon + gold label + value) ─────────────────────────────────────
+// INFO CELL
 
 class _InfoCell extends StatelessWidget {
   final IconData icon;
@@ -346,7 +346,7 @@ class _InfoCell extends StatelessWidget {
   }
 }
 
-// ── Thin vertical divider between info cells ──────────────────────────────────
+// VERTICAL DIVIDER BTWN CARD
 
 class _Divider extends StatelessWidget {
   @override
@@ -360,7 +360,7 @@ class _Divider extends StatelessWidget {
   }
 }
 
-// ── Section card (grey rounded card with gold title) ─────────────────────────
+// SECTION CARD
 
 class _SectionCard extends StatelessWidget {
   final String title;

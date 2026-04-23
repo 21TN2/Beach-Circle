@@ -99,7 +99,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
         _imageBytes = null;
       });
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+  // SUBMIT DORM EVENT
 
   Future<void> _handleSubmit() async {
     if (_eventNameController.text.trim().isEmpty) {
@@ -184,7 +184,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // BUILDERS
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +250,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  // ── Widgets ────────────────────────────────────────────────────────────────
+  // WIDGETS
 
   Widget _buildHeader() {
     return Container(

@@ -467,9 +467,9 @@ class _EBCreatePageState extends State<EBCreatePage> {
       onSelectedItemChanged: onChanged,
       selectionOverlay: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFD4A800).withOpacity(0.25),
+          color: const Color(0xFF888888).withOpacity(0.25),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFD4A800), width: 1.5),
+          border: Border.all(color: const Color(0xFF888888), width: 1.5),
         ),
       ),
       children: items
