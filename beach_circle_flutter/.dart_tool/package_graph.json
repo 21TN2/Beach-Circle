@@ -13,6 +13,7 @@
         "firebase_core",
         "firebase_storage",
         "flutter",
+        "flutter_activity_recognition",
         "font_awesome_flutter",
         "geocoding",
         "geolocator",
@@ -73,6 +74,13 @@
         "geocoding_android",
         "geocoding_ios",
         "geocoding_platform_interface"
+      ]
+    },
+    {
+      "name": "flutter_activity_recognition",
+      "version": "4.0.0",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

@@ -67,7 +67,7 @@ class ImageModerator {
       // 3. Initialize ML Kit Image Labeler
       final inputImage = InputImage.fromFilePath(file.path);
       
-      // Lowered threshold to 0.5 to be more sensitive to weapons/NSFW
+      // Lowered threshold to 0.1 to be more sensitive to weapons/NSFW
       final ImageLabelerOptions options = ImageLabelerOptions(confidenceThreshold: 0.1);
       final imageLabeler = ImageLabeler(options: options);
 
