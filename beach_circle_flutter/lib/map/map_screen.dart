@@ -315,18 +315,18 @@ class _MapScreenState extends State<MapScreen> {
     required String badgeText,
     required Color badgeColor,
   }) async {
-    const double width = 108;
-    const double height = 128;
-    const double circleRadius = 38;
-    const Offset circleCenter = Offset(54, 60);
+    const double width = 118;
+    const double height = 118;
+    const double circleRadius = 36;
+    const Offset circleCenter = Offset(59, 64);
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
 
     final Paint shadowPaint =
         Paint()
-          ..color = Colors.black.withOpacity(0.18)
-          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
+          ..color = Colors.black.withOpacity(0.20)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 5);
 
     canvas.drawCircle(
       Offset(circleCenter.dx, circleCenter.dy + 3),
@@ -342,7 +342,7 @@ class _MapScreenState extends State<MapScreen> {
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
         style: TextStyle(
-          fontSize: 38,
+          fontSize: 42,
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
           color: Colors.black87,
@@ -359,14 +359,25 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
 
-    final Rect badgeRect = Rect.fromLTWH(16, 6, 52, 28);
+    final double badgeWidth = badgeText.length >= 3 ? 68 : 50;
+    final Rect badgeRect = Rect.fromLTWH(16, 4, badgeWidth, 36);
     final RRect badgeRRect = RRect.fromRectAndRadius(
       badgeRect,
-      const Radius.circular(14),
+      const Radius.circular(15),
     );
 
     final Paint badgePaint = Paint()..color = badgeColor;
     canvas.drawRRect(badgeRRect, badgePaint);
+
+    // NEW FROM GISELLE REVIEW 4: For better badge visibility
+    final Paint badgeBorderPaint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+
+    canvas.drawRRect(badgeRRect, badgeBorderPaint);
+    //
 
     final TextPainter badgePainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -374,8 +385,8 @@ class _MapScreenState extends State<MapScreen> {
         text: badgeText,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+          fontSize: 19,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
@@ -479,7 +490,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             image: markerBytes,
-            iconSize: 1.0,
+            iconSize: 1.08,
           ),
         );
 
@@ -561,7 +572,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             image: markerBytes,
-            iconSize: 1.0,
+            iconSize: 1.08,
           ),
         );
 
@@ -612,7 +623,7 @@ class _MapScreenState extends State<MapScreen> {
               PointAnnotationOptions(
                 geometry: Point(coordinates: Position(lng, lat)),
                 image: customIconBytes,
-                iconSize: 1.0,
+                iconSize: 1.08,
               ),
             );
           }
