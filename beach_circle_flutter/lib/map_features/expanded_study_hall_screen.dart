@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+// NEW FROM GISELLE REVIEW 4: imports shared report page for study hall reports
+import 'package:beach_circle_flutter/moderation/report_issue_page.dart';
 
 // expanded study hall page
 class ExpandedStudyHallScreen extends StatelessWidget {
   const ExpandedStudyHallScreen({
     super.key,
+    // NEW FROM GISELLE REVIEW 4: needed so moderation can find this study hall document
+    required this.docId,
+    // NEW FROM GISELLE REVIEW 4: needed so moderation knows who created/reported content belongs to
+    required this.reportedUserId,
     required this.title,
     required this.buildingName,
     required this.startTime,
@@ -11,6 +17,11 @@ class ExpandedStudyHallScreen extends StatelessWidget {
     required this.seats,
     required this.amenities,
   });
+
+  // NEW FROM GISELLE REVIEW 4: fields used when submitting a study hall report
+  final String docId;
+  final String reportedUserId;
+
   // required fields
   final String title;
   final String buildingName;
@@ -18,6 +29,7 @@ class ExpandedStudyHallScreen extends StatelessWidget {
   final String endTime;
   final int? seats;
   final List<String> amenities;
+
   // calculates time of day
   TimeOfDay? _parseTime(String value) {
     try {
@@ -218,10 +230,17 @@ class ExpandedStudyHallScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
+                // NEW FROM GISELLE REVIEW 4: opens shared report page for study hall reports
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report feature coming soon.'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ReportIssuePage(
+                            targetId: docId,
+                            reportedUserId: reportedUserId,
+                            targetType: 'study_hall',
+                          ),
                     ),
                   );
                 },

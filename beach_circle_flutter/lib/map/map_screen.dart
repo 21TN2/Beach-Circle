@@ -1720,6 +1720,8 @@ class _StudySheetContent extends StatelessWidget {
                 // what  study hall description needs
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
+                  // NEW FROM GISELLE REVIEW 4: gets Firestore doc id for study hall reports
+                  final docId = filteredDocs[index].id;
 
                   final building =
                       (data['buildingAbbrev'] ?? '').toString().trim();
@@ -1844,6 +1846,11 @@ class _StudySheetContent extends StatelessWidget {
                         MaterialPageRoute(
                           builder:
                               (context) => ExpandedStudyHallScreen(
+                                // NEW FROM GISELLE REVIEW 4: pass report info
+                                docId: docId,
+                                reportedUserId:
+                                    (data['userId'] ?? data['createdBy'] ?? '')
+                                        .toString(),
                                 title: title,
                                 buildingName:
                                     (data['buildingName'] ?? '').toString(),
@@ -2097,6 +2104,7 @@ class _ChargingSheetContent extends StatelessWidget {
                         Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
+                  final docId = filteredDocs[index].id;
 
                   final building =
                       (data['buildingAbbrev'] ?? '').toString().trim();
@@ -2181,6 +2189,10 @@ class _ChargingSheetContent extends StatelessWidget {
                         MaterialPageRoute(
                           builder:
                               (context) => ExpandedOutletScreen(
+                                docId: docId,
+                                reportedUserId:
+                                    (data['userId'] ?? data['createdBy'] ?? '')
+                                        .toString(),
                                 title:
                                     building.isNotEmpty
                                         ? '$building Room $cleanRoom'

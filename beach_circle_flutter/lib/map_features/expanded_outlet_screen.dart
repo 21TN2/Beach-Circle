@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:beach_circle_flutter/moderation/report_issue_page.dart';
 
 // expanded outlet page
 class ExpandedOutletScreen extends StatelessWidget {
   const ExpandedOutletScreen({
     super.key,
+    required this.docId,
+    required this.reportedUserId,
     required this.title,
     required this.buildingName,
     required this.outletCount,
@@ -11,11 +14,14 @@ class ExpandedOutletScreen extends StatelessWidget {
     required this.accessibilityLevels,
   });
 
+  final String docId;
+  final String reportedUserId;
   final String title;
   final String buildingName;
   final int? outletCount;
   final List<String> outletTypes;
   final List<String> accessibilityLevels;
+
   // outlet status: limited / standard / plentiful
   @override
   Widget build(BuildContext context) {
@@ -38,6 +44,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             : hasLimited
             ? 'Limited Access'
             : 'Standard Access';
+
     Color statusColor;
     if (outletStatus == 'Plentiful Outlets') {
       statusColor = const Color(0xFF43A047);
@@ -46,6 +53,7 @@ class ExpandedOutletScreen extends StatelessWidget {
     } else {
       statusColor = const Color(0xFF5C6BC0);
     }
+
     // title of page + ui
     return Scaffold(
       appBar: AppBar(
@@ -121,6 +129,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 18),
+
             // section card includes outlet acccess
             _SectionCard(
               title: 'Outlet Access',
@@ -145,6 +154,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
+
             // number of outlets card
             _SectionCard(
               title: 'Number of Outlets',
@@ -155,6 +165,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
+
             // outlet type card
             _SectionCard(
               title: 'Outlet Type',
@@ -179,6 +190,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
+
             // acccessibility lvl section card
             _SectionCard(
               title: 'Accessibility Level',
@@ -203,14 +215,21 @@ class ExpandedOutletScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
+
             // report outlet info button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report feature coming soon.'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ReportIssuePage(
+                            targetId: docId,
+                            reportedUserId: reportedUserId,
+                            targetType: 'outlet',
+                          ),
                     ),
                   );
                 },
@@ -239,6 +258,7 @@ class _SectionCard extends StatelessWidget {
 
   final String title;
   final Widget child;
+
   // layout format
   @override
   Widget build(BuildContext context) {

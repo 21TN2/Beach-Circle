@@ -15,6 +15,7 @@ import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.da
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'package:beach_circle_flutter/moderation/moderation_view_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -30,6 +31,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
+
+  // NEW FROM GISELLE 4: ADDING MODERATION VIEW
+  static const List<String> adminEmails = [
+    'teef@gmail.com',
+    'reytest@gmail.com',
+    'giselle1@gmail.com',
+    'nguyentheresa204@gmail.com',
+    'josuealfaro8441@gmail.com',
+  ];
+
+  bool get _isModerator {
+    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+    return email != null &&
+        adminEmails.map((e) => e.toLowerCase()).contains(email);
+  }
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -308,12 +324,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          if (user?.email == 'teef@gmail.com')
+          if (_isModerator)
             IconButton(
               icon: const Icon(Icons.bug_report, color: Colors.red),
+              tooltip: 'Notification Test',
               onPressed: () {
                 Navigator.push(
                   context,
@@ -323,6 +341,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               },
             ),
+          if (_isModerator) // NEW FROM GISELLE 4: To view moderation
+            IconButton(
+              icon: const Icon(
+                Icons.admin_panel_settings,
+                color: Colors.black87,
+              ),
+              tooltip: 'Moderation',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            ModerationViewScreen(forumService: _forumService),
+                  ),
+                );
+              },
+            ),
+
           IconButton(icon: const Icon(Icons.logout), onPressed: _logOut),
         ],
       );
