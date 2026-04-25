@@ -26,6 +26,7 @@ Future<void> saveUserFcmToken() async {
   if (user == null) return;
 
   final token = await FirebaseMessaging.instance.getToken();
+  debugPrint('FCM TOKEN: $token');
   if (token == null) return;
 
   await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
