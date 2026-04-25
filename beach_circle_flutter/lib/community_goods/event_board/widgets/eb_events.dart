@@ -99,7 +99,7 @@ class EBEvents extends StatelessWidget {
                             ),
                             Icon(
                               Icons.star_border,
-                              color: iconColor,
+                              color: Colors.white,
                               size: 22,
                             ),
                           ],

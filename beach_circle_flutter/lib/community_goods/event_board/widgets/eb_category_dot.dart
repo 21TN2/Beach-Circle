@@ -64,7 +64,7 @@ class EBCategoryDotRow extends StatelessWidget {
 
 // ── 3-dot category selector (used in Add Event form header) ──────────────────
 
-class EBCategorySelector extends StatelessWidget {
+class EBCategorySelector extends StatefulWidget {
   final EBCategory selected;
   final ValueChanged<EBCategory> onChanged;
   final double dotSize;
@@ -77,6 +77,19 @@ class EBCategorySelector extends StatelessWidget {
   });
 
   @override
+  State<EBCategorySelector> createState() => _EBCategorySelectorState();
+}
+
+class _EBCategorySelectorState extends State<EBCategorySelector> {
+  late EBCategory _current;
+
+  @override
+  void initState() {
+    super.initState();
+    _current = widget.selected;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -85,13 +98,16 @@ class EBCategorySelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: EBCategory.values.map((cat) {
             return GestureDetector(
-              onTap: () => onChanged(cat),
+              onTap: () {
+                setState(() => _current = cat);
+                widget.onChanged(cat);
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: EBCategoryDot(
                   category: cat,
-                  size: dotSize,
-                  isSelected: cat == selected,
+                  size: widget.dotSize,
+                  isSelected: cat == _current,
                 ),
               ),
             );
@@ -99,11 +115,11 @@ class EBCategorySelector extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          selected.label,
+          _current.label,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: selected.color,
+            color: _current.color,
           ),
         ),
       ],

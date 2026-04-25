@@ -209,23 +209,28 @@ class _EBCalendarState extends State<EBCalendar> {
               ),
             ),
 
-          if (expanded)
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: monthDays.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 1,
+            if (expanded)
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.45,
+                ),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: monthDays.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final date = monthDays[index];
+                    if (date == null) return const SizedBox.shrink();
+                    return buildDayBox(date);
+                  },
+                ),
               ),
-              itemBuilder: (context, index) {
-                final date = monthDays[index];
-                if (date == null) return const SizedBox.shrink();
-                return buildDayBox(date);
-              },
-            ),
         ],
       ),
     );

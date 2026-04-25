@@ -36,12 +36,14 @@ class _EBHomePageState extends State<EBHomePage> {
   void _goToPreviousMonth() {
     setState(() {
       _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
+      _selectedDate = DateTime(_displayMonth.year, _displayMonth.month, 1);
     });
   }
 
   void _goToNextMonth() {
     setState(() {
       _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
+      _selectedDate = DateTime(_displayMonth.year, _displayMonth.month, 1);
     });
   }
 
@@ -64,6 +66,13 @@ class _EBHomePageState extends State<EBHomePage> {
     super.initState();
   }
 
+  // Fix 4: refresh dots stream when returning from sub-pages
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +88,6 @@ class _EBHomePageState extends State<EBHomePage> {
           stream: InterestedEBService.interestedEventIdsStream(),
           builder: (context, intSnap) {
             final hasInterested = (intSnap.data ?? {}).isNotEmpty;
-
             return Row(
               children: [
                 Expanded(
@@ -96,7 +104,10 @@ class _EBHomePageState extends State<EBHomePage> {
                           child: Text(
                             'Event Board',
                             style: TextStyle(
-                              color: Color(0xFF555555), fontSize: 15, fontWeight: FontWeight.w600),
+                              color: Color(0xFF555555),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         Icon(Icons.chevron_right, color: kPurple),
@@ -108,8 +119,7 @@ class _EBHomePageState extends State<EBHomePage> {
                 GestureDetector(
                   onTap: _openInterestedPage,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: kYellowBtn,
                       borderRadius: BorderRadius.circular(4),
@@ -119,17 +129,16 @@ class _EBHomePageState extends State<EBHomePage> {
                         Icon(
                           hasInterested ? Icons.star : Icons.star_border,
                           size: 18,
-                          color: hasInterested
-                              ? const Color(0xFFFFD700)
-                              : Colors.black,
+                          color: hasInterested ? const Color(0xFFFFD700) : Colors.black,
                         ),
                         const SizedBox(width: 6),
                         const Text(
                           'Interested',
                           style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Colors.black),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
                         ),
                       ],
                     ),
@@ -143,7 +152,7 @@ class _EBHomePageState extends State<EBHomePage> {
 
       body: Stack(
         children: [
-          // ── Background image ──────────────────────────────────────────
+          // ── Background image ──────────────────────────────────────────────
           Positioned.fill(
             child: Opacity(
               opacity: 0.25,
@@ -154,7 +163,7 @@ class _EBHomePageState extends State<EBHomePage> {
             ),
           ),
 
-          // ── Foreground content ────────────────────────────────────────
+          // ── Foreground content ────────────────────────────────────────────
           Column(
             children: [
               StreamBuilder<Map<String, List<EBCategory>>>(
@@ -166,7 +175,12 @@ class _EBHomePageState extends State<EBHomePage> {
                   );
                   return EBCalendar(
                     selectedDate: _selectedDate,
-                    onDateSelected: (d) => setState(() => _selectedDate = d),
+                    onDateSelected: (d) => setState(() {
+                      _selectedDate = d;
+                      if (d.month != _displayMonth.month || d.year != _displayMonth.year) {
+                        _displayMonth = DateTime(d.year, d.month);
+                      }
+                    }),
                     onPreviousMonth: _goToPreviousMonth,
                     onNextMonth: _goToNextMonth,
                     eventDates: eventDates,
@@ -174,77 +188,78 @@ class _EBHomePageState extends State<EBHomePage> {
                 },
               ),
 
-          const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-          Expanded(
-            child: StreamBuilder<List<EBEvent>>(
-              stream: EBServices.eventsForDateStream(_selectedDate),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              Expanded(
+                child: StreamBuilder<List<EBEvent>>(
+                  stream: EBServices.eventsForDateStream(_selectedDate),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                final events = snapshot.data ?? [];
+                    final events = snapshot.data ?? [];
 
-                if (events.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No events for this day.',
-                      style: TextStyle(color: Colors.grey, fontSize: 15),
-                    ),
-                  );
-                }
+                    if (events.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No events for this day.',
+                          style: TextStyle(color: Colors.grey, fontSize: 15),
+                        ),
+                      );
+                    }
 
-                return StreamBuilder<Set<String>>(
-                  stream: InterestedEBService.interestedEventIdsStream(),
-                  builder: (context, intSnap) {
-                    final interestedIds = intSnap.data ?? {};
+                    return StreamBuilder<Set<String>>(
+                      stream: InterestedEBService.interestedEventIdsStream(),
+                      builder: (context, intSnap) {
+                        final interestedIds = intSnap.data ?? {};
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-                      itemCount: events.length,
-                      itemBuilder: (context, i) {
-                        final event = events[i];
-                        final isInterested = interestedIds.contains(event.id);
+                        return ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                          itemCount: events.length,
+                          itemBuilder: (context, i) {
+                            final event = events[i];
+                            final isInterested = interestedIds.contains(event.id);
 
-                        return EBEvents(
-                          title: event.title,
-                          location: event.location,
-                          body: event.description,
-                          dateLabel: _dateLabel(_selectedDate),
-                          timeText: event.timeDisplay,
-                          isInterested: isInterested,
-                          color: event.category.color,
-                          eventId: event.id,
-                          eventOwnerId: event.createdBy ?? '',
-                          flyerLink: event.links == 'null' ? null : event.links,
-                          imageUrl: event.imageUrl,
-                          interestedCount: event.interestedCount,
-                          roomNumber: event.roomNumber.isEmpty ? null : event.roomNumber,
-                          onInterestedTap: () async {
-                            try {
-                              await InterestedEBService.toggleInterested(
-                                eventId: event.id,
-                                isInterested: isInterested,
-                              );
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(const SnackBar(
-                                  content: Text('Sign in to mark interest.'),
-                                  behavior: SnackBarBehavior.floating,
-                                ));
-                              }
-                            }
+                            return EBEvents(
+                              title: event.title,
+                              location: event.location,
+                              body: event.description,
+                              dateLabel: _dateLabel(_selectedDate),
+                              timeText: event.timeDisplay,
+                              isInterested: isInterested,
+                              color: event.category.color,
+                              eventId: event.id,
+                              eventOwnerId: event.createdBy ?? '',
+                              flyerLink: event.links == 'null' ? null : event.links,
+                              imageUrl: event.imageUrl,
+                              interestedCount: event.interestedCount,
+                              roomNumber: event.roomNumber.isEmpty ? null : event.roomNumber,
+                              onInterestedTap: () async {
+                                try {
+                                  await InterestedEBService.toggleInterested(
+                                    eventId: event.id,
+                                    isInterested: isInterested,
+                                  );
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Sign in to mark interest.'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            );
                           },
                         );
                       },
                     );
                   },
-                );
-              },
-            ),
-          ),
+                ),
+              ),
             ],
           ),
         ],
