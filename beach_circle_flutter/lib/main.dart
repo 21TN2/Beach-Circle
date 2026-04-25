@@ -18,6 +18,27 @@ import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
 import 'screens/resources_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+
+Future<void> saveUserFcmToken() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final token = await FirebaseMessaging.instance.getToken();
+  if (token == null) return;
+
+  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+    'fcmToken': token,
+  }, SetOptions(merge: true)); // merge: true so you don't overwrite other fields
+}
+
+// Background handler (must be top-level function, outside any class)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // You can log or handle background messages here
+  debugPrint('Background message: ${message.notification?.title}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +54,11 @@ void main() async {
     await Firebase.initializeApp();
   }
 
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Request iOS permissions
+  await FirebaseMessaging.instance.requestPermission();
+
   runApp(const MyApp());
 }
 
@@ -47,15 +73,42 @@ class MyApp extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // If the user is logged in, send them to Dashboard
           if (snapshot.hasData) {
-            return const DashboardScreen();
+            return PostLoginInit(
+              child: const DashboardScreen(),
+            );
           }
-          // Otherwise, show the Login/Auth Screen
           return const AuthScreen();
         },
       ),
     );
+  }
+}
+
+class PostLoginInit extends StatefulWidget {
+  final Widget child;
+  const PostLoginInit({super.key, required this.child});
+
+  @override
+  State<PostLoginInit> createState() => _PostLoginInitState();
+}
+
+class _PostLoginInitState extends State<PostLoginInit> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_initialized) {
+      _initialized = true;
+      saveUserFcmToken(); // runs once per login session
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
 
