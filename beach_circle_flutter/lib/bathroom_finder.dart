@@ -11,15 +11,15 @@ class BathroomFinder extends StatefulWidget {
 }
 
 class _BathroomFinderState extends State<BathroomFinder> {
-  // STATE VARIABLES 
+  // STATE VARIABLES
   int _selectedRating = 0;
-  String _selectedBathroom = ""; 
-  bool _isLoading = false; 
-  
+  String _selectedBathroom = "";
+  bool _isLoading = false;
+
   List<String> _bathroomOptions = []; // Will hold the auto generated list
-  
+
   final TextEditingController _commentController = TextEditingController();
-  
+
   // List of features to check
   final Map<String, bool> _features = {
     'Accessible': false,
@@ -34,41 +34,47 @@ class _BathroomFinderState extends State<BathroomFinder> {
   @override
   void initState() {
     super.initState();
-    _loadBathroomsFromFile(); 
+    _loadBathroomsFromFile();
   }
 
   // HELPER Converts numbers to 1st 2nd 3rd 4th
   String _getOrdinal(int number) {
     if (number % 100 >= 11 && number % 100 <= 13) return '${number}th';
     switch (number % 10) {
-      case 1: return '${number}st';
-      case 2: return '${number}nd';
-      case 3: return '${number}rd';
-      default: return '${number}th';
+      case 1:
+        return '${number}st';
+      case 2:
+        return '${number}nd';
+      case 3:
+        return '${number}rd';
+      default:
+        return '${number}th';
     }
   }
 
-  // READ AND AUTO GENERATE FROM TEXT FILE 
+  // READ AND AUTO GENERATE FROM TEXT FILE
   Future<void> _loadBathroomsFromFile() async {
     try {
-      final String fileText = await rootBundle.loadString('assets/bathrooms.txt');
+      final String fileText = await rootBundle.loadString(
+        'assets/bathrooms.txt',
+      );
       final List<String> lines = fileText.split('\n');
-      
+
       List<String> generatedList = [];
-      
+
       for (String line in lines) {
         if (line.trim().isEmpty) continue;
-        
+
         // New format Name | Abbrev | Floors
         final parts = line.split('|');
-        
+
         if (parts.length >= 3) {
           String name = parts[0].trim();
           String abbrev = parts[1].trim();
           int? floors = int.tryParse(parts[2].trim());
-          
+
           String buildingDisplay = abbrev != 'None' ? "$name ($abbrev)" : name;
-          
+
           if (floors != null && floors > 0) {
             // Auto generate the floors AND the gender types
             for (int i = 1; i <= floors; i++) {
@@ -91,7 +97,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
           generatedList.add("$buildingDisplay - Gender Neutral");
         }
       }
-      
+
       setState(() {
         _bathroomOptions = generatedList;
       });
@@ -100,7 +106,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
     }
   }
 
-  // FIREBASE SUBMIT LOGIC 
+  // FIREBASE SUBMIT LOGIC
   Future<void> _submitReview() async {
     if (_selectedBathroom.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,7 +132,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
         'rating': _selectedRating,
         'features': _features,
         'comments': _commentController.text.trim(),
-        'userId': user?.uid ?? 'anonymous', 
+        'userId': user?.uid ?? 'anonymous',
         'timestamp': FieldValue.serverTimestamp(),
       };
 
@@ -138,13 +144,13 @@ class _BathroomFinderState extends State<BathroomFinder> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Review Submitted Successfully")),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error submitting review: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error submitting review: $e")));
       }
     } finally {
       if (mounted) {
@@ -171,7 +177,7 @@ class _BathroomFinderState extends State<BathroomFinder> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER 
+              // HEADER
               Row(
                 children: [
                   Container(
@@ -180,7 +186,11 @@ class _BathroomFinderState extends State<BathroomFinder> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.grey.shade400, width: 2),
                     ),
-                    child: const Icon(Icons.wc, size: 30, color: Colors.black87),
+                    child: const Icon(
+                      Icons.wc,
+                      size: 30,
+                      color: Colors.black87,
+                    ),
                   ),
                   const SizedBox(width: 15),
                   const Text(
@@ -191,8 +201,11 @@ class _BathroomFinderState extends State<BathroomFinder> {
               ),
               const SizedBox(height: 25),
 
-              // SEARCH BAR 
-              const Text("Search for a Bathroom", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              // SEARCH BAR
+              const Text(
+                "Search for a Bathroom",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 8),
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
@@ -200,13 +213,20 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     return const Iterable<String>.empty();
                   }
                   return _bathroomOptions.where((String option) {
-                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                    return option.toLowerCase().contains(
+                      textEditingValue.text.toLowerCase(),
+                    );
                   });
                 },
                 onSelected: (String selection) {
                   _selectedBathroom = selection;
                 },
-                fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                fieldViewBuilder: (
+                  context,
+                  controller,
+                  focusNode,
+                  onEditingComplete,
+                ) {
                   controller.addListener(() {
                     _selectedBathroom = controller.text;
                   });
@@ -214,21 +234,30 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     controller: controller,
                     focusNode: focusNode,
                     decoration: InputDecoration(
-                      hintText: _bathroomOptions.isEmpty ? "Loading buildings" : "Example: ECS - 1st Floor - Men's",
+                      hintText:
+                          _bathroomOptions.isEmpty
+                              ? "Loading buildings"
+                              : "Example: ECS - 1st Floor - Men's",
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.cancel, color: Colors.grey, size: 20),
+                        icon: const Icon(
+                          Icons.cancel,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         onPressed: controller.clear,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25), 
+                        borderRadius: BorderRadius.circular(25),
                         borderSide: BorderSide(color: Colors.blue.shade200),
                       ),
                       enabledBorder: OutlineInputBorder(
-                         borderRadius: BorderRadius.circular(25),
-                         borderSide: const BorderSide(color: Colors.blue),
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: const BorderSide(color: Colors.blue),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
                     ),
                   );
                 },
@@ -236,8 +265,11 @@ class _BathroomFinderState extends State<BathroomFinder> {
 
               const SizedBox(height: 25),
 
-              // OVERALL RATING 
-              const Text("Overall Rating", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              // OVERALL RATING
+              const Text(
+                "Overall Rating",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: List.generate(5, (index) {
@@ -255,36 +287,46 @@ class _BathroomFinderState extends State<BathroomFinder> {
                   );
                 }),
               ),
-              const Text("Click to Rate", style: TextStyle(color: Colors.black54, fontSize: 12)),
+              const Text(
+                "Click to Rate",
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
 
               const SizedBox(height: 25),
 
-              // BATHROOM DETAILS CHECKBOXES 
-              const Text("Bathroom Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              // BATHROOM DETAILS CHECKBOXES
+              const Text(
+                "Bathroom Details",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 10),
-              
+
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: _features.entries.where((e) => e.value).map((e) {
-                     return Padding(
-                       padding: const EdgeInsets.only(right: 8.0),
-                       child: Chip(
-                         label: Text(e.key),
-                         backgroundColor: Colors.white,
-                         shape: const StadiumBorder(side: BorderSide(color: Colors.grey)),
-                         deleteIcon: const Icon(Icons.close, size: 18),
-                         onDeleted: () => setState(() => _features[e.key] = false),
-                       ),
-                     );
-                  }).toList(),
+                  children:
+                      _features.entries.where((e) => e.value).map((e) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Chip(
+                            label: Text(e.key),
+                            backgroundColor: Colors.white,
+                            shape: const StadiumBorder(
+                              side: BorderSide(color: Colors.grey),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 18),
+                            onDeleted:
+                                () => setState(() => _features[e.key] = false),
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
-              
+
               const SizedBox(height: 5),
 
               Container(
-                height: 200, 
+                height: 200,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
@@ -294,52 +336,64 @@ class _BathroomFinderState extends State<BathroomFinder> {
                   thumbVisibility: true,
                   child: ListView(
                     padding: const EdgeInsets.symmetric(vertical: 5),
-                    children: _features.keys.map((String key) {
-                      return CheckboxListTile(
-                        title: Text(key),
-                        value: _features[key],
-                        controlAffinity: ListTileControlAffinity.leading,
-                        dense: true,
-                        activeColor: Colors.purple,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _features[key] = value ?? false;
-                          });
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        _features.keys.map((String key) {
+                          return CheckboxListTile(
+                            title: Text(key),
+                            value: _features[key],
+                            controlAffinity: ListTileControlAffinity.leading,
+                            dense: true,
+                            activeColor: Colors.purple,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _features[key] = value ?? false;
+                              });
+                            },
+                          );
+                        }).toList(),
                   ),
                 ),
               ),
 
               const SizedBox(height: 25),
 
-              // COMMENTS 
-              const Text("Comments", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              // COMMENTS
+              const Text(
+                "Comments",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _commentController,
-                maxLines: 3, 
+                maxLines: 3,
                 decoration: InputDecoration(
                   hintText: "Add any extra details",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   contentPadding: const EdgeInsets.all(12),
                 ),
               ),
 
               const SizedBox(height: 30),
 
-              // BUTTONS 
+              // BUTTONS
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(context),
+                      onPressed:
+                          _isLoading ? null : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      child: const Text("Cancel", style: TextStyle(color: Colors.black)),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -347,17 +401,29 @@ class _BathroomFinderState extends State<BathroomFinder> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitReview,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC4D600), 
+                        backgroundColor: const Color(0xFFC4D600),
                         padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      child: _isLoading 
-                          ? const SizedBox(
-                              height: 20, 
-                              width: 20, 
-                              child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                            )
-                          : const Text("Submit", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text(
+                                "Submit",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                     ),
                   ),
                 ],
