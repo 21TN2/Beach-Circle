@@ -14,7 +14,7 @@ extension DormCategoryExtension on DormCategory {
   Color get color {
     switch (this) {
       case DormCategory.athletics:
-        return const Color(0xFFFFCC00);
+        return const Color(0xFFE6B800);
       case DormCategory.organization:
         return const Color(0xFFF5A623);
       case DormCategory.residential:

@@ -66,10 +66,10 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
           for (final doc in snapshot.docs) {
             final data = doc.data();
             final dynamic startRaw = data['date'];
-            final category = (data['category'] ?? 'Other').toString();
+            final categoryIndex = (data['category'] ?? 0) as int;
             if (startRaw is Timestamp) {
               final key = dateKey(startRaw.toDate());
-              final color = eventColor(category);
+              final color = eventColorFromIndex(categoryIndex);
               eventMap.putIfAbsent(key, () => []);
               if (!eventMap[key]!.contains(color)) {
                 eventMap[key]!.add(color);
@@ -103,6 +103,14 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
     }
   }
 
+  Color eventColorFromIndex(int index) {
+  switch (index) {
+    case 0: return const Color(0xFFE6B800); // Athletics - yellow
+    case 1: return const Color(0xFFF5A623); // Organization - orange
+    case 2: return const Color(0xFF8DB600); // Residential - olive
+    default: return const Color(0xFFF5A623);
+  }
+}
   // fixes the form of time with AM/PM
   String formatTime(DateTime dt) {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
@@ -340,7 +348,7 @@ class _DormlifeScreenState extends State<DormlifeScreen> {
                                 );
                               }
                             },
-                            color: eventColor((data['category'] ?? 'Other').toString()),
+                            color: eventColorFromIndex((data['category'] ?? 0) as int),
                             eventId: doc.id,
                             eventOwnerId: (data['createdBy'] ?? data['authorId'] ?? '').toString(),
                             imageUrl: data['imageUrl']?.toString(),

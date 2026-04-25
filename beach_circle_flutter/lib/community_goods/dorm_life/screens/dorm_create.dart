@@ -534,6 +534,7 @@ Widget _buildBuildingDropdown() {
                   child: TextField(
                     controller: controller,
                     focusNode: focusNode,
+                    autofocus: false,
                     style: const TextStyle(fontSize: 15),
                     decoration: const InputDecoration(
                       hintText: 'Search building or abbreviation...',
