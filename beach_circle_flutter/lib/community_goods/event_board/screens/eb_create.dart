@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/eb_services.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/services/eb_cloudinary.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/moderation_helper.dart';
 import 'package:beach_circle_flutter/community_goods/event_board/widgets/eb_category_dot.dart';
 
 class EBCreatePage extends StatefulWidget {
@@ -108,6 +109,13 @@ class _EBCreatePageState extends State<EBCreatePage> {
     }
     if (_selectedBuildingCode == null) {
       _showError('Please select a Building Location.');
+      return;
+    }
+
+    // ── Profanity check ───────────────────────────────────────────────
+    if (ModerationHelper.containsProfanity(_eventNameController.text) ||
+        ModerationHelper.containsProfanity(_eventDescController.text)) {
+      _showError('Your event contains inappropriate language. Please revise.');
       return;
     }
 
