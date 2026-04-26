@@ -57,6 +57,12 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  //debug
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    debugPrint('Foreground message: ${message.notification?.title}');
+    debugPrint('Body: ${message.notification?.body}');
+  });
+
   // Request iOS permissions
   await FirebaseMessaging.instance.requestPermission();
 
