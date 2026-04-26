@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //Added for firebase to track pins
 import 'package:beach_circle_flutter/community_goods/smf/service/moderation_service.dart'; //Moderation for pin details
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'mapbox.dart';
+import 'package:beach_circle_flutter/community_goods/smf/model/csulb_buildings.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -13,6 +17,13 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   MapboxMap? mapboxMap;
 
+  //Building Coordinates
+  PolylineAnnotationManager? polylineAnnotationManager;
+  Building? startBuilding;
+  Building? endBuilding;
+  String? startCategory;
+  String? endCategory;
+
   //Creates circle pins on the map
   CircleAnnotationManager? circleAnnotationManager;
 
@@ -20,6 +31,9 @@ class _MapScreenState extends State<MapScreen> {
   final Map<String, String> _annotationToDocId = {};
 
   bool _ignoreNextMapTap = false;
+
+  //Show or hide route panel
+  bool _showRoutePanel = false;
 
   // Default location. Coordinates to CSULB
   static const double _centerLat = 33.7820;
@@ -33,6 +47,22 @@ class _MapScreenState extends State<MapScreen> {
     northeast: Point(coordinates: Position(-118.1070, 33.78988)),
     infiniteBounds: false,
   );
+
+  List<String> get buildingCategories {
+    final categories = csulbBuildings.map((b) => b.category).toSet().toList();
+    categories.sort();
+    return categories;
+  }
+
+  List<Building> get startCategoryBuildings {
+    if (startCategory == null) return [];
+    return csulbBuildings.where((b) => b.category == startCategory).toList();
+  }
+
+  List<Building> get endCategoryBuildings {
+    if (endCategory == null) return [];
+    return csulbBuildings.where((b) => b.category == endCategory).toList();
+  }
 
   void _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
@@ -58,6 +88,10 @@ class _MapScreenState extends State<MapScreen> {
     //User pins(Circle pins)
     circleAnnotationManager =
         await mapboxMap!.annotations.createCircleAnnotationManager();
+
+    //Route Options
+    polylineAnnotationManager =
+        await mapboxMap!.annotations.createPolylineAnnotationManager();
 
     //If user wants to delete existing pins
     circleAnnotationManager!.addOnCircleAnnotationClickListener(
@@ -162,8 +196,26 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  //Clear route selections and map line
+  void _clearRoute() async {
+    setState(() {
+      startBuilding = null;
+      endBuilding = null;
+      startCategory = null;
+      endCategory = null;
+    });
+
+    //Remove route line from map
+    if (polylineAnnotationManager != null) {
+      await polylineAnnotationManager!.deleteAll();
+    }
+  }
+
   //When User Taps on the Map
   Future<void> _onMapTap(MapContentGestureContext tapContext) async {
+    //Prevents users from pinning while route panel is open
+    if (_showRoutePanel) return;
+
     if (_ignoreNextMapTap) {
       _ignoreNextMapTap = false;
       return;
@@ -496,6 +548,80 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  //Building Selection
+  Future<void> _getRoute() async {
+    if (startBuilding == null || endBuilding == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select both buildings.')),
+      );
+      return;
+    }
+
+    if (polylineAnnotationManager == null || mapboxMap == null) return;
+
+    try {
+      await polylineAnnotationManager!.deleteAll();
+
+      final url =
+          'https://api.mapbox.com/directions/v5/mapbox/walking/'
+          '${startBuilding!.lng},${startBuilding!.lat};'
+          '${endBuilding!.lng},${endBuilding!.lat}'
+          '?geometries=geojson&access_token=$mapboxAccessToken';
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get route: ${response.statusCode}'),
+          ),
+        );
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      final routes = data['routes'];
+
+      if (routes == null || routes.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No route found.')));
+        return;
+      }
+
+      final coordinates = routes[0]['geometry']['coordinates'] as List;
+
+      final List<Position> routePoints = coordinates.map((point) {
+        return Position(
+          (point[0] as num).toDouble(),
+          (point[1] as num).toDouble(),
+        );
+      }).toList();
+
+      await polylineAnnotationManager!.create(
+        PolylineAnnotationOptions(
+          geometry: LineString(coordinates: routePoints),
+          lineColor: Colors.blue.value,
+          lineWidth: 5.0,
+        ),
+      );
+
+      await mapboxMap!.flyTo(
+        CameraOptions(
+          center: Point(
+            coordinates: Position(startBuilding!.lng, startBuilding!.lat),
+          ),
+          zoom: 16.0,
+        ),
+        MapAnimationOptions(duration: 1200),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting route: $e')));
+    }
+  }
+
   //zoom into map
   void _zoomIn() async {
     final cameraState = await mapboxMap?.getCameraState();
@@ -556,6 +682,158 @@ class _MapScreenState extends State<MapScreen> {
 
             //Detects pin on the map
             onTapListener: _onMapTap,
+          ),
+
+          //Route panel only shows when user taps directions button
+          if (_showRoutePanel)
+            Positioned(
+              top: 20,
+              left: 12,
+              right: 12,
+              child: Card(
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      //Route panel header
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Find Route',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          //Close route panel button
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _showRoutePanel = false;
+                              });
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+
+                      DropdownButton<String>(
+                        value: startCategory,
+                        hint: const Text('Select start category'),
+                        isExpanded: true,
+                        items: buildingCategories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            startCategory = value;
+                            startBuilding = null;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButton<Building>(
+                        value: startBuilding,
+                        hint: const Text('Select start building'),
+                        isExpanded: true,
+                        items: startCategoryBuildings.map((building) {
+                          return DropdownMenuItem<Building>(
+                            value: building,
+                            child: Text(building.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            startBuilding = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButton<String>(
+                        value: endCategory,
+                        hint: const Text('Select destination category'),
+                        isExpanded: true,
+                        items: buildingCategories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            endCategory = value;
+                            endBuilding = null;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButton<Building>(
+                        value: endBuilding,
+                        hint: const Text('Select destination building'),
+                        isExpanded: true,
+                        items: endCategoryBuildings.map((building) {
+                          return DropdownMenuItem<Building>(
+                            value: building,
+                            child: Text(building.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            endBuilding = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+
+                      //Get Route Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _getRoute,
+                          child: const Text('Get Route'),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      //Clear Route Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: _clearRoute,
+                          child: const Text('Clear Route'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          //Directions button for opening/closing route panel
+          Positioned(
+            bottom: 210,
+            left: 15,
+            child: RawMaterialButton(
+              onPressed: () {
+                setState(() {
+                  _showRoutePanel = !_showRoutePanel;
+                });
+              },
+              fillColor: Colors.grey.shade300,
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+              elevation: 10,
+              child: const Icon(Icons.directions, color: Colors.black),
+            ),
           ),
 
           //bottom left positioning buttons
