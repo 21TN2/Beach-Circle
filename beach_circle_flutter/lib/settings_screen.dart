@@ -200,8 +200,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ----- Notifications Section -----
             _buildSectionHeader('Notifications'),
-            _buildToggleOption('Enable Notifications', _notificationsEnabled, () {
-              setState(() => _notificationsEnabled = !_notificationsEnabled);
+            _buildToggleOption('Enable Notifications', _notificationsEnabled, () async {
+              final newVal = !_notificationsEnabled;
+              setState(() => _notificationsEnabled = newVal);
+              await _updateSetting('notif_enabled', newVal);  // ADD THIS LINE
             }),
             _buildToggleOption('Event Reminders', _eventReminders, () {
               setState(() => _eventReminders = !_eventReminders);
