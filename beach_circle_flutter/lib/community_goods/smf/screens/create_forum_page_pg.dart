@@ -1,8 +1,13 @@
 /// This is for the add forum request  ///
 
+import 'dart:io';
+
+import 'package:beach_circle_flutter/community_goods/smf/service/cloudinary_service.dart';
+import 'package:beach_circle_flutter/community_goods/smf/widgets/report_image_selection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreateForumPage extends StatefulWidget {
   const CreateForumPage({
@@ -26,12 +31,26 @@ class _CreateForumPageState extends State<CreateForumPage> {
 
   bool _isSubmitting = false;
   bool _submitted = false; // to keep track of when users submit a request
+  File? _selectedImage;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
   }
 
   // ensures users are logged in
@@ -50,6 +69,12 @@ class _CreateForumPageState extends State<CreateForumPage> {
     setState(() => _isSubmitting = true);
 
     try {
+      String? imageUrl;
+
+      if (_selectedImage != null) {
+        imageUrl = await CloudinaryService.uploadImage(_selectedImage!);
+      }
+
       await FirebaseFirestore.instance.collection("forum_requests").add({
         "title": _titleController.text.trim(),
         "description": _descController.text.trim(),
@@ -58,6 +83,7 @@ class _CreateForumPageState extends State<CreateForumPage> {
         "status": "pending", // pending | approved | rejected
         "reviewedBy": null,
         "reviewedAt": null,
+        "imageUrl": imageUrl,
       });
 
       if (!mounted) return;
@@ -200,6 +226,21 @@ class _CreateForumPageState extends State<CreateForumPage> {
                 return "Description is required."; // user input required
               }
               return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          const Text(
+            "Forum Image (Optional)",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+
+          ReportImageSection(
+            selectedImage: _selectedImage,
+            onPickImage: () {
+              _pickImage();
             },
           ),
 

@@ -41,7 +41,9 @@ flutter:
     - assets/logo.png
     - assets/forum/
     - assets/weather/
-
+    - assets/en.txt
+    - assets/char_map.txt
+    
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev

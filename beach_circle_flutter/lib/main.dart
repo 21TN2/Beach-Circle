@@ -19,6 +19,7 @@ import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
 import 'screens/resources_page.dart';
+import 'community_goods/smf/service/moderation_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,8 @@ void main() async {
     await Firebase.initializeApp();
   }
 
+  await ModerationHelper.loadBadWords();await ModerationHelper.loadBadWords();
+  
   runApp(const MyApp());
 }
 
