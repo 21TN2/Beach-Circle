@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math' as math;
-import 'dart:async'; // Added for StreamSubscription
+import 'dart:async'; 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -14,10 +14,6 @@ import '../map_features/add_outlet_screen.dart';
 import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
-
-//to do, remove sheet when placing pin
-// fix adding indication for pin
-// add active pins (or phase out?)
 
 enum _FoodAlertStep { none, placingPin, fillingForm }
 
@@ -56,7 +52,6 @@ class _MapScreenState extends State<MapScreen> {
   bool _isDevMode = false;
   Position? _simulatedPosition;
 
-  // NEW FROM GISELLE: to select filter building from study hall + outlet
   String? _activeFilter;
   String _selectedStudyBuildingFilter = 'All';
   String? _selectedExactStudyBuilding;
@@ -64,25 +59,26 @@ class _MapScreenState extends State<MapScreen> {
   String _selectedOutletBuildingFilter = 'All';
   String? _selectedExactOutletBuilding;
 
-  // NEW: Parking Zone Filter
   String _selectedParkingZoneFilter = 'All';
-  String? _reportingLotName; // Tracks which lot is currently being reported
+  String? _reportingLotName; 
 
-  // NEW: Parking Polygon Management
   PolygonAnnotationManager? _parkingLotManager;
+  PointAnnotationManager? _parkingLabelManager; 
   final Map<String, List<Position>> _parkingGeometries = {}; 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _parkingStreamSubscription;
-  final Map<String, String> _polygonIdToLotName = {}; // Maps clickable polygons to lot names
+  final Map<String, String> _polygonIdToLotName = {}; 
+  final Map<String, String> _labelIdToLotName = {}; 
 
-  // study hall
+  // DEMO STATE
+  Timer? _demoTimer;
+  final Map<String, int> _demoLotCounts = {};
+
   PointAnnotationManager? _studyHallPinManager;
   final Map<String, Map<String, dynamic>> _studyHallPinData = {};
 
-  // outlet
   PointAnnotationManager? _outletPinManager;
   final Map<String, Map<String, dynamic>> _outletPinData = {};
 
-  // NEW FROM GISELLE: STUDY HALL BUILDING FILTERS
   String _mapBuildingToStudyFilter(String building) {
     final code = building.toUpperCase().trim();
 
@@ -99,7 +95,6 @@ class _MapScreenState extends State<MapScreen> {
     return 'All';
   }
 
-  // FILTERS TO BUILDING
   void _handleStudyHallPinTap(Map<String, dynamic> data) {
     final building = (data['buildingAbbrev'] ?? '').toString().trim();
     final mappedFilter = _mapBuildingToStudyFilter(building);
@@ -132,7 +127,6 @@ class _MapScreenState extends State<MapScreen> {
     return 'All';
   }
 
-  // NEW FROM GISELLE: OUTLET BUILDING FILTER
   void _handleOutletPinTap(Map<String, dynamic> data) {
     final building = (data['buildingAbbrev'] ?? '').toString().trim();
     final mappedFilter = _mapBuildingToOutletFilter(building);
@@ -150,7 +144,6 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // NEW: Handling parking lot polygon taps
   void _handleParkingLotTap(String lotName) {
     setState(() {
       _activeFilter = 'parking';
@@ -158,9 +151,6 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // --------
-
-  //food alert form creation stuff
   _FoodAlertStep _foodAlertStep = _FoodAlertStep.none;
   Position? _foodAlertPinPosition;
   PointAnnotationManager? _foodAlertPinManager;
@@ -220,7 +210,49 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _parkingStreamSubscription?.cancel();
+    _demoTimer?.cancel();
     super.dispose();
+  }
+
+  // --- DRAW THE 5-PERSON RATING MARKER ---
+  Future<Uint8List> _createOccupancyMarker(double occupancy) async {
+    const double width = 110;
+    const double height = 36;
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    final Paint bgPaint = Paint()..color = Colors.white;
+    final RRect rrect = RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, width, height), const Radius.circular(18));
+    
+    canvas.drawShadow(Path()..addRRect(rrect), Colors.black, 4, true);
+    canvas.drawRRect(rrect, bgPaint);
+
+    int filledCount = (occupancy * 5).round();
+
+    for (int i = 0; i < 5; i++) {
+      bool isFilled = i < filledCount;
+      Color iconColor = isFilled ? Colors.black87 : Colors.grey.shade300;
+
+      final TextPainter iconPainter = TextPainter(
+        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: String.fromCharCode(Icons.person.codePoint),
+          style: TextStyle(
+            fontSize: 18,
+            fontFamily: Icons.person.fontFamily,
+            package: Icons.person.fontPackage,
+            color: iconColor,
+          ),
+        ),
+      );
+      iconPainter.layout();
+      double startX = 10.0 + (i * 18.0);
+      iconPainter.paint(canvas, Offset(startX, 9));
+    }
+
+    final ui.Image image = await recorder.endRecording().toImage(width.toInt(), height.toInt());
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
   }
 
   Future<Uint8List> _createWcMarker() async {
@@ -311,7 +343,7 @@ class _MapScreenState extends State<MapScreen> {
     final Canvas canvas = Canvas(recorder);
 
     final Paint shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.18)
+      ..color = Colors.black.withValues(alpha: 0.18)
       ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
 
     canvas.drawCircle(
@@ -652,38 +684,198 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // --- DRAW PARKING POLYGONS ---
-  Future<void> _drawParkingPolygons() async {
+  // --- DRAW PARKING POLYGONS AND MARKERS ---
+  Future<void> _drawParkingPolygons([Map<String, int> counts = const {}]) async {
     if (_parkingLotManager == null) return;
     await _parkingLotManager!.deleteAll();
+    if (_parkingLabelManager != null) await _parkingLabelManager!.deleteAll();
+
     _polygonIdToLotName.clear(); 
+    _labelIdToLotName.clear();
     
     List<PolygonAnnotationOptions> polygonOptions = [];
+    List<PointAnnotationOptions> labelOptions = [];
     List<String> lotNamesList = []; 
 
-    // Draw ALL parking polygons from GeoJSON in green (ignoring Firebase)
     for (final name in _parkingGeometries.keys) {
-      int colorValue = const Color(0x884CAF50).value; // Default: Green
+      int searchingCount = counts[name] ?? 0;
+      
+      // Calculate Occupancy to drive both Color AND Marker Icons
+      double occupancy = searchingCount / 20.0; // Assume 20 is max for the UI scale
+      if (occupancy > 1.0) occupancy = 1.0;
+
+      int colorValue = Colors.green.toARGB32(); 
+      if (occupancy >= 0.75) { 
+        colorValue = Colors.red.toARGB32(); 
+      } else if (occupancy >= 0.25) { 
+        colorValue = Colors.orange.toARGB32(); 
+      }
 
       polygonOptions.add(
         PolygonAnnotationOptions(
           geometry: Polygon(coordinates: [_parkingGeometries[name]!]),
           fillColor: colorValue,
-          fillOutlineColor: Colors.black.value, 
+          fillOpacity: 0.5, 
+          fillOutlineColor: Colors.black.toARGB32(), 
         )
       );
       lotNamesList.add(name);
+
+      // Find center to place the 5-person rating marker
+      double sumX = 0;
+      double sumY = 0;
+      for (var pos in _parkingGeometries[name]!) {
+        sumX += pos.lng;
+        sumY += pos.lat;
+      }
+      double centerX = sumX / _parkingGeometries[name]!.length;
+      double centerY = sumY / _parkingGeometries[name]!.length;
+
+      // Create and place marker
+      final markerBytes = await _createOccupancyMarker(occupancy);
+      labelOptions.add(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(centerX, centerY)),
+          image: markerBytes,
+          iconSize: 1.0,
+        )
+      );
     }
     
     if (polygonOptions.isNotEmpty) {
       final annotations = await _parkingLotManager!.createMulti(polygonOptions);
       for (int i = 0; i < annotations.length; i++) {
-        final annotation = annotations[i];
-        if (annotation != null) {
-          _polygonIdToLotName[annotation.id] = lotNamesList[i];
+        if (annotations[i] != null) {
+          _polygonIdToLotName[annotations[i]!.id] = lotNamesList[i];
         }
       }
     }
+
+    if (labelOptions.isNotEmpty && _parkingLabelManager != null) {
+       final labelAnnotations = await _parkingLabelManager!.createMulti(labelOptions);
+       for (int i = 0; i < labelAnnotations.length; i++) {
+         if (labelAnnotations[i] != null) {
+           _labelIdToLotName[labelAnnotations[i]!.id] = lotNamesList[i];
+         }
+       }
+    }
+  }
+
+  // --- LISTEN TO FIREBASE ---
+  void _listenToParkingFirebase() {
+    _parkingStreamSubscription?.cancel();
+    _parkingStreamSubscription = FirebaseFirestore.instance
+        .collection('parking_lots')
+        .snapshots()
+        .listen((snapshot) {
+      final Map<String, int> liveCounts = {};
+      for (var doc in snapshot.docs) {
+        final name = (doc.data()['name'] ?? '').toString();
+        final count = doc.data()['searching_count'] ?? 0;
+        liveCounts[name] = count;
+      }
+      // Instantly redraw map polygons and markers when database changes
+      _drawParkingPolygons(liveCounts);
+    });
+
+    // Initial draw while Firebase connects
+    _drawParkingPolygons();
+  }
+
+
+  // --- REFINED DEMO SIMULATION LOGIC ---
+  void _runParkingDemo() async {
+    _demoTimer?.cancel();
+    _parkingStreamSubscription?.cancel(); // Stop firebase from overwriting demo
+    int tick = 0;
+    
+    setState(() {
+      _activeFilter = 'parking';
+      _selectedParkingZoneFilter = 'G Lots';
+      _reportingLotName = null;
+      _demoLotCounts.clear();
+    });
+    
+    double lotCenterX = -118.1135; 
+    double lotCenterY = 33.7840;   
+
+    final lotG3Coords = _parkingGeometries['Lot G3'];
+    if (lotG3Coords != null && lotG3Coords.isNotEmpty) {
+      double sumX = 0;
+      double sumY = 0;
+      for (var pos in lotG3Coords) {
+        sumX += pos.lng;
+        sumY += pos.lat;
+      }
+      lotCenterX = sumX / lotG3Coords.length;
+      lotCenterY = sumY / lotG3Coords.length;
+    }
+
+    mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(lotCenterX, lotCenterY)),
+        zoom: 17.5, 
+      ),
+      MapAnimationOptions(duration: 1000),
+    );
+
+    _demoTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      tick++;
+
+      setState(() {
+        _demoLotCounts['Lot G3'] = math.min(tick, 20); 
+      });
+      
+      _drawParkingPolygons(_demoLotCounts);
+
+      if (_devPinManager != null) {
+         await _devPinManager!.deleteAll();
+         
+         for (int i = 0; i < math.min(tick, 20); i++) {
+           double offsetX = math.sin(i * 1.5) * 0.00025;
+           double offsetY = math.cos(i * 1.5) * 0.00025;
+           double progress = math.min((tick - i) / 3.0, 1.0); 
+           
+           double startX = lotCenterX - 0.0008;
+           double startY = lotCenterY - 0.0008;
+           double endX = lotCenterX + offsetX;
+           double endY = lotCenterY + offsetY;
+
+           double currentX = startX + (endX - startX) * progress;
+           double currentY = startY + (endY - startY) * progress;
+
+           await _devPinManager!.create(
+             PointAnnotationOptions(
+               geometry: Point(coordinates: Position(currentX, currentY)),
+               textField: progress >= 1.0 ? "Car ${i+1} (Parked)" : "Car ${i+1}",
+               textColor: progress >= 1.0 ? Colors.green.toARGB32() : Colors.blueAccent.toARGB32(),
+               textHaloColor: Colors.white.toARGB32(),
+               textHaloWidth: 2.0,
+             )
+           );
+         }
+      }
+
+      if (tick >= 20) {
+        timer.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("20s Demo Complete: Lot G3 has reached capacity.")),
+        );
+        Future.delayed(const Duration(seconds: 4), () {
+          if (mounted) {
+            _devPinManager?.deleteAll();
+            setState(() {
+              _demoLotCounts.clear();
+            });
+            _listenToParkingFirebase(); // Restart live sync
+          }
+        });
+      }
+    });
   }
 
   void _onMapCreated(MapboxMap map) async {
@@ -706,31 +898,22 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     pointAnnotationManager = await mapboxMap!.annotations.createPointAnnotationManager();
-    pointAnnotationManager?.addOnPointAnnotationClickListener(
-      _BathroomClickListener(context),
-    );
 
     _devPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
     _devCircleManager = await mapboxMap!.annotations.createCircleAnnotationManager();
     _foodAlertPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
 
     _studyHallPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
-    _studyHallPinManager?.addOnPointAnnotationClickListener(
-      _StudyHallClickListener(_handleStudyHallPinTap, _studyHallPinData),
-    );
 
     _outletPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
-    _outletPinManager?.addOnPointAnnotationClickListener(
-      _OutletClickListener(_handleOutletPinTap, _outletPinData),
-    );
 
-    // Initialize Parking Manager
     _parkingLotManager = await mapboxMap!.annotations.createPolygonAnnotationManager();
+    _parkingLabelManager = await mapboxMap!.annotations.createPointAnnotationManager();
 
     await _loadBuildingBathrooms();
     await _loadStudyHallPins();
     await _loadOutletPins();
-    await _loadParkingLotGeometries(); // Pre-load all geometries
+    await _loadParkingLotGeometries(); 
     await _updateMapPins();
   }
 
@@ -751,17 +934,17 @@ class _MapScreenState extends State<MapScreen> {
       CircleAnnotationOptions(
         geometry: context.point,
         circleRadius: 9.0,
-        circleColor: const Color(0xFF4285F4).value,
+        circleColor: const Color(0xFF4285F4).toARGB32(),
         circleStrokeWidth: 3.0,
-        circleStrokeColor: Colors.white.value,
+        circleStrokeColor: Colors.white.toARGB32(),
       ),
     );
     _devPin = await _devPinManager?.create(
       PointAnnotationOptions(
         geometry: context.point,
         textField: "You (Simulated)",
-        textColor: Colors.black.value,
-        textHaloColor: Colors.white.value,
+        textColor: Colors.black.toARGB32(),
+        textHaloColor: Colors.white.toARGB32(),
         textHaloWidth: 2.0,
         textOffset: [0.0, 1.2],
       ),
@@ -878,37 +1061,18 @@ class _MapScreenState extends State<MapScreen> {
     _updateMapPins();
   }
 
-  void _onAddTapped() async {
-    if (_activeFilter == 'study') {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AddStudyHallScreen()),
-      );
-
-      if (result == true) {
-        await _loadStudyHallPins();
-        await _updateMapPins();
-        setState(() {});
-      }
-    } else if (_activeFilter == 'charging') {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AddOutletScreen()),
-      );
-
-      if (result == true) {
-        setState(() {});
-      }
-    }
-  }
-
   Future<void> _updateMapPins() async {
     if (pointAnnotationManager == null) return;
 
     await pointAnnotationManager!.deleteAll();
 
     if (_activeFilter == 'restroom' && _bathroomPinOptions.isNotEmpty) {
-      await pointAnnotationManager!.createMulti(_bathroomPinOptions);
+      final annotations = await pointAnnotationManager!.createMulti(_bathroomPinOptions);
+      for (var annotation in annotations) {
+        if (annotation != null) {
+          // Re-attach listener logic manually if needed for individual pins
+        }
+      }
     }
 
     if (_studyHallPinManager != null) {
@@ -931,10 +1095,15 @@ class _MapScreenState extends State<MapScreen> {
 
     if (_parkingLotManager != null) {
       if (_activeFilter == 'parking') {
-        // Just draw the polygons from GeoJSON directly
-        _drawParkingPolygons();
+        if (_isDevMode && _demoTimer != null && _demoTimer!.isActive) {
+          // Let demo keep rendering
+        } else {
+          _listenToParkingFirebase(); 
+        }
       } else {
+        _parkingStreamSubscription?.cancel();
         await _parkingLotManager!.deleteAll();
+        await _parkingLabelManager?.deleteAll();
       }
     }
   }
@@ -1064,6 +1233,12 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 Row(
                   children: [
+                    if (_isDevMode)
+                      TextButton.icon(
+                        onPressed: _runParkingDemo,
+                        icon: const Icon(Icons.play_circle_fill, color: Colors.red),
+                        label: const Text("Run 20s Demo", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      ),
                     Text(
                       "DEV",
                       style: TextStyle(
@@ -1074,6 +1249,8 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     Switch(
                       value: _isDevMode,
+                      activeThumbImage: null,
+                      activeTrackColor: Colors.red.withValues(alpha: 0.5),
                       activeColor: Colors.red,
                       onChanged: (val) {
                         setState(() {
@@ -1398,10 +1575,6 @@ class _FilterBottomSheet extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------
-// UPDATED PARKING SHEET CONTENT
-// Now uses GeoJSON list exclusively, ignoring Firebase counts.
-// ----------------------------------------------------
 class _ParkingSheetContent extends StatelessWidget {
   final String selectedZoneFilter;
   final ValueChanged<String> onZoneFilterChanged;
@@ -1422,6 +1595,25 @@ class _ParkingSheetContent extends StatelessWidget {
     'E Lots',
     'Palo Verde',
   ];
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'full':
+        return Colors.red.shade600;
+      case 'moderate':
+        return Colors.orange.shade600;
+      case 'empty':
+        return Colors.green.shade600;
+      default:
+        return Colors.grey.shade600;
+    }
+  }
+
+  String _calculateStatus(int searchingCount, int parkedCount) {
+    if (searchingCount >= 15) return 'Full';
+    if (searchingCount >= 5) return 'Moderate';
+    return 'Empty';
+  }
 
   bool _matchesZone(String lotName, String zone) {
     if (zone == 'All') return true;
@@ -1494,92 +1686,106 @@ class _ParkingSheetContent extends StatelessWidget {
           ),
 
         if (filteredLots.isNotEmpty)
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: 5, bottom: 20),
-            itemCount: filteredLots.length,
-            separatorBuilder: (context, index) =>
-                Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
-            itemBuilder: (context, index) {
-              final name = filteredLots[index];
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance.collection('parking_lots').snapshots(),
+            builder: (context, snapshot) {
               
-              // Hardcoded to empty green since we are ignoring Firebase
-              final statusText = 'Empty';
-              final statusColor = Colors.green.shade600;
+              final Map<String, Map<String, dynamic>> lotDataMap = {};
+              if (snapshot.hasData && !snapshot.hasError) {
+                for (var doc in snapshot.data!.docs) {
+                  final dbName = (doc.data()['name'] ?? '').toString();
+                  lotDataMap[dbName] = doc.data();
+                }
+              }
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 5, bottom: 20),
+                itemCount: filteredLots.length,
+                separatorBuilder: (context, index) =>
+                    Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
+                itemBuilder: (context, index) {
+                  final name = filteredLots[index];
+                  
+                  final liveData = lotDataMap[name] ?? {};
+                  final searchingCount = liveData['searching_count'] ?? 0;
+                  final parkedCount = liveData['parked_count'] ?? 0;
+                  
+                  final statusText = _calculateStatus(searchingCount, parkedCount);
+                  final statusColor = _getStatusColor(statusText);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Status : $statusText',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Status : $statusText',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(height: 10),
+                        Text('● Actively Searching: $searchingCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text('● Parked Vehicles: $parkedCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => onReportTapped(name),
+                            icon: const Icon(Icons.add_circle_outline, color: Colors.black87, size: 20),
+                            label: const Text(
+                              'Make a Report',
+                              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade300, width: 1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Text('● Actively Searching: 0', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text('● Parked Vehicles: 0', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => onReportTapped(name),
-                        icon: const Icon(Icons.add_circle_outline, color: Colors.black87, size: 20),
-                        label: const Text(
-                          'Make a Report',
-                          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey.shade300, width: 1),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               );
-            },
+            }
           ),
       ],
     );
   }
 }
 
-// ----------------------------------------------------
-// REPORT SHEET CONTENT 
-// ----------------------------------------------------
 class _ParkingReportSheetContent extends StatelessWidget {
   final String lotName;
   final VoidCallback onBack;
@@ -1589,18 +1795,62 @@ class _ParkingReportSheetContent extends StatelessWidget {
     required this.onBack,
   });
 
-  // Function intact, but ignores Firebase
   void _submitReport(BuildContext context, String status) async {
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('parking_lots')
+          .where('name', isEqualTo: lotName)
+          .get();
+
+      int newSearch = 0;
+      if (status == 'Full') newSearch = 20;
+      if (status == 'Moderate') newSearch = 10;
+      if (status == 'Empty') newSearch = 1;
+
+      if (query.docs.isNotEmpty) {
+        await query.docs.first.reference.update({
+          'searching_count': newSearch,
+          'last_report': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await FirebaseFirestore.instance.collection('parking_lots').add({
+          'name': lotName,
+          'searching_count': newSearch,
+          'parked_count': 0,
+          'last_report': FieldValue.serverTimestamp(),
+        });
+      }
+      
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Report submitted for $lotName')),
       );
       onBack(); 
+    } catch (e) {
+      debugPrint("Error updating report: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-        // Hardcoded dummy data to ignore Firebase
-        double occupancy = 0.0;
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('parking_lots')
+          .where('name', isEqualTo: lotName)
+          .snapshots(),
+      builder: (context, snapshot) {
+        int searchingCount = 0;
+        int parkedCount = 0;
+
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          final data = snapshot.data!.docs.first.data();
+          searchingCount = data['searching_count'] ?? 0;
+          parkedCount = data['parked_count'] ?? 0;
+        }
+        
+        final total = searchingCount + parkedCount;
+        double occupancy = total == 0 ? 0 : searchingCount / 20.0;
+        if (occupancy > 1.0) occupancy = 1.0;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1691,6 +1941,8 @@ class _ParkingReportSheetContent extends StatelessWidget {
             ],
           ),
         );
+      },
+    );
   }
 }
 
@@ -1758,9 +2010,7 @@ class _ReportButton extends StatelessWidget {
     );
   }
 }
-// ----------------------------------------------------
 
-/// NEW FROM GISELLE: STUDY HALL
 class _StudySheetContent extends StatelessWidget {
   const _StudySheetContent({
     required this.selectedBuildingFilter,
@@ -2178,8 +2428,6 @@ class _StudySheetContent extends StatelessWidget {
   }
 }
 
-// ----------
-// NEW FROM GISELLE: CREATING THE OUTLET SHEET DISPLAYED ON MAP
 class _ChargingSheetContent extends StatelessWidget {
   const _ChargingSheetContent({
     required this.selectedBuildingFilter,
@@ -2721,45 +2969,5 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
           ),
       ],
     );
-  }
-}
-
-class _BathroomClickListener extends OnPointAnnotationClickListener {
-  final BuildContext context;
-  _BathroomClickListener(this.context);
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const BathroomFinder()),
-    );
-  }
-}
-
-class _StudyHallClickListener extends OnPointAnnotationClickListener {
-  final void Function(Map<String, dynamic>) onTap;
-  final Map<String, Map<String, dynamic>> pinData;
-
-  _StudyHallClickListener(this.onTap, this.pinData);
-
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    final data = pinData[annotation.id];
-    if (data == null) return;
-    onTap(data);
-  }
-}
-
-class _OutletClickListener extends OnPointAnnotationClickListener {
-  final void Function(Map<String, dynamic>) onTap;
-  final Map<String, Map<String, dynamic>> pinData;
-
-  _OutletClickListener(this.onTap, this.pinData);
-
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    final data = pinData[annotation.id];
-    if (data == null) return;
-    onTap(data);
   }
 }
