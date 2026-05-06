@@ -10,7 +10,7 @@ import 'firebase_options.dart';
 import 'auth_screen.dart';
 import 'signup_screen.dart';
 import 'map_screen.dart';
-import 'events_screen.dart';
+import 'eventboard_screen.dart';
 import 'misc_screen.dart';
 import 'dormlife_screen.dart';
 import 'hourscap_screen.dart';
@@ -19,6 +19,7 @@ import 'feedbackanalytics_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
 import 'screens/resources_page.dart';
+import 'community_goods/smf/service/moderation_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,8 @@ void main() async {
     await Firebase.initializeApp();
   }
 
+  await ModerationHelper.loadBadWords();await ModerationHelper.loadBadWords();
+  
   runApp(const MyApp());
 }
 

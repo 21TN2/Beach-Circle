@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notification_test_screen.dart';
 import 'dormlife_screen.dart';
-import 'events_screen.dart';
+import 'eventboard_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';
@@ -33,6 +33,7 @@ import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.da
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+
 import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -48,6 +49,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _dormNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _ebNavKey = GlobalKey<NavigatorState>();
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -258,6 +261,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "dormlife";
+                _dormNavKey.currentState?.popUntil((r) => r.isFirst);
               });
             }),
           ]),
@@ -347,13 +351,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildDormTab() {
+    return Navigator(
+      key: _dormNavKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(builder: (_) => const DormlifeScreen());
+      },
+    );
+  }
+
+  Widget _buildEventBoardTab() {
+  return Navigator(
+    key: _ebNavKey,
+    onGenerateRoute: (settings) {
+      return MaterialPageRoute(builder: (_) => const EventBoardScreen());
+    },
+  );
+}
+
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
-          return const EventsScreen();
+        return _buildEventBoardTab();
         case "dormlife":
-          return const DormlifeScreen();
+          return _buildDormTab();
         case "hourscap":
           return const HourscapScreen();
         case "feedback":
@@ -378,6 +400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'teef@gmail.com',
       'reytest@gmail.com',
       'giselle1@gmail.com',
+      'josuealfaro8441@gmail.com',
     ];
 
     if (_currentIndex == 0 && _homePage == "home") {

@@ -1,10 +1,16 @@
 // Creates the Forum Posts
 
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../model/forum_category.dart';
+import '../service/cloudinary_service.dart';
 import '../service/forum_service.dart';
+import '../service/moderation_helper.dart';
+import '../widgets/report_image_selection.dart';
 
 class CreateForumPostPg extends StatefulWidget {
   final ForumCategory category;
@@ -30,6 +36,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
   bool _showPreview = false;
   bool _isSubmitting = false;
+  File? _selectedImage;
 
   @override
   void dispose() {
@@ -46,6 +53,20 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
         uri.host.isNotEmpty;
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _showPreview = false;
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
@@ -59,7 +80,20 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
       return;
     }
 
-    // reply shows usernane otherwise anonymous
+    if (ModerationHelper.containsProfanity(_titleCtrl.text) ||
+        ModerationHelper.containsProfanity(_bodyCtrl.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please keep the community friendly. Remove inappropriate language before posting.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // reply shows username otherwise anonymous
     final rawDisplayName = user.displayName?.trim();
     final rawEmailName = user.email?.split('@').first.trim();
 
@@ -70,19 +104,28 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 ? rawEmailName
                 : "Anonymous");
 
-    final imageUrl = _imageUrlCtrl.text.trim();
+    final pastedImageUrl = _imageUrlCtrl.text.trim();
 
     setState(() => _isSubmitting = true);
 
     try {
+      String? finalImageUrl;
+
+      if (_selectedImage != null) {
+        finalImageUrl = await CloudinaryService.uploadImage(_selectedImage!);
+      } else if (pastedImageUrl.isNotEmpty) {
+        finalImageUrl = pastedImageUrl;
+      }
+
       await widget.forumService.createPost(
         categoryId: widget.category.id,
         title: _titleCtrl.text.trim(),
         body: _bodyCtrl.text.trim(),
         authorId: user.uid,
         authorName: authorName,
-        mediaUrl: imageUrl.isEmpty ? null : imageUrl,
-        mediaType: imageUrl.isEmpty ? null : "image",
+        mediaUrl: finalImageUrl,
+        mediaType:
+            finalImageUrl == null || finalImageUrl.isEmpty ? null : "image",
       );
 
       if (!mounted) return;
@@ -104,7 +147,6 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: const Color(0xFFF2D21B),
         elevation: 0,
@@ -130,7 +172,6 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
           ),
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
@@ -165,11 +206,11 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  validator:
-                      (v) =>
-                          v == null || v.trim().isEmpty
-                              ? "Title is required."
-                              : null,
+                  validator: (v) {
+                    return v == null || v.trim().isEmpty
+                        ? "Title is required."
+                        : null;
+                  },
                 ),
 
                 const SizedBox(height: 14),
@@ -189,11 +230,11 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  validator:
-                      (v) =>
-                          v == null || v.trim().isEmpty
-                              ? "Body is required."
-                              : null,
+                  validator: (v) {
+                    return v == null || v.trim().isEmpty
+                        ? "Body is required."
+                        : null;
+                  },
                 ),
 
                 const SizedBox(height: 16),
@@ -203,6 +244,15 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
+
+                ReportImageSection(
+                  selectedImage: _selectedImage,
+                  onPickImage: () {
+                    _pickImage();
+                  },
+                ),
+
+                const SizedBox(height: 14),
 
                 TextFormField(
                   controller: _imageUrlCtrl,
@@ -215,7 +265,10 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        setState(() => _showPreview = true);
+                        setState(() {
+                          _showPreview = true;
+                          _selectedImage = null;
+                        });
                       },
                     ),
                   ),
@@ -228,7 +281,9 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                     return null;
                   },
                   onChanged: (_) {
-                    if (_showPreview) setState(() {});
+                    if (_showPreview) {
+                      setState(() {});
+                    }
                   },
                 ),
 
@@ -260,7 +315,6 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
 
                 const SizedBox(height: 28),
 
-                /// CANCEL / SUBMIT BUTTONS
                 Row(
                   children: [
                     Expanded(
@@ -293,9 +347,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 16),
-
                     Expanded(
                       child: SizedBox(
                         height: 52,
