@@ -6,6 +6,8 @@ const { getMessaging } = require("firebase-admin/messaging");
 initializeApp();
 const db = getFirestore();
 
+//deplow line: firebase deploy --only functions
+
 // ── Helper: send to all subscribed users ──────────────────────────────
 async function notifySubscribedUsers(prefField, title, body) {
   const usersSnap = await db
@@ -41,22 +43,22 @@ exports.onNewFoodAlert = onDocumentCreated("food_alerts/{docId}", async (event) 
   const data = (event.data && event.data.data) ? event.data.data() : null;
   if (!data) return;
 
-  const title = `🍕 Food Alert: ${data.title ?? "Free food nearby!"}`;
+  const title = `Food Alert: ${data.title ?? "Free food nearby!"}`;
   const body = data.description ?? "Check the map for details.";
 
   await notifySubscribedUsers("notif_foodAlerts", title, body);
 });
 
-// // Event board trigger
-// exports.onNewEventPost = onDocumentCreated("events/{docId}", async (event) => {
-//   const data = event.data?.data();
-//   if (!data) return;
+// Event board trigger
+exports.onNewEventPost = onDocumentCreated("eb_events/{docId}", async (event) => {
+  const data = event.data?.data();
+  if (!data) return;
 
-//   const title = `📅 New Event: ${data.title ?? "Something's happening!"}`;
-//   const body = data.description ?? "Tap to see the details.";
+  const title = `New Event: ${data.title ?? "Something's happening!"}`;
+  const body = data.description ?? "Tap to see the details.";
 
-//   await notifySubscribedUsers("notif_eventReminders", title, body);
-// });
+  await notifySubscribedUsers("notif_eventReminders", title, body);
+});
 
 // // Dorm event trigger
 // exports.onNewDormEvent = onDocumentCreated("dorm_events/{docId}", async (event) => {
