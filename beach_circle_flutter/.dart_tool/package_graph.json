@@ -22,6 +22,7 @@
         "image_picker",
         "lottie",
         "mapbox_maps_flutter",
+        "maps_toolkit",
         "path_provider",
         "url_launcher"
       ],
@@ -176,6 +177,11 @@
     {
       "name": "cupertino_icons",
       "version": "1.0.9",
+      "dependencies": []
+    },
+    {
+      "name": "maps_toolkit",
+      "version": "3.1.0",
       "dependencies": []
     },
     {
