@@ -63,7 +63,7 @@ class DormCategoryDotRow extends StatelessWidget {
 
 // ── 3-dot category selector (used in Add Dorm form header) ───────────────────
 
-class DormCategorySelector extends StatelessWidget {
+class DormCategorySelector extends StatefulWidget {
   final DormCategory selected;
   final ValueChanged<DormCategory> onChanged;
   final double dotSize;
@@ -76,6 +76,19 @@ class DormCategorySelector extends StatelessWidget {
   });
 
   @override
+  State<DormCategorySelector> createState() => _DormCategorySelectorState();
+}
+
+class _DormCategorySelectorState extends State<DormCategorySelector> {
+  late DormCategory _current;
+
+  @override
+  void initState() {
+    super.initState();
+    _current = widget.selected;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -84,13 +97,16 @@ class DormCategorySelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: DormCategory.values.map((cat) {
             return GestureDetector(
-              onTap: () => onChanged(cat),
+              onTap: () {
+                setState(() => _current = cat);
+                widget.onChanged(cat);
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: DormCategoryDot(
                   category: cat,
-                  size: dotSize,
-                  isSelected: cat == selected,
+                  size: widget.dotSize,
+                  isSelected: cat == _current,
                 ),
               ),
             );
@@ -98,11 +114,11 @@ class DormCategorySelector extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          selected.label,
+          _current.label,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: selected.color,
+            color: _current.color,
           ),
         ),
       ],

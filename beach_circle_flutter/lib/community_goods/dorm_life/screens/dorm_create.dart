@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/services/dorm_services.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/services/dl_cloudinary.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/moderation_helper.dart';
 import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_category_dot.dart';
 
 class DormCreatePage extends StatefulWidget {
@@ -108,6 +109,13 @@ class _DormCreatePageState extends State<DormCreatePage> {
     }
     if (_selectedBuildingCode == null) {
       _showError('Please select a Building Location.');
+      return;
+    }
+
+    // ── Profanity check ───────────────────────────────────────────────
+    if (ModerationHelper.containsProfanity(_eventNameController.text) ||
+        ModerationHelper.containsProfanity(_eventDescController.text)) {
+      _showError('Your event contains inappropriate language. Please revise.');
       return;
     }
 

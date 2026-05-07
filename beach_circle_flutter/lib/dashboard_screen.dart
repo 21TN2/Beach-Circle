@@ -55,6 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
   }
