@@ -1,6 +1,5 @@
-// TIFF
-// dorm_create.dart
-// Add Dorm Details form — wired to DormServices & DormEvent model
+// eb_create.dart
+// Create event screen for Event Board
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -10,27 +9,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/services/dorm_services.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/services/dl_cloudinary.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/services/eb_services.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/services/eb_cloudinary.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/moderation_helper.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/widgets/dorm_category_dot.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/widgets/eb_category_dot.dart';
 
-class DormCreatePage extends StatefulWidget {
-  const DormCreatePage({super.key});
+class EBCreatePage extends StatefulWidget {
+  const EBCreatePage({super.key});
 
   @override
-  State<DormCreatePage> createState() => _DormCreatePageState();
+  State<EBCreatePage> createState() => _EBCreatePageState();
 }
 
-class _DormCreatePageState extends State<DormCreatePage> {
+class _EBCreatePageState extends State<EBCreatePage> {
   static const Color kYellow    = Color(0xFFFFCC00);
   static const Color kYellowBtn = Color(0xFFD4A800);
   static const Color kPurple    = Color(0xFF3B3599);
   static const Color kBg        = Color(0xFFF0F0F0);
 
   String?      _selectedBuildingCode;
-  DormCategory _selectedCategory = DormCategory.athletics;
+  String?      _selectedBuildingName;
+  EBCategory   _selectedCategory = EBCategory.sports;
   bool         _isAllDay         = false;
   bool         _isSubmitting     = false;
 
@@ -100,11 +100,11 @@ class _DormCreatePageState extends State<DormCreatePage> {
         _imageBytes = null;
       });
 
-  // SUBMIT DORM EVENT
+  // ── Submit ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleSubmit() async {
     if (_eventNameController.text.trim().isEmpty) {
-      _showError('Please enter a Dorm Event Name.');
+      _showError('Please enter an Event Name.');
       return;
     }
     if (_selectedBuildingCode == null) {
@@ -125,28 +125,28 @@ class _DormCreatePageState extends State<DormCreatePage> {
       String? imageUrl;
       if (_pickedFile != null) {
         if (kIsWeb) {
-          imageUrl = await DormCloudinaryService.uploadImageBytes(
+          imageUrl = await EBCloudinaryService.uploadImageBytes(
             _imageBytes!,
             _pickedFile!.name,
           );
         } else {
-          imageUrl = await DormCloudinaryService.uploadImage(
+          imageUrl = await EBCloudinaryService.uploadImage(
             File(_pickedFile!.path),
           );
         }
       }
 
       final selectedDay = _days[_selectedDayIndex];
-      final buildings = await DormServices.fetchBuildings();
+      final buildings = await EBServices.fetchBuildings();
       final building = buildings.firstWhere(
         (b) => b['code'] == _selectedBuildingCode,
-        orElse: () => {'code': _selectedBuildingCode!, 'name': _selectedBuildingCode!},
+        orElse: () => {'code': _selectedBuildingCode!, 'name': _selectedBuildingName ?? _selectedBuildingCode!},
       );
       final locationDisplay = building['code']!.isEmpty
-        ? building['name']!
-        : '${building['code']} - ${building['name']}';
+          ? building['name']!
+          : '${building['name']}';
 
-      final event = DormEvent(          // ← this line was missing
+      final event = EBEvent(
         id: '',
         title: _eventNameController.text.trim(),
         location: locationDisplay,
@@ -164,13 +164,13 @@ class _DormCreatePageState extends State<DormCreatePage> {
         imageUrl: imageUrl,
       );
 
-      await DormServices.addEvent(event);
+      await EBServices.addEvent(event);
 
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🎉 Dorm event submitted!'),
+          content: Text('🎉 Event submitted!'),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 3),
         ),
@@ -192,13 +192,24 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  // BUILDERS
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBg,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.25,
+              child: Image.asset(
+                'assets/images/lb_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SafeArea(
         child: Column(
           children: [
             _buildHeader(),
@@ -225,21 +236,21 @@ class _DormCreatePageState extends State<DormCreatePage> {
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      label: 'Dorm Event Name',
-                      hint: 'Enter Dorm Event Name',
+                      label: 'Event Name',
+                      hint: 'Enter Event Name',
                       controller: _eventNameController,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      label: 'Dorm Event Description',
-                      hint: 'Enter Dorm Event Description',
+                      label: 'Event Description',
+                      hint: 'Enter Event Description',
                       controller: _eventDescController,
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      label: 'Dorm Event Links',
-                      hint: 'Enter Dorm Event Links',
+                      label: 'Event Links',
+                      hint: 'Enter Event Links',
                       controller: _eventLinksController,
                       keyboardType: TextInputType.url,
                     ),
@@ -255,10 +266,12 @@ class _DormCreatePageState extends State<DormCreatePage> {
           ],
         ),
       ),
+        ],
+      ),
     );
   }
 
-  // WIDGETS
+  // ── Widgets ────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
@@ -281,7 +294,7 @@ class _DormCreatePageState extends State<DormCreatePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
                   Text(
-                    'Dorm Life',
+                    'Event Board',
                     style: TextStyle(fontSize: 15, color: Color(0xFF555555)),
                   ),
                   Text(
@@ -319,11 +332,11 @@ class _DormCreatePageState extends State<DormCreatePage> {
             const SizedBox(width: 12),
             const Expanded(
               child: Text(
-                'Add Dorm Details',
+                'Add Event Details',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
               ),
             ),
-            DormCategorySelector(
+            EBCategorySelector(
               selected: _selectedCategory,
               onChanged: (cat) => setState(() => _selectedCategory = cat),
               dotSize: 14,
@@ -462,9 +475,9 @@ class _DormCreatePageState extends State<DormCreatePage> {
       onSelectedItemChanged: onChanged,
       selectionOverlay: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFD4A800).withOpacity(0.25),
+          color: const Color(0xFF888888).withOpacity(0.25),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFD4A800), width: 1.5),
+          border: Border.all(color: const Color(0xFF888888), width: 1.5),
         ),
       ),
       children: items
@@ -502,10 +515,9 @@ class _DormCreatePageState extends State<DormCreatePage> {
     );
   }
 
-  // ← only ONE _buildBuildingDropdown, using FutureBuilder
-Widget _buildBuildingDropdown() {
+  Widget _buildBuildingDropdown() {
     return FutureBuilder<List<Map<String, String>>>(
-      future: DormServices.fetchBuildings(),
+      future: EBServices.fetchBuildings(),
       builder: (context, snap) {
         final buildings = snap.data ?? [];
 
@@ -530,7 +542,10 @@ Widget _buildBuildingDropdown() {
                   ? b['name']!
                   : '${b['code']} – ${b['name']}',
               onSelected: (b) {
-                setState(() => _selectedBuildingCode = b['code']);
+                setState(() {
+                  _selectedBuildingCode = b['code'];
+                  _selectedBuildingName = b['name'];
+                });
               },
               fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
                 return Container(
@@ -587,6 +602,7 @@ Widget _buildBuildingDropdown() {
       },
     );
   }
+
   Widget _buildTextField({
     required String label,
     required String hint,
