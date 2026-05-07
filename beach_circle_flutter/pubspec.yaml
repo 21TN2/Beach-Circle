@@ -43,6 +43,7 @@ flutter:
     - assets/weather/
     - assets/en.txt
     - assets/char_map.txt
+    - assets/images/
     
 # flutter:
 #   assets:
