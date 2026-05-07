@@ -289,3 +289,4 @@ beach_circle_flutter/windows/flutter/generated_plugin_registrant.cc
 beach_circle_flutter/windows/flutter/generated_plugins.cmake
 beach_circle_flutter/lib/mapbox.dart
 beach_circle_flutter/.flutter-plugins-dependencies
+beach_circle_flutter\functions\node_modules
