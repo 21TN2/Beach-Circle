@@ -21,21 +21,44 @@ class ModerationService {
   Future<void> reportPost({
     required String postId,
     required String postAuthorId,
+  Future<void> reportContent({
+    required String targetId,
+    required String reportedUserId,
+    required String targetType,
     required String reason,
     required String details,
+    String? imageUrl,
   }) async {
     final uid = _auth.currentUser!.uid;
 
     await _db.collection('reports').add({
-      'targetType':
-          'post', // field collections needed to store + update reports
-      'postId': postId,
-      'reportedUserId': postAuthorId,
+      'targetType': targetType,
+      'targetId': targetId,
+      'reportedUserId': reportedUserId,
       'reporterUserId': uid,
       'reason': reason,
       'details': details,
+      'imageUrl': imageUrl,
       'status': 'open',
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  // fields needed for firebase
+  Future<void> reportPost({
+    required String postId,
+    required String postAuthorId,
+    required String reason,
+    required String details,
+    String? imageUrl,
+  }) async {
+    await reportContent(
+      targetId: postId,
+      reportedUserId: postAuthorId,
+      targetType: 'post',
+      reason: reason,
+      details: details,
+      imageUrl: imageUrl,
+    );
   }
 }

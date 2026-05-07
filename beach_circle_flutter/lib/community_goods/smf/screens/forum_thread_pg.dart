@@ -5,6 +5,7 @@ import '../model/forum_category.dart';
 import '../model/forum_post.dart';
 import '../model/forum_reply.dart';
 import '../service/forum_service.dart';
+import '../service/moderation_helper.dart';
 
 class ForumThreadPg extends StatefulWidget {
   final ForumCategory category;
@@ -34,6 +35,17 @@ class _ForumThreadPgState extends State<ForumThreadPg> {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
 
+    //auto moderation
+    if (ModerationHelper.containsProfanity(text)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please keep the community friendly. Remove inappropriate language before replying."),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return; // Stops the reply from going through!
+        }
+        
     setState(() => _sending = true);
     try {
       await widget.forumService.addReply(
