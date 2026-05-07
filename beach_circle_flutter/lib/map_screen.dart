@@ -19,6 +19,7 @@ class _MapScreenState extends State<MapScreen> {
 
   //Building Coordinates
   PolylineAnnotationManager? polylineAnnotationManager;
+  PolylineAnnotation? currentRouteAnnotation;
   Building? startBuilding;
   Building? endBuilding;
   String? startCategory;
@@ -42,7 +43,7 @@ class _MapScreenState extends State<MapScreen> {
   //coordinates for map boundaries
   static final campusBounds = CoordinateBounds(
     southwest: Point(
-      coordinates: Position(-118.1225, 33.77387), //long, lat
+      coordinates: Position(-118.1365, 33.77387), //long, lat
     ),
     northeast: Point(coordinates: Position(-118.1070, 33.78988)),
     infiniteBounds: false,
@@ -197,17 +198,19 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   //Clear route selections and map line
-  void _clearRoute() async {
+  Future<void> _clearRoute() async {
     setState(() {
       startBuilding = null;
       endBuilding = null;
       startCategory = null;
       endCategory = null;
+      _showRoutePanel = false;
     });
 
     //Remove route line from map
     if (polylineAnnotationManager != null) {
       await polylineAnnotationManager!.deleteAll();
+      currentRouteAnnotation = null;
     }
   }
 
@@ -561,6 +564,7 @@ class _MapScreenState extends State<MapScreen> {
 
     try {
       await polylineAnnotationManager!.deleteAll();
+      currentRouteAnnotation = null;
 
       final url =
           'https://api.mapbox.com/directions/v5/mapbox/walking/'
@@ -598,13 +602,17 @@ class _MapScreenState extends State<MapScreen> {
         );
       }).toList();
 
-      await polylineAnnotationManager!.create(
+      currentRouteAnnotation = await polylineAnnotationManager!.create(
         PolylineAnnotationOptions(
           geometry: LineString(coordinates: routePoints),
           lineColor: Colors.blue.value,
           lineWidth: 5.0,
         ),
       );
+
+      setState(() {
+        _showRoutePanel = false;
+      });
 
       await mapboxMap!.flyTo(
         CameraOptions(
