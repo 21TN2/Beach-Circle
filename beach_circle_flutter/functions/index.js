@@ -6,7 +6,7 @@ const { getMessaging } = require("firebase-admin/messaging");
 initializeApp();
 const db = getFirestore();
 
-//deplow line: firebase deploy --only functions
+// deplow line: firebase deploy --only functions
 
 // ── Helper: send to all subscribed users ──────────────────────────────
 async function notifySubscribedUsers(prefField, title, body) {
