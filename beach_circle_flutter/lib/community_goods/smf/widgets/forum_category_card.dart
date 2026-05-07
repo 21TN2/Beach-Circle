@@ -1,11 +1,10 @@
-// REUSABLE CARD WIDGET
-
 import 'package:flutter/material.dart';
 import 'interested_button.dart';
 
 class ForumCategoryCard extends StatelessWidget {
   final String title;
-  final String imagePath;
+  final String? imagePath;
+  final String? imageUrl;
   final bool isInterested;
   final VoidCallback onTap;
   final VoidCallback onInterestedTap;
@@ -13,7 +12,8 @@ class ForumCategoryCard extends StatelessWidget {
   const ForumCategoryCard({
     super.key,
     required this.title,
-    required this.imagePath,
+    this.imagePath,
+    this.imageUrl,
     required this.isInterested,
     required this.onTap,
     required this.onInterestedTap,
@@ -21,6 +21,11 @@ class ForumCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ImageProvider imageProvider =
+        (imageUrl != null && imageUrl!.isNotEmpty)
+            ? NetworkImage(imageUrl!)
+            : AssetImage(imagePath!) as ImageProvider;
+
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -30,10 +35,7 @@ class ForumCategoryCard extends StatelessWidget {
             width: 160,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: AssetImage(imagePath),
-                fit: BoxFit.cover,
-              ),
+              image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
             ),
           ),
           Positioned(

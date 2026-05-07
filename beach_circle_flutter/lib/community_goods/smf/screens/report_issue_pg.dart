@@ -1,19 +1,26 @@
-// This is where users can report an issue about a post
+// This is where users can report an issue
 // created by Giselle -- for student review so i dont forget
 
+import 'dart:io';
+
+import 'package:beach_circle_flutter/community_goods/smf/service/cloudinary_service.dart';
+import 'package:beach_circle_flutter/community_goods/smf/widgets/report_image_selection.dart';
 import 'package:beach_circle_flutter/community_goods/smf/widgets/report_submitted.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../service/moderation_service.dart';
 
 class ReportIssuePage extends StatefulWidget {
   const ReportIssuePage({
     super.key,
-    required this.postId,
-    required this.postAuthorId,
+    required this.targetId,
+    required this.reportedUserId,
+    required this.targetType,
   });
 
-  final String postId;
-  final String postAuthorId;
+  final String targetId;
+  final String reportedUserId;
+  final String targetType;
 
   @override
   State<ReportIssuePage> createState() => _ReportIssuePageState();
@@ -32,6 +39,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
 
   String? _issueType;
   bool _submitting = false;
+  File? _selectedImage;
 
   // categories
   final List<String> _issueTypes = const [
@@ -97,17 +105,38 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
 
     try {
-      await _moderationService.reportPost(
-        postId: widget.postId,
-        postAuthorId: widget.postAuthorId,
+      String? imageUrl;
+
+      if (_selectedImage != null) {
+        imageUrl = await CloudinaryService.uploadImage(_selectedImage!);
+      }
+
+      await _moderationService.reportContent(
+        targetId: widget.targetId,
+        reportedUserId: widget.reportedUserId,
+        targetType: widget.targetType,
         reason: _issueType!,
         details: _descController.text.trim(),
+        imageUrl: imageUrl,
       );
 
       if (!mounted) return;
@@ -280,35 +309,11 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
 
                     const SizedBox(height: 14),
 
-                    OutlinedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Photo upload is optional (add later).',
-                            ),
-                          ),
-                        );
+                    ReportImageSection(
+                      selectedImage: _selectedImage,
+                      onPickImage: () {
+                        _pickImage();
                       },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        side: const BorderSide(color: Color(0xFFD0D0D0)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      child: const Text(
-                        '+ Add a Photo',
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Optional',
-                      style: TextStyle(color: Colors.black54, fontSize: 15),
                     ),
                   ],
                 ),
