@@ -273,6 +273,7 @@ class _MiscScreenState extends State<MiscScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: StreamBuilder<QuerySnapshot>(
+                  // shows approved categories from forumCategories
                   stream:
                       FirebaseFirestore.instance
                           .collection("forum_requests")
@@ -407,7 +408,6 @@ class _CategoryCard extends StatelessWidget {
           Center(
             child: Text(
               title,
-              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

@@ -66,3 +66,5 @@ Thumbs.db
 lib\main.dart
 
 node_modules
+functions\node_modules
+node_modules
