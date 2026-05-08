@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart'; // Added for real images
+import 'dart:io'; // Added for File objects
+
 import 'image_moderator.dart'; 
+import 'package:beach_circle_flutter/community_goods/smf/service/cloudinary_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,10 +20,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _yearController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _interestsController = TextEditingController();
-  final TextEditingController _photoUrlController = TextEditingController();
+  final TextEditingController _photoUrlController = TextEditingController(); // Keeps track of existing Firebase URL
 
   final User? user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true;
+
+  // --- NEW: Variables for handling local image picking ---
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -53,36 +61,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showImageUrlDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Update Profile Picture"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Paste a direct image link from Google/Web:"),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _photoUrlController,
-              decoration: const InputDecoration(
-                hintText: "https://example.com/image.png",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                setState(() {}); 
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Done"),
-          ),
-        ],
-      ),
-    );
+  // --- NEW: Pick a real image from the gallery ---
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -91,21 +78,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      String imageUrl = _photoUrlController.text.trim();
+      String finalImageUrl = _photoUrlController.text.trim(); // Default to existing URL
 
-      // --- UPDATED MODERATION: CHECK FOR REASON ---
-      if (imageUrl.isNotEmpty) {
-        String? flagReason = await ImageModerator.isUrlSafe(imageUrl);
+      // --- NEW LOGIC: Upload to Cloudinary & Moderate ---
+      if (_selectedImage != null) {
+        // 1. Upload to Cloudinary first
+        String? uploadedUrl = await CloudinaryService.uploadImage(_selectedImage!);
         
+        if (uploadedUrl != null) {
+          // 2. Moderate the new Cloudinary URL
+          String? flagReason = await ImageModerator.isUrlSafe(uploadedUrl);
+          
+          if (flagReason != null) {
+            if (mounted) {
+              _showBlockedDialog(flagReason); 
+              setState(() => _isLoading = false);
+            }
+            return; // STOP! Do not save to Firebase.
+          }
+          
+          // 3. It passed moderation! Set it as the final URL to save.
+          finalImageUrl = uploadedUrl;
+          _photoUrlController.text = finalImageUrl; // Update controller to match
+        } else {
+          throw Exception("Failed to upload image to Cloudinary.");
+        }
+      } else if (finalImageUrl.isNotEmpty) {
+        // Fallback: If they didn't pick a new image but have an existing URL, moderate it just in case
+        String? flagReason = await ImageModerator.isUrlSafe(finalImageUrl);
         if (flagReason != null) {
           if (mounted) {
-            _showBlockedDialog(flagReason); // Pass the reason to the pop-up
+            _showBlockedDialog(flagReason);
             setState(() => _isLoading = false);
           }
-          return; 
+          return;
         }
       }
 
+      // --- Save everything to Firebase ---
       await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
         'name': _nameController.text.trim(),
         'email': user!.email,
@@ -113,11 +123,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'year': _yearController.text.trim(),
         'bio': _bioController.text.trim(),
         'interests': _interestsController.text.trim(),
-        'photo_url': imageUrl, 
+        'photo_url': finalImageUrl, 
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (mounted) {
+        // Reset the selected file since it's now officially in the cloud
+        setState(() {
+           _selectedImage = null; 
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile Saved!'), backgroundColor: Colors.green),
         );
@@ -133,7 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // --- UPDATED POP-UP: TELLS THE USER WHY ---
   void _showBlockedDialog(String reason) {
     showDialog(
       context: context,
@@ -148,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Text(
           "This image was flagged by our safety system.\n\n"
           "Reason: $reason\n\n"
-          "Please use a different image URL."
+          "Please select a different image."
         ),
         actions: [
           TextButton(
@@ -220,7 +234,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const Text("Profile Picture", style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
                             GestureDetector(
-                              onTap: _showImageUrlDialog, 
+                              // --- Changed from showing URL dialog to picking a real image ---
+                              onTap: _pickImage, 
                               child: Container(
                                 height: 100,
                                 width: 100,
@@ -236,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 5),
-                            const Text("Tap to paste URL", style: TextStyle(fontSize: 12, color: Colors.blue)),
+                            const Text("Tap to upload image", style: TextStyle(fontSize: 12, color: Colors.blue)),
                           ],
                         ),
                       ),
@@ -275,9 +290,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // --- UPDATED: Show the local file if one is selected, otherwise show the network URL ---
   Widget _buildProfileImage() {
+    if (_selectedImage != null) {
+      return Image.file(_selectedImage!, fit: BoxFit.cover);
+    }
+
     String url = _photoUrlController.text.trim();
     if (url.isEmpty) return const Icon(Icons.person, size: 50, color: Colors.grey);
+    
     return Image.network(
       url,
       fit: BoxFit.cover,

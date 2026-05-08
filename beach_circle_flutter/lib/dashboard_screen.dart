@@ -6,7 +6,6 @@ import 'eventboard_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';
-import 'addres_screen.dart';
 import 'settings_screen.dart';
 import 'bathroom_finder.dart';
 import 'map/map_screen.dart';
@@ -52,9 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
-  // --- HELPER METHODS ---
-
-  //State Abbreviation for Weather Location
+//State Abbreviation for Weather Location
   String _getStateAbbreviation(String stateName) {
     const stateMap = {
       "Alabama": "AL",
@@ -232,9 +229,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _mapFilter = "restroom";
               });
             }),
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (_) => const BathroomFinder()),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
               setState(() {
                 _currentIndex = 1;
@@ -399,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     if (_currentIndex == 2) return _buildForumTab();
-    if (_currentIndex == 3) return const AddresScreen();
+    if (_currentIndex == 3) return const ResourcesPage();
     return const SettingsScreen();
   }
 
@@ -535,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // Current location of the User
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
       //Find City & State of the User
@@ -567,7 +561,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Weather error: $e");
+      debugPrint("Weather error: $e");
     }
   }
 
@@ -807,30 +801,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  //Location permission Denied
-  void _showLocationErrorDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          //Display message requiring location permissions
-          title: const Text("Location Access Required"),
-          content: const Text(
-            "Please enable location access to view current weather.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   //If location permission is not accepted or denied(Allow Retry)
   Widget _buildLocationRetry() {
     return GestureDetector(
@@ -843,9 +813,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _fetchWeather();
         }
       },
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.location_off, size: 50, color: Colors.white),
           SizedBox(height: 12),
 

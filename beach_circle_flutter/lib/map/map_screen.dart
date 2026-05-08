@@ -2781,6 +2781,17 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
     _loadList();
   }
 
+  // --- NEW: This forces the list to reload when the Dev Pin moves! ---
+  @override
+  void didUpdateWidget(covariant _RestroomSheetContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentPosition.lat != widget.currentPosition.lat ||
+        oldWidget.currentPosition.lng != widget.currentPosition.lng) {
+      setState(() => _isLoading = true);
+      _loadList();
+    }
+  }
+
   double _getDistance(double lat1, double lon1, double lat2, double lon2) {
     const p = 0.017453292519943295;
     final a =
@@ -2842,7 +2853,7 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
               dist < 1000
                   ? "${dist.toStringAsFixed(0)} ft"
                   : "${(dist / 5280).toStringAsFixed(1)} mi",
-          'details': 'Loading stats',
+          'details': 'Loading stats...',
         });
       }
 
@@ -2866,23 +2877,28 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
                 .get();
 
         if (snap.docs.isNotEmpty) {
-          Map<String, int> counts = {};
+          // --- NEW: Calculate Average Star Rating ---
+          double totalRating = 0;
+          int reviewCount = 0;
+          
           for (var doc in snap.docs) {
-            Map<String, dynamic> fts = doc.data()['features'] ?? {};
-            fts.forEach((k, v) {
-              if (v == true) counts[k] = (counts[k] ?? 0) + 1;
-            });
+            final data = doc.data();
+            // Assuming your star field is named 'rating' in Firebase. 
+            // If it's named 'stars' or something else, change 'rating' below!
+            if (data.containsKey('rating')) {
+              totalRating += (data['rating'] as num).toDouble();
+              reviewCount++;
+            }
           }
-          if (counts.isNotEmpty && mounted) {
+          
+          if (reviewCount > 0 && mounted) {
             setState(() {
-              b['details'] =
-                  counts.entries
-                      .reduce((a, b) => a.value > b.value ? a : b)
-                      .key;
+              double avg = totalRating / reviewCount;
+              b['details'] = "${avg.toStringAsFixed(1)} ★ ($reviewCount reviews)";
             });
           } else if (mounted) {
             setState(() {
-              b['details'] = "Functional";
+              b['details'] = "No ratings yet";
             });
           }
         } else if (mounted) {
