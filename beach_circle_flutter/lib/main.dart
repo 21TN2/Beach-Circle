@@ -10,7 +10,7 @@ import 'firebase_options.dart';
 import 'auth_screen.dart';
 import 'signup_screen.dart';
 import 'map/map_screen.dart';
-import 'events_screen.dart';
+import 'eventboard_screen.dart';
 import 'misc_screen.dart';
 import 'dormlife_screen.dart';
 import 'hourscap_screen.dart';

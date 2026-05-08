@@ -50,6 +50,7 @@ flutter:
     - assets/char_map.txt
     - assets/csulb.geojson
     - assets/bathrooms.txt
+    - assets/images/
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev

@@ -1,25 +1,21 @@
-// TIFF
-
-// dorm_details.dart
-// Expanded detail view for a single dorm event.
-// Matches the screenshot layout: title, date/location/time row,
-// description card, links card, bottom nav.
+// eb_details.dart
+// Expanded detail view for a single Event Board event.
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/models/dorm_event.dart';
-import 'package:beach_circle_flutter/community_goods/dorm_life/services/interested_dorm_service.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/models/eb_event.dart';
+import 'package:beach_circle_flutter/community_goods/event_board/services/interested_eb_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/report_issue_pg.dart';
 
-class DormDetailsPage extends StatelessWidget {
-  const DormDetailsPage({
+class EBDetailsPage extends StatelessWidget {
+  const EBDetailsPage({
     super.key,
     required this.event,
     required this.isInterested,
     required this.onInterestedTap,
   });
 
-  final DormEvent event;
+  final EBEvent event;
   final bool isInterested;
   final VoidCallback onInterestedTap;
 
@@ -28,7 +24,6 @@ class DormDetailsPage extends StatelessWidget {
   static const Color kCardGrey = Color(0xFFE8E8E8);
   static const Color kPurple   = Color(0xFF3B3599);
 
-  // FORMATTED DATE LEBEL:  "Oct. 26"
   String get _dateLabel {
     const months = [
       'Jan.','Feb.','Mar.','Apr.','May','Jun.',
@@ -37,7 +32,6 @@ class DormDetailsPage extends StatelessWidget {
     return '${months[event.date.month - 1]} ${event.date.day}';
   }
 
-  // OPEN ANY URL
   Future<void> _openLink(BuildContext context, String raw) async {
     final trimmed = raw.trim();
     final formatted = (trimmed.startsWith('http://') ||
@@ -63,7 +57,6 @@ class DormDetailsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // YELLOW APP BAR
       appBar: AppBar(
         backgroundColor: kYellow,
         elevation: 0,
@@ -88,7 +81,7 @@ class DormDetailsPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Dorm Life',
+                        'Event Board',
                         style: TextStyle(
                             color: Color(0xFF555555), fontSize: 15),
                       ),
@@ -100,7 +93,6 @@ class DormDetailsPage extends StatelessWidget {
             ),
           ],
         ),
-        // STAR / INTERESTED
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -116,14 +108,13 @@ class DormDetailsPage extends StatelessWidget {
         ],
       ),
 
-      // BODY
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
-            // EVENT TITLE
+            // ── Event title ──────────────────────────────────────────────
             Text(
               event.title,
               textAlign: TextAlign.center,
@@ -137,17 +128,17 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // EVENT IMAGE
-          if (event.imageUrl != null && event.imageUrl!.isNotEmpty) ...[
-            Image.network(
-              event.imageUrl!,
-              width: double.infinity,
-              fit: BoxFit.contain,
-            ),
+            // ── Event image ──────────────────────────────────────────────
+            if (event.imageUrl != null && event.imageUrl!.isNotEmpty) ...[
+              Image.network(
+                event.imageUrl!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 24),
+            ],
 
-            const SizedBox(height: 24),
-],
-            // DATE / LOC / TIME CARD
+            // ── Date / Location / Time card ──────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
@@ -159,21 +150,18 @@ class DormDetailsPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // DATE
                   _InfoCell(
                     icon: Icons.calendar_month_outlined,
                     label: 'Date',
                     value: _dateLabel,
                   ),
-                  _Divider(),
-                  // LOC
+                  _EBDivider(),
                   _InfoCell(
                     icon: Icons.location_on_outlined,
                     label: 'Location',
                     value: event.location,
                   ),
-                  _Divider(),
-                  // TIME
+                  _EBDivider(),
                   _InfoCell(
                     icon: Icons.access_time_outlined,
                     label: 'Time',
@@ -185,7 +173,7 @@ class DormDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // DECORATION CARD
+            // ── Description card ─────────────────────────────────────────
             if (hasDescription)
               _SectionCard(
                 title: 'Description',
@@ -202,7 +190,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (hasDescription) const SizedBox(height: 20),
 
-            // LINKS CARD
+            // ── Links card ───────────────────────────────────────────────
             if (hasLinks)
               _SectionCard(
                 title: 'Links',
@@ -222,12 +210,12 @@ class DormDetailsPage extends StatelessWidget {
 
             if (hasLinks) const SizedBox(height: 20),
 
-            // ROOM INFO
+            // ── Room info ────────────────────────────────────────────────
             if (event.roomNumber.isNotEmpty)
               _SectionCard(
                 title: 'Room',
                 child: Text(
-                  '${event.buildingCode} – Room ${event.roomNumber}',
+                  '${event.buildingCode} – ${event.roomNumber}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -238,7 +226,7 @@ class DormDetailsPage extends StatelessWidget {
 
             if (event.roomNumber.isNotEmpty) const SizedBox(height: 20),
 
-            // REFPORT BUTTON
+            // ── Report button ────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -248,15 +236,14 @@ class DormDetailsPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => ReportIssuePage(
                         targetId: event.id,
-                        reportedUserId: event.id, // swap with ownerId if added
+                        reportedUserId: event.id,
                         targetType: 'event',
                       ),
                     ),
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                      color: Color(0xFFD6D6D6), width: 1.3),
+                  side: const BorderSide(color: Color(0xFFD6D6D6), width: 1.3),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -277,28 +264,11 @@ class DormDetailsPage extends StatelessWidget {
         ),
       ),
 
-      // BOTTOM NAV
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFD8D8D8))),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: kPurple, size: 28),
-            Icon(Icons.location_on_outlined, color: kPurple, size: 28),
-            Icon(Icons.layers_outlined, color: kPurple, size: 28),
-            Icon(Icons.settings_outlined, color: kPurple, size: 28),
-          ],
-        ),
-      ),
     );
   }
 }
 
-// INFO CELL
+// ── Info cell ─────────────────────────────────────────────────────────────────
 
 class _InfoCell extends StatelessWidget {
   final IconData icon;
@@ -346,9 +316,7 @@ class _InfoCell extends StatelessWidget {
   }
 }
 
-// VERTICAL DIVIDER BTWN CARD
-
-class _Divider extends StatelessWidget {
+class _EBDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -359,8 +327,6 @@ class _Divider extends StatelessWidget {
     );
   }
 }
-
-// SECTION CARD
 
 class _SectionCard extends StatelessWidget {
   final String title;
