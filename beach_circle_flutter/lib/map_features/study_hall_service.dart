@@ -1,0 +1,102 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// services needed for study hall to function properly
+class StudyHallService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // fetch building from firebase
+  Future<List<Map<String, String>>> fetchBuildings() async {
+    final snapshot =
+        await _db
+            .collection('buildings')
+            .where('feature_type', isEqualTo: 'building')
+            .get();
+    // building fields needed
+    final buildings =
+        snapshot.docs
+            .map((doc) {
+              final data = doc.data();
+
+              return {
+                'id': doc.id,
+                'code': (data['abbrev'] ?? '').toString().trim(),
+                'name': (data['name'] ?? '').toString().trim(),
+              };
+            }) // building format
+            .where((building) {
+              final code = (building['code'] ?? '').toLowerCase().trim();
+              final name = (building['name'] ?? '').toLowerCase().trim();
+
+              final isExcludedCode = code == 'g12' || code == 'g14';
+              // exclude parking lots + fields
+              final isExcludedName =
+                  name == 'g12' ||
+                  name == 'g14' ||
+                  name.contains('sand courts') ||
+                  name.contains('softball complex') ||
+                  name.contains('tennis center') ||
+                  name.contains('soccer and softball clubhouse') ||
+                  name.contains('parking') ||
+                  name.contains('structure') ||
+                  name.contains('lot') ||
+                  name.contains('field') ||
+                  name.contains('fields') ||
+                  name.contains('stadium') ||
+                  name.contains('track') ||
+                  name.contains('diamond');
+
+              return !isExcludedCode && !isExcludedName;
+            })
+            .toList();
+    // sort building alphabetically
+    buildings.sort((a, b) {
+      final aName = (a['name'] ?? '').toLowerCase();
+      final bName = (b['name'] ?? '').toLowerCase();
+      return aName.compareTo(bName);
+    });
+
+    return buildings;
+  }
+
+  // fields required to make study hall post
+  Future<void> addStudyHall({
+    required String buildingId,
+    required String buildingCode,
+    required String buildingName,
+    required String roomNumber,
+    required String startTime,
+    required String endTime,
+    required int seatCapacity,
+    required List<String> amenities,
+  }) async {
+    final user = _auth.currentUser;
+    // user must be logged in to make post
+    if (user == null) {
+      throw Exception('User must be signed in.');
+    }
+
+    final buildingDoc = await _db.collection('buildings').doc(buildingId).get();
+    // if building doesnt exist
+    if (!buildingDoc.exists) {
+      throw Exception('Selected building was not found.');
+    }
+
+    final buildingData = buildingDoc.data() ?? {};
+    // add to firebase
+    await _db.collection('study_halls').add({
+      'buildingId': buildingId,
+      'buildingAbbrev': buildingCode,
+      'buildingName': buildingName,
+      'coords': buildingData['coords'],
+      'roomNumber': roomNumber,
+      'startTime': startTime,
+      'endTime': endTime,
+      'seatCapacity': seatCapacity,
+      'amenities': amenities,
+      'status': 'approved',
+      'createdBy': user.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+}

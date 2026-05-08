@@ -1,4 +1,4 @@
-import 'package:beach_circle_flutter/map_screen.dart';
+import 'package:beach_circle_flutter/map/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notification_test_screen.dart';
@@ -28,11 +28,11 @@ import 'package:beach_circle_flutter/weather/models/weather_model.dart';
 import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 
 // Forum imports
-import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'package:beach_circle_flutter/moderation/moderation_view_screen.dart';
 
 import 'screens/resources_page.dart';
 
@@ -46,6 +46,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   String _homePage = "home";
+  String? _mapFilter;
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
@@ -54,6 +55,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
+
+  // NEW FROM GISELLE 4: ADDING MODERATION VIEW
+  static const List<String> adminEmails = [
+    'teef@gmail.com',
+    'reytest@gmail.com',
+    'giselle1@gmail.com',
+    'nguyentheresa204@gmail.com',
+    'josuealfaro8441@gmail.com',
+  ];
+
+  bool get _isModerator {
+    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+    return email != null &&
+        adminEmails.map((e) => e.toLowerCase()).contains(email);
+  }
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -117,7 +133,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return stateMap[stateName] ?? stateName;
   }
 
-  // ----------  dashboard tiles  ----------
 
   Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
@@ -127,7 +142,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          // Fixed deprecation warning
           hoverColor: Colors.blue.withValues(alpha: 0.25),
           splashColor: Colors.blue.withValues(alpha: 0.25),
           onTap: onTap,
@@ -185,7 +199,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // CSULB Image
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
@@ -207,7 +220,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // -------- DASHBOARD TILES --------------
           const Text(
             'Map Features',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -216,23 +228,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           _scrollingRow([
             _tileOpen(Icons.local_pizza, 'Food Alert', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "food";
+              });
             }),
             _tileOpen(Icons.directions_car, 'Parking', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "parking";
+              });
             }),
             _tileOpen(Icons.power, 'Outlets', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "charging";
+              });
             }),
             // Bathroom Tile
             _tileOpen(Icons.family_restroom, 'Bathrooms', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "restroom";
+              });
             }),
             // Navigator.push(
             //   context,
             //   MaterialPageRoute(builder: (_) => const BathroomFinder()),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "study";
+              });
             }),
           ]),
 
@@ -385,7 +412,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return _dashboardBody(context);
       }
     }
-    if (_currentIndex == 1) return const MapScreen();
+
+    if (_currentIndex == 1 && (_mapFilter != null)) {
+      return MapScreen(initialFilter: _mapFilter);
+    } else if (_currentIndex == 1) {
+      return MapScreen();
+    }
+
     if (_currentIndex == 2) return _buildForumTab();
     if (_currentIndex == 3) return const ResourcesPage();
     return const SettingsScreen();
@@ -405,6 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
@@ -461,6 +495,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentIndex = index;
             if (index == 0) _homePage = "home";
+            if (index != 1) _mapFilter = null;
           });
         },
         items: const [
