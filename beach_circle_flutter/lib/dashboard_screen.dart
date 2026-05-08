@@ -7,7 +7,6 @@ import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';
 import 'settings_screen.dart';
-import 'bathroom_finder.dart';
 import 'map/map_screen.dart';
 
 // Weather packages
@@ -118,7 +117,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          // Fixed deprecation warning
           hoverColor: Colors.blue.withValues(alpha: 0.25),
           splashColor: Colors.blue.withValues(alpha: 0.25),
           onTap: onTap,
@@ -428,10 +426,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
           if (user?.email !=
-                  null && // NEW FROM GISELLE ---> ADDED MODS VIEW SCREEN
+                  null && 
               adminEmails.contains(
                 user!.email,
-              )) // Checks current user is a moderator
+              )) 
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
               onPressed: () {
@@ -441,7 +439,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     builder:
                         (_) => ModerationViewScreen(
                           forumService: _forumService,
-                        ), // to view Moderator only screen
+                        ), 
                   ),
                 );
               },
