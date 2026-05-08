@@ -188,6 +188,9 @@ class ForumService {
         // gathers who it was created by
         'createdFromRequestId': requestId,
         if (data['createdBy'] != null) 'createdBy': data['createdBy'],
+        if (data['imageUrl'] != null &&
+            data['imageUrl'].toString().trim().isNotEmpty)
+          'imageUrl': data['imageUrl'],
       });
 
       // Mark request as approved + processed

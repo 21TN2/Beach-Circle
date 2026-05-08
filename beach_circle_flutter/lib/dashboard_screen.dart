@@ -15,6 +15,8 @@ import 'map/map_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:beach_circle_flutter/weather/models/weather_model.dart';
 import 'package:beach_circle_flutter/weather/services/weather_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 // Forum imports
 import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
@@ -23,6 +25,7 @@ import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.da
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+
 import 'screens/resources_page.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -39,12 +42,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _dormNavKey = GlobalKey<NavigatorState>();
+
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
   }
 
   // --- HELPER METHODS ---
+
+  //State Abbreviation for Weather Location
+  String _getStateAbbreviation(String stateName) {
+    const stateMap = {
+      "Alabama": "AL",
+      "Alaska": "AK",
+      "Arizona": "AZ",
+      "Arkansas": "AR",
+      "California": "CA",
+      "Colorado": "CO",
+      "Connecticut": "CT",
+      "Delaware": "DE",
+      "Florida": "FL",
+      "Georgia": "GA",
+      "Hawaii": "HI",
+      "Idaho": "ID",
+      "Illinois": "IL",
+      "Indiana": "IN",
+      "Iowa": "IA",
+      "Kansas": "KS",
+      "Kentucky": "KY",
+      "Louisiana": "LA",
+      "Maine": "ME",
+      "Maryland": "MD",
+      "Massachusetts": "MA",
+      "Michigan": "MI",
+      "Minnesota": "MN",
+      "Mississippi": "MS",
+      "Missouri": "MO",
+      "Montana": "MT",
+      "Nebraska": "NE",
+      "Nevada": "NV",
+      "New Hampshire": "NH",
+      "New Jersey": "NJ",
+      "New Mexico": "NM",
+      "New York": "NY",
+      "North Carolina": "NC",
+      "North Dakota": "ND",
+      "Ohio": "OH",
+      "Oklahoma": "OK",
+      "Oregon": "OR",
+      "Pennsylvania": "PA",
+      "Rhode Island": "RI",
+      "South Carolina": "SC",
+      "South Dakota": "SD",
+      "Tennessee": "TN",
+      "Texas": "TX",
+      "Utah": "UT",
+      "Vermont": "VT",
+      "Virginia": "VA",
+      "Washington": "WA",
+      "West Virginia": "WV",
+      "Wisconsin": "WI",
+      "Wyoming": "WY",
+    };
+
+    return stateMap[stateName] ?? stateName;
+  }
+
+  // ----------  dashboard tiles  ----------
   Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
@@ -200,6 +267,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() {
                 _currentIndex = 0;
                 _homePage = "dormlife";
+                _dormNavKey.currentState?.popUntil((r) => r.isFirst);
               });
             }),
           ]),
@@ -289,13 +357,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildDormTab() {
+    return Navigator(
+      key: _dormNavKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(builder: (_) => const DormlifeScreen());
+      },
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
           return const EventsScreen();
         case "dormlife":
-          return const DormlifeScreen();
+          return _buildDormTab();
         case "hourscap":
           return const HourscapScreen();
         case "feedback":
@@ -403,146 +480,266 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _weatherService = WeatherServices(
     'd947beb08a254433a6949b94bf6dccc1',
   ); //API key
-  Weather? _weather;
+
+  Weather? _csulbWeather; //Weather at CSULb
+  Weather? _weather; //User current location weather
+
+  bool _isLoading = true; //Whether user accepts permission or denies
+  bool _locationDenied = false; //Location permission denied 
+
+  String? _currentLocationName;
 
   double convertToFahrenheit(double celsius) =>
       (celsius * 9 / 5) + 32; //Celcuis to Fahrenheit
 
   //Displays city name and weather condition
   Future<void> _fetchWeather() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final cityName = await _weatherService.getCurrentCity();
-      final weather = await _weatherService.getWeather(cityName);
+      // CSULB Weather
+      final csulb = await _weatherService.getWeatherByCoords(
+        33.7838,
+        -118.1141,
+      );
+      //Permission check
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        setState(() {
+          _csulbWeather = csulb;
+          _locationDenied = true;
+          _isLoading = false;
+        });
+
+        return;
+      }
+
+      // Current location of the User
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      //Find City & State of the User
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      String city = placemarks[0].locality ?? "";
+      String state = placemarks[0].administrativeArea ?? "";
+
+      String stateAbbreviation = _getStateAbbreviation(state); //Ex. California -> CA
+
+      final current = await _weatherService.getWeatherByCoords(
+        position.latitude,
+        position.longitude,
+      );
+
       if (!mounted) return;
-      setState(() => _weather = weather);
-    }
-    //raise error condition if issues occur
-    catch (e) {
+
+    //Weather Widget Display 
+      setState(() {
+        _csulbWeather = csulb;
+        _weather = current;
+        _currentLocationName = "$city, $stateAbbreviation"; // 👈 SAVE IT
+        _locationDenied = false;
+        _isLoading = false;
+      });
+    } catch (e) {
       print("Weather error: $e");
     }
   }
 
+  //State of the Weather
   @override
   void initState() {
     super.initState();
     _fetchWeather();
   }
 
-  //Displays weather background
-  List<Color> _getBackgroundColors() {
-    if (_weather == null) {
-      return [Colors.lightBlue.shade400, Colors.orange.shade300];
-    }
+  //Weather Widget Background
+  List<Color> _getBackgroundColorsFor(Weather weather) {
+    final condition = weather.mainCondition.toLowerCase();
+    final isNight = weather.icon.contains("n");
 
-    final condition = _weather!.mainCondition.toLowerCase();
-    final isNight = _weather!.icon.contains("n");
-
+    //Weather Conditions(Cloudy, Sunny, Rainy, etc.)
     if (condition == "clear") {
       return isNight
           ? [Colors.indigo.shade900, Colors.black]
-          : [Colors.orange.shade300, Colors.lightBlue.shade400];
+          : [Colors.orange, Colors.lightBlue];
     }
 
     if (condition == "clouds") {
       return isNight
           ? [Colors.blueGrey.shade900, Colors.black54]
-          : [Colors.blueGrey.shade400, Colors.grey.shade300];
+          : [Colors.blueGrey, Colors.grey];
     }
 
-    if (condition == "rain" || condition == "drizzle") {
-      return [Colors.indigo.shade700, Colors.blueGrey.shade500];
+    if (condition == "rain") {
+      return [Colors.indigo, Colors.blueGrey];
     }
 
     if (condition == "thunderstorm") {
-      return [Colors.deepPurple.shade800, Colors.black];
+      return [Colors.deepPurple, Colors.black];
     }
 
     if (condition == "snow") {
-      return [Colors.lightBlueAccent.shade100, Colors.white];
+      return [Colors.lightBlueAccent, Colors.white];
     }
 
-    if (condition == "mist" || condition == "fog" || condition == "haze") {
+    if (condition == "mist" || condition == "fog") {
       return [Colors.grey.shade600, Colors.grey.shade400];
     }
 
-    return [Colors.lightBlue, Colors.orange];
+    return [Colors.blue, Colors.lightBlue];
   }
 
-  //Displays weather icons to match weather conditions
-  String _getWeatherAnimation() {
-    if (_weather == null) return "assets/weather/sunny.json";
+  //Weather icons match current weather conditions(Ex. If rainy weather show rainy icon)
+  String _getWeatherAnimationFor(Weather weather) {
+    final condition = weather.mainCondition.toLowerCase();
+    final isNight = weather.icon.contains("n");
 
-    final condition = _weather!.mainCondition.toLowerCase();
-    final isNight = _weather!.icon.contains("n");
-
-    //Clear day or clear night
     if (condition == "clear") {
       return isNight
-          ? "assets/weather/night.json"
+          ? "assets/weather/night.json" //Json file is the weather icons 
           : "assets/weather/sunny.json";
     }
 
-    //Cloudy
     if (condition == "clouds") {
       return isNight
           ? "assets/weather/night.json"
           : "assets/weather/cloudy.json";
     }
 
-    //Rainy or drizzling
     if (condition == "rain" || condition == "drizzle") {
       return "assets/weather/rain.json";
     }
 
-    //Thunderstorm
     if (condition == "thunderstorm") {
       return "assets/weather/storm.json";
     }
 
-    //Snow
     if (condition == "snow") {
       return "assets/weather/snowy.json";
     }
 
-    //Misty/foggy
-    if (condition == "mist" ||
-        condition == "smoke" ||
-        condition == "haze" ||
-        condition == "dust" ||
-        condition == "fog") {
+    if (condition == "mist" || condition == "fog") {
       return "assets/weather/mist.json";
     }
 
     return "assets/weather/sunny.json";
   }
 
-  //Display weather information onto the dashboard
+  //Weather Widget Title
   Widget _weatherHeader(String name) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 210,
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+
+            //CSULB Campus title text
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: _buildWeatherCard(
+                  weather: _csulbWeather,
+                  title: "CSULB Campus",
+                  name: name,
+                ),
+              ),
+
+              //Current location text
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: _buildWeatherCard(
+                  weather: _weather,
+                  title: "Current Location",
+                  name: name,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        //Title Card Size
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(2, (index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 8,
+              width: _currentPage == index ? 16 : 8,
+              decoration: BoxDecoration(
+                color:
+                    _currentPage == index
+                        ? Colors.blueAccent
+                        : Colors.grey.shade400,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  //Weather Card Widget Implementations
+  Widget _buildWeatherCard({
+    required Weather? weather,
+    required String title,
+    required String name,
+  }) {
+
+    //Implementing Background onto Widget
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: _getBackgroundColors(),
+          colors:
+              weather == null
+                  ? [Colors.blue, Colors.lightBlue]
+                  : _getBackgroundColorsFor(weather),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
       ),
+
+      //If location permission is allowed
       child:
-          _weather == null
-              ? const SizedBox(
-                height: 120,
-                child: Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              )
+          weather == null
+              ? _isLoading
+                  ? const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  )
+                  : (title == "Current Location" && _locationDenied)
+                  ? _buildLocationRetry() 
+                  : const SizedBox()
               : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // LEFT TEXT
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
+                    //Welcoming User Texts
                     children: [
                       Text(
                         "Hello, $name",
@@ -552,14 +749,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
-                        _weather!.cityName,
+                        title,
                         style: const TextStyle(color: Colors.white70),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 6),
+
+                      //Title Card Implemented on Widget
                       Text(
-                        "${_weather!.temperature.round()}°C  •  ${convertToFahrenheit(_weather!.temperature).round()}°F",
+                        title == "CSULB Campus"
+                            ? "Long Beach, CA"
+                            : _currentLocationName ?? weather.cityName,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      //Current Temperature
+                      Text(
+                        "${weather.temperature.round()}°C • "
+                        "${convertToFahrenheit(weather.temperature).round()}°F",
                         style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -568,21 +778,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _weather!.mainCondition,
+                        weather.mainCondition,
                         style: const TextStyle(color: Colors.white70),
                       ),
                     ],
                   ),
 
-                  // RIGHT ANIMATION
+                  //Weather icon 
                   Lottie.asset(
-                    _getWeatherAnimation(),
-                    width: 110,
-                    height: 110,
-                    fit: BoxFit.contain,
+                    _getWeatherAnimationFor(weather),
+                    width: 95,
+                    height: 95,
                   ),
                 ],
               ),
+    );
+  }
+
+  //Location permission Denied
+  void _showLocationErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+
+          //Display message requiring location permissions
+          title: const Text("Location Access Required"),
+          content: const Text(
+            "Please enable location access to view current weather.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //If location permission is not accepted or denied(Allow Retry)
+  Widget _buildLocationRetry() {
+    return GestureDetector(
+      onTap: () async {
+        LocationPermission permission = await Geolocator.requestPermission(); //Permission Request
+
+        if (permission == LocationPermission.always || 
+            permission == LocationPermission.whileInUse) {
+          _fetchWeather();
+        }
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.location_off, size: 50, color: Colors.white),
+          SizedBox(height: 12),
+
+          //If location is not accepted, prompted message
+          Text(
+            "Location Access Needed",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 6),
+
+          //Allow users to tap to load permission acceess
+          Text(
+            "Tap to allow location",
+            style: TextStyle(color: Colors.white70),
+          ),
+        ],
+      ),
     );
   }
 }

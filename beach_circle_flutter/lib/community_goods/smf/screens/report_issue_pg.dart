@@ -1,4 +1,4 @@
-// This is where users can report an issue about a post
+// This is where users can report an issue
 // created by Giselle -- for student review so i dont forget
 
 import 'dart:io';
@@ -13,12 +13,14 @@ import '../service/moderation_service.dart';
 class ReportIssuePage extends StatefulWidget {
   const ReportIssuePage({
     super.key,
-    required this.postId,
-    required this.postAuthorId,
+    required this.targetId,
+    required this.reportedUserId,
+    required this.targetType,
   });
 
-  final String postId;
-  final String postAuthorId;
+  final String targetId;
+  final String reportedUserId;
+  final String targetType;
 
   @override
   State<ReportIssuePage> createState() => _ReportIssuePageState();
@@ -128,9 +130,10 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
         imageUrl = await CloudinaryService.uploadImage(_selectedImage!);
       }
 
-      await _moderationService.reportPost(
-        postId: widget.postId,
-        postAuthorId: widget.postAuthorId,
+      await _moderationService.reportContent(
+        targetId: widget.targetId,
+        reportedUserId: widget.reportedUserId,
+        targetType: widget.targetType,
         reason: _issueType!,
         details: _descController.text.trim(),
         imageUrl: imageUrl,

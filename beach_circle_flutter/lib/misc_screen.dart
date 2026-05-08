@@ -150,6 +150,8 @@ class _MiscScreenState extends State<MiscScreen> {
     final category = ForumCategory(
       id: cat.id,
       title: cat.title.replaceAll('\n', ' '),
+      imagePath: cat.imagePath,
+      imageUrl: cat.imageUrl,
     );
 
     if (widget.onOpenCategory != null) {
@@ -192,6 +194,7 @@ class _MiscScreenState extends State<MiscScreen> {
         return _CategoryCard(
           title: cat.title,
           imagePath: cat.imagePath,
+          imageUrl: cat.imageUrl,
           isStarred: isStarred,
           onStarTap: () => _toggleStar(cat.id),
           onTap: () => _openCategory(cat),
@@ -290,8 +293,8 @@ class _MiscScreenState extends State<MiscScreen> {
                           _CategoryItem(
                             id: doc.id,
                             title: title,
-                            // Reuse an existing asset for custom approved categories
                             imagePath: "assets/forum/community_chat.jpg",
+                            imageUrl: (data['imageUrl'] ?? '').toString(),
                           ),
                         );
                       }
@@ -351,6 +354,7 @@ class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.title,
     required this.imagePath,
+    this.imageUrl,
     required this.isStarred,
     required this.onStarTap,
     required this.onTap,
@@ -358,24 +362,27 @@ class _CategoryCard extends StatelessWidget {
 
   final String title;
   final String imagePath;
+  final String? imageUrl;
   final bool isStarred;
   final VoidCallback onStarTap;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final ImageProvider imageProvider =
+        (imageUrl != null && imageUrl!.isNotEmpty)
+            ? NetworkImage(imageUrl!)
+            : AssetImage(imagePath);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Container(color: Colors.grey),
-            ),
+            child: Image(image: imageProvider, fit: BoxFit.cover),
           ),
+
+          // DARK OVERLAY FIXED
           Positioned.fill(
             child: Container(color: Colors.black.withValues(alpha: 0.45)),
           ),
@@ -405,6 +412,7 @@ class _CategoryCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -417,10 +425,12 @@ class _CategoryItem {
   final String id;
   final String title;
   final String imagePath;
+  final String? imageUrl;
 
   const _CategoryItem({
     required this.id,
     required this.title,
     required this.imagePath,
+    this.imageUrl,
   });
 }

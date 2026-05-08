@@ -9,6 +9,29 @@ class ModerationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  Future<void> reportContent({
+    required String targetId,
+    required String reportedUserId,
+    required String targetType,
+    required String reason,
+    required String details,
+    String? imageUrl,
+  }) async {
+    final uid = _auth.currentUser!.uid;
+
+    await _db.collection('reports').add({
+      'targetType': targetType,
+      'targetId': targetId,
+      'reportedUserId': reportedUserId,
+      'reporterUserId': uid,
+      'reason': reason,
+      'details': details,
+      'imageUrl': imageUrl,
+      'status': 'open',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   // fields needed for firebase
   Future<void> reportPost({
     required String postId,
@@ -17,19 +40,13 @@ class ModerationService {
     required String details,
     String? imageUrl,
   }) async {
-    final uid = _auth.currentUser!.uid;
-
-    await _db.collection('reports').add({
-      'targetType':
-          'post', // field collections needed to store + update reports
-      'postId': postId,
-      'reportedUserId': postAuthorId,
-      'reporterUserId': uid,
-      'reason': reason,
-      'details': details,
-      'imageUrl': imageUrl,
-      'status': 'open',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    await reportContent(
+      targetId: postId,
+      reportedUserId: postAuthorId,
+      targetType: 'post',
+      reason: reason,
+      details: details,
+      imageUrl: imageUrl,
+    );
   }
 }
