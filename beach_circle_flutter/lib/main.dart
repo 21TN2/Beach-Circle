@@ -57,7 +57,7 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  await ModerationHelper.loadBadWords();
+  await ModerationHelper.loadBadWords();await ModerationHelper.loadBadWords();
   
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -124,3 +124,52 @@ class _PostLoginInitState extends State<PostLoginInit> {
 }
 
 
+// import 'package:flutter/material.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/foundation.dart';
+// import 'auth_screen.dart';
+// import 'signup_screen.dart';
+// import 'dashboard_screen.dart';
+// import 'screens/resources_page.dart';
+
+// const bool showResourcesOnly = true;
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   if (!showResourcesOnly) {
+//     if (kIsWeb) {
+//       await Firebase.initializeApp(
+//         //insert stuff here
+//       );
+//     } else {
+//       // ANDROID/iOS: Use the file (google-services.json) automatically
+//       await Firebase.initializeApp();
+//     }
+//   }
+
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       home:
+//           showResourcesOnly
+//               ? const ResourcesPage()
+//               : StreamBuilder<User?>(
+//                 stream: FirebaseAuth.instance.authStateChanges(),
+//                 builder: (context, snapshot) {
+//                   if (snapshot.hasData) {
+//                     return const DashboardScreen();
+//                   }
+//                   //Otherwise, show Auth Screen
+//                   return const AuthScreen();
+//                 },
+//               ),
+//     );
+//   }
+// }

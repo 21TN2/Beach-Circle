@@ -6,9 +6,9 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'auth_screen.dart'; 
+import 'auth_screen.dart';
 
-import 'email_config.dart'; 
+import 'email_config.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -21,7 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final _emailController = TextEditingController();
   final _passwordController1 = TextEditingController();
-  final _passwordController2 = TextEditingController(); 
+  final _passwordController2 = TextEditingController();
 
   bool _isLoading = false;
 
@@ -38,12 +38,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // --- EmailJS Logic ---
   Future<bool> _sendVerificationEmail(String email, String code) async {
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-    
+   
     try {
       final response = await http.post(
         url,
         headers: {
-          'origin': 'http://localhost', 
+          'origin': 'http://localhost',
           'Content-Type': 'application/json',
         },
         body: json.encode({
@@ -111,10 +111,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onPressed: isVerifying ? null : () async {
                   if (codeController.text.trim() == sentCode) {
                     setStateDialog(() => isVerifying = true);
-                    
+                   
                     // Code matches! NOW we actually create the account.
                     await _finalizeUserCreation(email, password);
-                    
+                   
                     if (mounted) {
                       Navigator.pop(context); // Close dialog
                       // Assuming AuthScreen handles routing to the main app once logged in
@@ -130,7 +130,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
-                child: isVerifying 
+                child: isVerifying
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                   : const Text('Verify & Create Account'),
               ),
@@ -154,12 +154,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       // 2. Prepare Data for Database
       final data = {
-        'name': email.split('@')[0], 
+        'name': email.split('@')[0],
         'email': email,
         'major': selectedMajor ?? 'Undeclared',
         'year': selectedYear ?? 'Freshman',
-        'interests': selectedInterest ?? '', 
-        'bio': '', 
+        'interests': selectedInterest ?? '',
+        'bio': '',
         'is_verified': true, // We know they are verified because they passed the check!
         'created_at': FieldValue.serverTimestamp(),
       };
@@ -188,7 +188,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final email = _emailController.text.trim();
     final password1 = _passwordController1.text.trim();
     final password2 = _passwordController2.text.trim();  
-    
+   
     bool isValidEmail(String email) {
       return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
     }
@@ -203,20 +203,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // --- NEW CHECK: Does the account already exist? ---
     setState(() => _isLoading = true);
+
+    // --- NEW FIREBASE CHECK: Attempt to create a dummy credential to see if email exists ---
     try {
-      // This will throw an error if the email is already in use
-      final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-      if (methods.isNotEmpty) {
-        setState(() => _isLoading = false);
+      // We attempt to create the account right now. 
+      // If it works, we immediately delete it (because we need them to verify email first).
+      // If it fails with 'email-already-in-use', we know it's taken!
+      UserCredential tempUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password1,
+      );
+      // It succeeded, meaning the email is free! Delete the temporary auth record.
+      await tempUser.user!.delete();
+
+    } on FirebaseAuthException catch (e) {
+      setState(() => _isLoading = false);
+      if (e.code == 'email-already-in-use') {
         _showErrorDialog('An account already exists for that email.');
-        return;
+      } else if (e.code == 'weak-password') {
+        _showErrorDialog('The password provided is too weak.');
+      } else {
+        _showErrorDialog('Validation Error: ${e.message}');
       }
+      return; // Stop the flow!
     } catch (e) {
-       // Ignore fetch errors, let creation attempt handle it later
+      setState(() => _isLoading = false);
+      _showErrorDialog('An unknown error occurred.');
+      return;
     }
-    
+   
     // 1. Generate a random 6 digit code
     String generatedCode = (Random().nextInt(900000) + 100000).toString();
 
@@ -289,7 +305,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return inputBox(
       child: DropdownButtonFormField<String>(
         initialValue: selectedYear,
-        isExpanded: true, 
+        isExpanded: true,
         decoration: const InputDecoration(
           hintText: 'Year',
           border: InputBorder.none,
@@ -297,7 +313,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         items: years
             .map((y) => DropdownMenuItem(
                   value: y,
-                  child: Text(y, overflow: TextOverflow.ellipsis), 
+                  child: Text(y, overflow: TextOverflow.ellipsis),
                 ))
             .toList(),
         onChanged: (val) => setState(() => selectedYear = val),
@@ -330,17 +346,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget profilePicField() {
     return inputBox(
       child: InkWell(
-        onTap: _pickProfileImage, 
+        onTap: _pickProfileImage,
         child: SizedBox(
-          height: 56, 
+          height: 56,
           child: Row(
             children: [
               CircleAvatar(
-                radius: 16, 
+                radius: 16,
                 backgroundColor: Colors.grey.shade400,
                 backgroundImage:
                     _profileImage != null ? FileImage(_profileImage!) : null,
-                child: _profileImage == null 
+                child: _profileImage == null
                     ? const Icon(Icons.person, color: Colors.white, size: 20)
                     : null,
               ),
@@ -351,12 +367,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ? 'Upload Pic'
                       : 'Change Pic',
                   style: TextStyle(
-                    fontSize: 13, 
+                    fontSize: 13,
                     color: _profileImage == null
                         ? Colors.grey.shade700
                         : Colors.black,
                   ),
-                  overflow: TextOverflow.ellipsis, 
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Icon(Icons.upload, size: 20),
@@ -383,18 +399,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 20, 
-        backgroundColor: Colors.white, 
+        toolbarHeight: 20,
+        backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
       ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: const Color(0xFFEFCA08), 
+        color: const Color(0xFFEFCA08),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center, 
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 8.0, top: 16.0),
@@ -406,14 +422,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 10), 
+             
+              const SizedBox(height: 10),
               Container(
-                width: screenWidth * 0.85, 
+                width: screenWidth * 0.85,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16), 
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
@@ -488,7 +504,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
 
                     const SizedBox(height: 30),
-                    
+                   
                     Row(
                       children: [
                         Expanded(child: majorField()),
@@ -504,7 +520,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Expanded(child: profilePicField()),
                       ],
                     ),
-                    
+                   
                     const SizedBox(height: 40),
                     //signup button
                     SizedBox(
@@ -551,7 +567,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 40), 
+              const SizedBox(height: 40),
             ],
           ),
         ),
