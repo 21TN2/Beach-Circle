@@ -12,6 +12,7 @@
         "file_picker",
         "firebase_auth",
         "firebase_core",
+        "firebase_messaging",
         "firebase_storage",
         "flutter",
         "flutter_activity_recognition",
@@ -109,19 +110,32 @@
       ]
     },
     {
+      "name": "firebase_messaging",
+      "version": "16.2.0",
+      "dependencies": [
+        "firebase_core",
+        "firebase_core_platform_interface",
+        "firebase_messaging_platform_interface",
+        "firebase_messaging_web",
+        "flutter",
+        "meta"
+      ]
+    },
+    {
       "name": "firebase_storage",
-      "version": "12.4.10",
+      "version": "13.3.0",
       "dependencies": [
         "firebase_core",
         "firebase_core_platform_interface",
         "firebase_storage_platform_interface",
         "firebase_storage_web",
-        "flutter"
+        "flutter",
+        "mime"
       ]
     },
     {
       "name": "cloud_firestore",
-      "version": "5.6.12",
+      "version": "6.3.0",
       "dependencies": [
         "cloud_firestore_platform_interface",
         "cloud_firestore_web",
@@ -134,7 +148,7 @@
     },
     {
       "name": "firebase_auth",
-      "version": "5.7.0",
+      "version": "6.4.0",
       "dependencies": [
         "firebase_auth_platform_interface",
         "firebase_auth_web",
@@ -146,7 +160,7 @@
     },
     {
       "name": "firebase_core",
-      "version": "3.15.2",
+      "version": "4.7.0",
       "dependencies": [
         "firebase_core_platform_interface",
         "firebase_core_web",
@@ -156,7 +170,7 @@
     },
     {
       "name": "font_awesome_flutter",
-      "version": "10.12.0",
+      "version": "11.0.0",
       "dependencies": [
         "flutter"
       ]
@@ -199,7 +213,7 @@
     },
     {
       "name": "google_mlkit_image_labeling",
-      "version": "0.13.0",
+      "version": "0.14.2",
       "dependencies": [
         "flutter",
         "google_mlkit_commons"
@@ -218,9 +232,10 @@
     },
     {
       "name": "file_picker",
-      "version": "8.3.7",
+      "version": "11.0.2",
       "dependencies": [
         "cross_file",
+        "dbus",
         "ffi",
         "flutter",
         "flutter_plugin_android_lifecycle",
@@ -322,7 +337,7 @@
     },
     {
       "name": "matcher",
-      "version": "0.12.18",
+      "version": "0.12.17",
       "dependencies": [
         "async",
         "meta",
@@ -333,7 +348,7 @@
     },
     {
       "name": "test_api",
-      "version": "0.7.9",
+      "version": "0.7.7",
       "dependencies": [
         "async",
         "boolean_selector",
@@ -461,27 +476,24 @@
       ]
     },
     {
-      "name": "firebase_storage_web",
-      "version": "3.10.17",
+      "name": "firebase_messaging_web",
+      "version": "4.1.5",
       "dependencies": [
         "_flutterfire_internals",
-        "async",
         "firebase_core",
         "firebase_core_web",
-        "firebase_storage_platform_interface",
+        "firebase_messaging_platform_interface",
         "flutter",
         "flutter_web_plugins",
-        "http",
         "meta",
         "web"
       ]
     },
     {
-      "name": "firebase_storage_platform_interface",
-      "version": "5.2.10",
+      "name": "firebase_messaging_platform_interface",
+      "version": "4.7.9",
       "dependencies": [
         "_flutterfire_internals",
-        "collection",
         "firebase_core",
         "flutter",
         "meta",
@@ -500,8 +512,41 @@
       ]
     },
     {
+      "name": "mime",
+      "version": "2.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "firebase_storage_web",
+      "version": "3.11.5",
+      "dependencies": [
+        "_flutterfire_internals",
+        "async",
+        "firebase_core",
+        "firebase_core_web",
+        "firebase_storage_platform_interface",
+        "flutter",
+        "flutter_web_plugins",
+        "http",
+        "meta",
+        "web"
+      ]
+    },
+    {
+      "name": "firebase_storage_platform_interface",
+      "version": "5.2.20",
+      "dependencies": [
+        "_flutterfire_internals",
+        "collection",
+        "firebase_core",
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
+      ]
+    },
+    {
       "name": "cloud_firestore_web",
-      "version": "4.4.12",
+      "version": "5.3.0",
       "dependencies": [
         "_flutterfire_internals",
         "cloud_firestore_platform_interface",
@@ -514,7 +559,7 @@
     },
     {
       "name": "cloud_firestore_platform_interface",
-      "version": "6.6.12",
+      "version": "7.2.0",
       "dependencies": [
         "_flutterfire_internals",
         "collection",
@@ -526,7 +571,7 @@
     },
     {
       "name": "firebase_auth_web",
-      "version": "5.15.3",
+      "version": "6.1.5",
       "dependencies": [
         "firebase_auth_platform_interface",
         "firebase_core",
@@ -540,19 +585,20 @@
     },
     {
       "name": "firebase_auth_platform_interface",
-      "version": "7.7.3",
+      "version": "8.1.9",
       "dependencies": [
         "_flutterfire_internals",
         "collection",
         "firebase_core",
         "flutter",
+        "http",
         "meta",
         "plugin_platform_interface"
       ]
     },
     {
       "name": "firebase_core_web",
-      "version": "2.24.1",
+      "version": "3.6.0",
       "dependencies": [
         "firebase_core_platform_interface",
         "flutter",
@@ -671,7 +717,7 @@
     },
     {
       "name": "google_mlkit_commons",
-      "version": "0.9.0",
+      "version": "0.11.1",
       "dependencies": [
         "flutter"
       ]
@@ -700,6 +746,16 @@
       "version": "2.0.34",
       "dependencies": [
         "flutter"
+      ]
+    },
+    {
+      "name": "dbus",
+      "version": "0.7.12",
+      "dependencies": [
+        "args",
+        "ffi",
+        "meta",
+        "xml"
       ]
     },
     {
@@ -812,14 +868,14 @@
     },
     {
       "name": "material_color_utilities",
-      "version": "0.13.0",
+      "version": "0.11.1",
       "dependencies": [
         "collection"
       ]
     },
     {
       "name": "characters",
-      "version": "1.4.1",
+      "version": "1.4.0",
       "dependencies": []
     },
     {
@@ -913,16 +969,6 @@
       ]
     },
     {
-      "name": "dbus",
-      "version": "0.7.12",
-      "dependencies": [
-        "args",
-        "ffi",
-        "meta",
-        "xml"
-      ]
-    },
-    {
       "name": "uuid",
       "version": "4.5.3",
       "dependencies": [
@@ -932,7 +978,7 @@
     },
     {
       "name": "_flutterfire_internals",
-      "version": "1.3.59",
+      "version": "1.3.69",
       "dependencies": [
         "collection",
         "firebase_core",
@@ -1025,6 +1071,20 @@
       ]
     },
     {
+      "name": "xml",
+      "version": "6.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "petitparser"
+      ]
+    },
+    {
+      "name": "args",
+      "version": "2.7.0",
+      "dependencies": []
+    },
+    {
       "name": "file_selector_windows",
       "version": "0.9.3+5",
       "dependencies": [
@@ -1062,11 +1122,6 @@
       ]
     },
     {
-      "name": "mime",
-      "version": "2.0.0",
-      "dependencies": []
-    },
-    {
       "name": "vm_service",
       "version": "15.2.0",
       "dependencies": []
@@ -1079,20 +1134,6 @@
         "meta",
         "plugin_platform_interface"
       ]
-    },
-    {
-      "name": "xml",
-      "version": "6.6.1",
-      "dependencies": [
-        "collection",
-        "meta",
-        "petitparser"
-      ]
-    },
-    {
-      "name": "args",
-      "version": "2.7.0",
-      "dependencies": []
     },
     {
       "name": "fixnum",

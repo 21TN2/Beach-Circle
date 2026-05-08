@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// services to help implement outlet page
 class OutletService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -18,17 +19,18 @@ class OutletService {
               final data = doc.data();
 
               return {
+                // fields
                 'id': doc.id,
                 'code': (data['abbrev'] ?? '').toString().trim(),
                 'name': (data['name'] ?? '').toString().trim(),
               };
-            })
+            }) // building format
             .where((building) {
               final code = (building['code'] ?? '').toLowerCase().trim();
               final name = (building['name'] ?? '').toLowerCase().trim();
 
               final isExcludedCode = code == 'g12' || code == 'g14';
-
+              // excluding parking lots // non-academic buildings
               final isExcludedName =
                   name == 'g12' ||
                   name == 'g14' ||
@@ -48,7 +50,7 @@ class OutletService {
               return !isExcludedCode && !isExcludedName;
             })
             .toList();
-
+    // sort buildings
     buildings.sort((a, b) {
       final aName = (a['name'] ?? '').toLowerCase();
       final bName = (b['name'] ?? '').toLowerCase();
@@ -58,6 +60,7 @@ class OutletService {
     return buildings;
   }
 
+  // fields required to add outlet info
   Future<void> addOutlet({
     required String buildingId,
     required String buildingCode,
@@ -68,19 +71,19 @@ class OutletService {
     required List<String> accessibilityLevels,
   }) async {
     final user = _auth.currentUser;
-
+    // preconditions: user logged in
     if (user == null) {
       throw Exception('User must be signed in.');
     }
 
     final buildingDoc = await _db.collection('buildings').doc(buildingId).get();
-
+    // no building found
     if (!buildingDoc.exists) {
       throw Exception('Selected building was not found.');
     }
 
     final buildingData = buildingDoc.data() ?? {};
-
+    // added to firebase required to make proper post
     await _db.collection('outlets').add({
       'buildingId': buildingId,
       'buildingAbbrev': buildingCode,

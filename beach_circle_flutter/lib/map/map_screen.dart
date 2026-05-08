@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../bathroom_finder.dart';
 
 import '../map_features/add_study_hall_screen.dart';
@@ -14,6 +15,9 @@ import '../map_features/add_outlet_screen.dart';
 import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
+import '../map_features/expanded_bathroom_finder_screen.dart';
+
+// add active pins (or phase out?)
 
 enum _FoodAlertStep { none, placingPin, fillingForm }
 
@@ -69,6 +73,10 @@ class _MapScreenState extends State<MapScreen> {
   final Map<String, String> _polygonIdToLotName = {}; 
   final Map<String, String> _labelIdToLotName = {}; 
 
+  // --- NEW: LIFTED PARKING STATE ---
+  // This holds the live data so both Firebase AND the Demo can update the bottom sheet!
+  Map<String, Map<String, dynamic>> _liveParkingData = {};
+
   // DEMO STATE
   Timer? _demoTimer;
   final Map<String, int> _demoLotCounts = {};
@@ -79,6 +87,13 @@ class _MapScreenState extends State<MapScreen> {
   PointAnnotationManager? _outletPinManager;
   final Map<String, Map<String, dynamic>> _outletPinData = {};
 
+  // NEW FROM GISELLE REVIEW 4: Keeps bathroom building data in the same order as bathroom pin options
+  final List<Map<String, dynamic>> _bathroomBuildingData = [];
+
+  // NEW FROM GISELLE REVIEW 4: Connects each created bathroom pin id to its building data
+  final Map<String, Map<String, dynamic>> _bathroomPinData = {};
+
+  // NEW FROM GISELLE: STUDY HALL BUILDING FILTERS
   String _mapBuildingToStudyFilter(String building) {
     final code = building.toUpperCase().trim();
 
@@ -112,6 +127,7 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  // filter req
   String _mapBuildingToOutletFilter(String building) {
     final code = building.toUpperCase().trim();
 
@@ -155,6 +171,11 @@ class _MapScreenState extends State<MapScreen> {
   Position? _foodAlertPinPosition;
   PointAnnotationManager? _foodAlertPinManager;
   PointAnnotation? _foodAlertPin;
+  Uint8List? _foodAlertMarkerBytes;
+
+  // Manager and data map for live food-alert map pins (food filter)
+  PointAnnotationManager? _foodAlertMapPinManager;
+  final Map<String, Map<String, dynamic>> _foodAlertPinData = {};
 
   static const double _centerLat = 33.7820;
   static const double _centerLng = -118.1126;
@@ -177,7 +198,6 @@ class _MapScreenState extends State<MapScreen> {
       icon: Icons.local_pizza,
       label: 'Food',
       hasBottomSheet: true,
-      sheetContent: FoodAlertSheetContent(),
     ),
     FilterOption(
       key: 'study',
@@ -283,6 +303,33 @@ class _MapScreenState extends State<MapScreen> {
     return byteData!.buffer.asUint8List();
   }
 
+  Future<Uint8List> _createFoodAlertMarker() async {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    // Red circle background
+    final Paint bg = Paint()..color = Colors.red;
+    canvas.drawCircle(const Offset(24.0, 24.0), 24.0, bg);
+
+    // White pin_drop icon on top
+    final TextPainter tp = TextPainter(textDirection: TextDirection.ltr);
+    tp.text = TextSpan(
+      text: String.fromCharCode(Icons.pin_drop.codePoint),
+      style: TextStyle(
+        fontSize: 28.0,
+        fontFamily: Icons.pin_drop.fontFamily,
+        package: Icons.pin_drop.fontPackage,
+        color: Colors.white,
+      ),
+    );
+    tp.layout();
+    tp.paint(canvas, Offset((48 - tp.width) / 2, (48 - tp.height) / 2));
+
+    final ui.Image img = await recorder.endRecording().toImage(48, 48);
+    final ByteData? bd = await img.toByteData(format: ui.ImageByteFormat.png);
+    return bd!.buffer.asUint8List();
+  }
+
   TimeOfDay? _parseTimeOfDay(String value) {
     try {
       final parts = value.trim().split(' ');
@@ -334,17 +381,18 @@ class _MapScreenState extends State<MapScreen> {
     required String badgeText,
     required Color badgeColor,
   }) async {
-    const double width = 108;
-    const double height = 128;
-    const double circleRadius = 38;
-    const Offset circleCenter = Offset(54, 60);
+    const double width = 118;
+    const double height = 118;
+    const double circleRadius = 36;
+    const Offset circleCenter = Offset(59, 64);
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
 
-    final Paint shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.18)
-      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
+    final Paint shadowPaint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.20)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 5);
 
     canvas.drawCircle(
       Offset(circleCenter.dx, circleCenter.dy + 3),
@@ -360,7 +408,7 @@ class _MapScreenState extends State<MapScreen> {
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
         style: TextStyle(
-          fontSize: 38,
+          fontSize: 42,
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
           color: Colors.black87,
@@ -377,14 +425,23 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
 
-    final Rect badgeRect = Rect.fromLTWH(16, 6, 52, 28);
+    final double badgeWidth = badgeText.length >= 3 ? 68 : 50;
+    final Rect badgeRect = Rect.fromLTWH(16, 4, badgeWidth, 36);
     final RRect badgeRRect = RRect.fromRectAndRadius(
       badgeRect,
-      const Radius.circular(14),
+      const Radius.circular(15),
     );
 
     final Paint badgePaint = Paint()..color = badgeColor;
     canvas.drawRRect(badgeRRect, badgePaint);
+
+    final Paint badgeBorderPaint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+
+    canvas.drawRRect(badgeRRect, badgeBorderPaint);
 
     final TextPainter badgePainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -392,8 +449,8 @@ class _MapScreenState extends State<MapScreen> {
         text: badgeText,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+          fontSize: 19,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
@@ -460,7 +517,7 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-
+        
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
@@ -493,7 +550,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             image: markerBytes,
-            iconSize: 1.0,
+            iconSize: 1.08,
           ),
         );
 
@@ -548,13 +605,13 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-
+        
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
         }
       }
-
+      
       for (final entry in buildingsMap.entries) {
         final buildingData = entry.value;
         final badgeText = '${buildingData['totalCount']}';
@@ -565,7 +622,7 @@ class _MapScreenState extends State<MapScreen> {
           badgeText: badgeText,
           badgeColor: const Color(0xFF5F6B8C),
         );
-
+        
         final annotation = await _outletPinManager!.create(
           PointAnnotationOptions(
             geometry: Point(
@@ -575,7 +632,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             image: markerBytes,
-            iconSize: 1.0,
+            iconSize: 1.08,
           ),
         );
 
@@ -599,14 +656,28 @@ class _MapScreenState extends State<MapScreen> {
       final Map<String, dynamic> geoJson = json.decode(geoJsonString);
       final List features = geoJson['features'] ?? [];
       final Uint8List customIconBytes = await _createWcMarker();
+
       _bathroomPinOptions.clear();
+      _bathroomBuildingData.clear();
+      _bathroomPinData.clear();
+
       for (var feature in features) {
         final properties = feature['properties'] ?? {};
         final geometry = feature['geometry'] ?? {};
-        if (properties['feature_type'] == 'building') {
+        final name = (properties['name'] ?? '').toString();
+        final abbrev = (properties['abbrev'] ?? '').toString();
+        final featureType = (properties['feature_type'] ?? '').toString();
+
+        final isBathroomBuilding =
+            featureType == 'building' || abbrev.toUpperCase() == 'VEC';
+
+        if (isBathroomBuilding) {
           final type = geometry['type'];
           final coords = geometry['coordinates'];
-          double lat = 0.0, lng = 0.0;
+
+          double lat = 0.0;
+          double lng = 0.0;
+
           try {
             if (type == 'Point') {
               lng = (coords[0] as num).toDouble();
@@ -627,14 +698,95 @@ class _MapScreenState extends State<MapScreen> {
               PointAnnotationOptions(
                 geometry: Point(coordinates: Position(lng, lat)),
                 image: customIconBytes,
-                iconSize: 1.0,
+                iconSize: 1.20,
               ),
             );
+
+            _bathroomBuildingData.add({
+              'name': name,
+              'abbrev': abbrev,
+              'lat': lat,
+              'lng': lng,
+            });
           }
         }
       }
     } catch (e) {
-      debugPrint("Error loading buildings");
+      debugPrint("Error loading buildings: $e");
+    }
+  }
+
+  double _getDistanceFeet(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295;
+    final a =
+        0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
+
+    return 12742 * math.asin(math.sqrt(a)) * 3280.84;
+  }
+
+  String _formatDistance(double dist) {
+    return dist < 1000
+        ? "${dist.toStringAsFixed(0)} ft"
+        : "${(dist / 5280).toStringAsFixed(1)} mi";
+  }
+
+  void _handleBathroomPinTap(Map<String, dynamic> data) {
+    final bathroomName = (data['name'] ?? '').toString();
+    final buildingAbbrev = (data['abbrev'] ?? '').toString();
+
+    final bathroomLat = (data['lat'] as num?)?.toDouble();
+    final bathroomLng = (data['lng'] as num?)?.toDouble();
+
+    final Position locationToUse =
+        (_isDevMode && _simulatedPosition != null)
+            ? _simulatedPosition!
+            : Position(_centerLng, _centerLat);
+
+    String distance = '';
+
+    if (bathroomLat != null && bathroomLng != null) {
+      final dist = _getDistanceFeet(
+        locationToUse.lat.toDouble(),
+        locationToUse.lng.toDouble(),
+        bathroomLat,
+        bathroomLng,
+      );
+
+      distance = _formatDistance(dist);
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ExpandedBathroomFinderPage(
+              bathroomName: bathroomName,
+              buildingAbbrev: buildingAbbrev,
+              distance: distance,
+              details: '',
+            ),
+      ),
+    );
+  }
+
+  Future<void> _loadBathroomPins() async {
+    if (pointAnnotationManager == null) return;
+
+    _bathroomPinData.clear();
+
+    for (int i = 0; i < _bathroomPinOptions.length; i++) {
+      final annotation = await pointAnnotationManager!.create(
+        _bathroomPinOptions[i],
+      );
+
+      if (i < _bathroomBuildingData.length) {
+        _bathroomPinData[annotation.id] = _bathroomBuildingData[i];
+      }
     }
   }
 
@@ -700,7 +852,6 @@ class _MapScreenState extends State<MapScreen> {
     for (final name in _parkingGeometries.keys) {
       int searchingCount = counts[name] ?? 0;
       
-      // Calculate Occupancy to drive both Color AND Marker Icons
       double occupancy = searchingCount / 20.0; // Assume 20 is max for the UI scale
       if (occupancy > 1.0) occupancy = 1.0;
 
@@ -721,7 +872,6 @@ class _MapScreenState extends State<MapScreen> {
       );
       lotNamesList.add(name);
 
-      // Find center to place the 5-person rating marker
       double sumX = 0;
       double sumY = 0;
       for (var pos in _parkingGeometries[name]!) {
@@ -731,7 +881,6 @@ class _MapScreenState extends State<MapScreen> {
       double centerX = sumX / _parkingGeometries[name]!.length;
       double centerY = sumY / _parkingGeometries[name]!.length;
 
-      // Create and place marker
       final markerBytes = await _createOccupancyMarker(occupancy);
       labelOptions.add(
         PointAnnotationOptions(
@@ -769,16 +918,24 @@ class _MapScreenState extends State<MapScreen> {
         .snapshots()
         .listen((snapshot) {
       final Map<String, int> liveCounts = {};
+      final Map<String, Map<String, dynamic>> fullData = {};
+      
       for (var doc in snapshot.docs) {
         final name = (doc.data()['name'] ?? '').toString();
         final count = doc.data()['searching_count'] ?? 0;
         liveCounts[name] = count;
+        fullData[name] = doc.data();
       }
-      // Instantly redraw map polygons and markers when database changes
+      
+      // Update central state so bottom sheet can re-render instantly
+      if (mounted) {
+        setState(() {
+          _liveParkingData = fullData;
+        });
+      }
       _drawParkingPolygons(liveCounts);
     });
 
-    // Initial draw while Firebase connects
     _drawParkingPolygons();
   }
 
@@ -794,6 +951,11 @@ class _MapScreenState extends State<MapScreen> {
       _selectedParkingZoneFilter = 'G Lots';
       _reportingLotName = null;
       _demoLotCounts.clear();
+      // Inject fake empty data for the menu to read
+      _liveParkingData['Lot G3'] = {
+        'searching_count': 0,
+        'parked_count': 0,
+      };
     });
     
     double lotCenterX = -118.1135; 
@@ -828,6 +990,11 @@ class _MapScreenState extends State<MapScreen> {
 
       setState(() {
         _demoLotCounts['Lot G3'] = math.min(tick, 20); 
+        // Feed fake live data into the bottom sheet state
+        _liveParkingData['Lot G3'] = {
+          'searching_count': math.min(tick, 20),
+          'parked_count': tick > 5 ? (tick - 5) : 0, 
+        };
       });
       
       _drawParkingPolygons(_demoLotCounts);
@@ -897,23 +1064,47 @@ class _MapScreenState extends State<MapScreen> {
       LocationComponentSettings(enabled: true, pulsingEnabled: true),
     );
 
-    pointAnnotationManager = await mapboxMap!.annotations.createPointAnnotationManager();
+    pointAnnotationManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    pointAnnotationManager?.addOnPointAnnotationClickListener(
+      _BathroomClickListener(_handleBathroomPinTap, _bathroomPinData),
+    );
 
     _devPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
     _devCircleManager = await mapboxMap!.annotations.createCircleAnnotationManager();
     _foodAlertPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
 
-    _studyHallPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
+    _foodAlertMapPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _foodAlertMapPinManager?.addOnPointAnnotationClickListener(
+      _FoodAlertMapPinClickListener(_handleFoodAlertPinTap, _foodAlertPinData),
+    );
 
-    _outletPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
+    _studyHallPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _studyHallPinManager?.addOnPointAnnotationClickListener(
+      _StudyHallClickListener(_handleStudyHallPinTap, _studyHallPinData),
+    );
+
+    _outletPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _outletPinManager?.addOnPointAnnotationClickListener(
+      _OutletClickListener(_handleOutletPinTap, _outletPinData),
+    );
 
     _parkingLotManager = await mapboxMap!.annotations.createPolygonAnnotationManager();
     _parkingLabelManager = await mapboxMap!.annotations.createPointAnnotationManager();
 
+    _foodAlertMarkerBytes = await _createFoodAlertMarker();
+
     await _loadBuildingBathrooms();
-    await _loadStudyHallPins();
-    await _loadOutletPins();
+    
     await _loadParkingLotGeometries(); 
+
+    if (widget.initialFilter != null) {
+      await Future.delayed(const Duration(milliseconds: 150));
+    }
+
     await _updateMapPins();
   }
 
@@ -956,11 +1147,13 @@ class _MapScreenState extends State<MapScreen> {
     if (_foodAlertPin != null) {
       await _foodAlertPinManager?.delete(_foodAlertPin!);
     }
+    if (_foodAlertMarkerBytes == null) return;
+
     _foodAlertPin = await _foodAlertPinManager?.create(
       PointAnnotationOptions(
         geometry: point,
         iconSize: 1.5,
-        iconImage: "marker-15",
+        image: _foodAlertMarkerBytes!,
       ),
     );
     setState(() {
@@ -992,6 +1185,104 @@ class _MapScreenState extends State<MapScreen> {
       _foodAlertPin = null;
       _foodAlertPinPosition = null;
     });
+  }
+
+  void _flyToFoodAlert(double lat, double lng) {
+    mapboxMap?.flyTo(
+      CameraOptions(center: Point(coordinates: Position(lng, lat)), zoom: 17.5),
+      MapAnimationOptions(duration: 600),
+    );
+  }
+
+  void _handleFoodAlertPinTap(Map<String, dynamic> data) {
+    final title = (data['title'] ?? 'Untitled').toString();
+    final description = (data['description'] ?? '').toString();
+    final docId = (data['docId'] ?? '').toString();
+    final alertUserId = (data['userId'] ?? '').toString();
+    final currentUserId = data['currentUserId'] as String?;
+    final timeStr = (data['timeStr'] ?? '').toString();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => FoodAlertDetailPage(
+              docId: docId,
+              title: title,
+              description: description,
+              isActive: true,
+              timeStr: timeStr,
+              currentUserId: currentUserId,
+              alertUserId: alertUserId,
+            ),
+      ),
+    );
+  }
+
+  Future<void> _loadFoodAlertMapPins() async {
+    if (_foodAlertMapPinManager == null) return;
+
+    await _foodAlertMapPinManager!.deleteAll();
+    _foodAlertPinData.clear();
+
+    final markerBytes = _foodAlertMarkerBytes ?? await _createFoodAlertMarker();
+
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('food_alerts')
+              .where('active', isEqualTo: true)
+              .get();
+
+      final now = DateTime.now();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final ts = data['createdAt'] as Timestamp?;
+
+        if (ts != null) {
+          final age = now.difference(ts.toDate());
+          if (age >= const Duration(hours: 5)) continue;
+        }
+
+        final lat = (data['lat'] as num?)?.toDouble();
+        final lng = (data['lng'] as num?)?.toDouble();
+        if (lat == null || lng == null) continue;
+
+        String timeStr = '';
+        if (ts != null) {
+          final diff = now.difference(ts.toDate());
+          if (diff.inMinutes < 60) {
+            timeStr = '${diff.inMinutes}m ago';
+          } else if (diff.inHours < 24) {
+            timeStr = '${diff.inHours}h ago';
+          } else {
+            timeStr = '${diff.inDays}d ago';
+          }
+        }
+
+        final annotation = await _foodAlertMapPinManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(lng, lat)),
+            image: markerBytes,
+            iconSize: 1.2,
+          ),
+        );
+
+        _foodAlertPinData[annotation.id] = {
+          'docId': doc.id,
+          'title': data['title'] ?? 'Untitled',
+          'description': data['description'] ?? '',
+          'userId': data['userId'] ?? '',
+          'currentUserId': currentUserId,
+          'timeStr': timeStr,
+          'lat': lat,
+          'lng': lng,
+        };
+      }
+    } catch (e) {
+      debugPrint('Error loading food alert map pins: $e');
+    }
   }
 
   void _locateUser() {
@@ -1061,18 +1352,39 @@ class _MapScreenState extends State<MapScreen> {
     _updateMapPins();
   }
 
+  void _onAddTapped() async {
+    if (_activeFilter == 'study') {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddStudyHallScreen()),
+      );
+
+      if (result == true) {
+        await _loadStudyHallPins();
+        await _updateMapPins();
+        setState(() {});
+      }
+    } else if (_activeFilter == 'charging') {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddOutletScreen()),
+      );
+
+      if (result == true) {
+        setState(() {});
+      }
+    }
+  }
+
   Future<void> _updateMapPins() async {
     if (pointAnnotationManager == null) return;
 
     await pointAnnotationManager!.deleteAll();
 
     if (_activeFilter == 'restroom' && _bathroomPinOptions.isNotEmpty) {
-      final annotations = await pointAnnotationManager!.createMulti(_bathroomPinOptions);
-      for (var annotation in annotations) {
-        if (annotation != null) {
-          // Re-attach listener logic manually if needed for individual pins
-        }
-      }
+      await _loadBathroomPins();
+    } else {
+      _bathroomPinData.clear();
     }
 
     if (_studyHallPinManager != null) {
@@ -1106,6 +1418,15 @@ class _MapScreenState extends State<MapScreen> {
         await _parkingLabelManager?.deleteAll();
       }
     }
+
+    if (_foodAlertMapPinManager != null) {
+      if (_activeFilter == 'food') {
+        await _loadFoodAlertMapPins();
+      } else {
+        await _foodAlertMapPinManager!.deleteAll();
+        _foodAlertPinData.clear();
+      }
+    }
   }
 
   Widget? get _activeSheetContent {
@@ -1115,6 +1436,9 @@ class _MapScreenState extends State<MapScreen> {
         onClose: _cancelFoodAlertFlow,
         onSubmitted: () {
           _cancelFoodAlertFlow();
+          if (_activeFilter == 'food') {
+            _loadFoodAlertMapPins();
+          }
         },
       );
     }
@@ -1172,6 +1496,8 @@ class _MapScreenState extends State<MapScreen> {
       if (_reportingLotName != null) {
         return _ParkingReportSheetContent(
           lotName: _reportingLotName!,
+          // Pass the live data down into the report sheet!
+          lotData: _liveParkingData[_reportingLotName!] ?? {},
           onBack: () {
             setState(() {
               _reportingLotName = null;
@@ -1184,6 +1510,8 @@ class _MapScreenState extends State<MapScreen> {
 
       return _ParkingSheetContent(
         availableLots: lots,
+        // Pass the live data down into the main list!
+        liveDataMap: _liveParkingData,
         selectedZoneFilter: _selectedParkingZoneFilter,
         onZoneFilterChanged: (value) {
           setState(() {
@@ -1202,6 +1530,12 @@ class _MapScreenState extends State<MapScreen> {
       (f) => f.key == _activeFilter,
       orElse: () => _filters.first,
     );
+
+    if (_activeFilter == 'food') {
+      return FoodAlertSheetContent(
+        onAlertSelected: (lat, lng) => _flyToFoodAlert(lat, lng),
+      );
+    }
 
     return filter.hasBottomSheet ? filter.sheetContent : null;
   }
@@ -1451,7 +1785,7 @@ class _MapScreenState extends State<MapScreen> {
 
           if (_activeFilter == 'food' && _foodAlertStep == _FoodAlertStep.none)
             Positioned(
-              bottom: 310,
+              bottom: 300,
               right: 16,
               child: FloatingActionButton(
                 onPressed: _startFoodAlertFlow,
@@ -1580,12 +1914,14 @@ class _ParkingSheetContent extends StatelessWidget {
   final ValueChanged<String> onZoneFilterChanged;
   final ValueChanged<String> onReportTapped;
   final List<String> availableLots; 
+  final Map<String, Map<String, dynamic>> liveDataMap;
 
   const _ParkingSheetContent({
     required this.selectedZoneFilter,
     required this.onZoneFilterChanged,
     required this.onReportTapped,
     required this.availableLots,
+    required this.liveDataMap,
   });
 
   final List<String> _zoneFilters = const [
@@ -1686,100 +2022,86 @@ class _ParkingSheetContent extends StatelessWidget {
           ),
 
         if (filteredLots.isNotEmpty)
-          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance.collection('parking_lots').snapshots(),
-            builder: (context, snapshot) {
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(top: 5, bottom: 20),
+            itemCount: filteredLots.length,
+            separatorBuilder: (context, index) =>
+                Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
+            itemBuilder: (context, index) {
+              final name = filteredLots[index];
               
-              final Map<String, Map<String, dynamic>> lotDataMap = {};
-              if (snapshot.hasData && !snapshot.hasError) {
-                for (var doc in snapshot.data!.docs) {
-                  final dbName = (doc.data()['name'] ?? '').toString();
-                  lotDataMap[dbName] = doc.data();
-                }
-              }
+              final liveData = liveDataMap[name] ?? {};
+              final searchingCount = liveData['searching_count'] ?? 0;
+              final parkedCount = liveData['parked_count'] ?? 0;
+              
+              final statusText = _calculateStatus(searchingCount, parkedCount);
+              final statusColor = _getStatusColor(statusText);
 
-              return ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 5, bottom: 20),
-                itemCount: filteredLots.length,
-                separatorBuilder: (context, index) =>
-                    Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
-                itemBuilder: (context, index) {
-                  final name = filteredLots[index];
-                  
-                  final liveData = lotDataMap[name] ?? {};
-                  final searchingCount = liveData['searching_count'] ?? 0;
-                  final parkedCount = liveData['parked_count'] ?? 0;
-                  
-                  final statusText = _calculateStatus(searchingCount, parkedCount);
-                  final statusColor = _getStatusColor(statusText);
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                'Status : $statusText',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Text('● Actively Searching: $searchingCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text('● Parked Vehicles: $parkedCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () => onReportTapped(name),
-                            icon: const Icon(Icons.add_circle_outline, color: Colors.black87, size: 20),
-                            label: const Text(
-                              'Make a Report',
-                              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey.shade300, width: 1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Status : $statusText',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  );
-                },
+                    const SizedBox(height: 10),
+                    Text('● Actively Searching: $searchingCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text('● Parked Vehicles: $parkedCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => onReportTapped(name),
+                        icon: const Icon(Icons.add_circle_outline, color: Colors.black87, size: 20),
+                        label: const Text(
+                          'Make a Report',
+                          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey.shade300, width: 1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
-            }
+            },
           ),
       ],
     );
@@ -1789,10 +2111,12 @@ class _ParkingSheetContent extends StatelessWidget {
 class _ParkingReportSheetContent extends StatelessWidget {
   final String lotName;
   final VoidCallback onBack;
+  final Map<String, dynamic> lotData;
 
   const _ParkingReportSheetContent({
     required this.lotName,
     required this.onBack,
+    required this.lotData,
   });
 
   void _submitReport(BuildContext context, String status) async {
@@ -1833,115 +2157,101 @@ class _ParkingReportSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('parking_lots')
-          .where('name', isEqualTo: lotName)
-          .snapshots(),
-      builder: (context, snapshot) {
-        int searchingCount = 0;
-        int parkedCount = 0;
+    int searchingCount = lotData['searching_count'] ?? 0;
+    int parkedCount = lotData['parked_count'] ?? 0;
+    
+    final total = searchingCount + parkedCount;
+    double occupancy = total == 0 ? 0 : searchingCount / 20.0;
+    if (occupancy > 1.0) occupancy = 1.0;
 
-        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-          final data = snapshot.data!.docs.first.data();
-          searchingCount = data['searching_count'] ?? 0;
-          parkedCount = data['parked_count'] ?? 0;
-        }
-        
-        final total = searchingCount + parkedCount;
-        double occupancy = total == 0 ? 0 : searchingCount / 20.0;
-        if (occupancy > 1.0) occupancy = 1.0;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Location:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(lotName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                    ],
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.cancel_outlined, size: 30, color: Colors.black54),
-                    onPressed: onBack,
-                  ),
+                  const Text("Location:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(lotName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
                 ],
               ),
-              const Divider(thickness: 1.5, height: 30),
-              
-              Text(
-                "Predicted Capacity: ${(occupancy * 100).toInt()}%",
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              IconButton(
+                icon: const Icon(Icons.cancel_outlined, size: 30, color: Colors.black54),
+                onPressed: onBack,
               ),
-              const SizedBox(height: 20),
-              
-              Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 160,
-                      height: 160,
-                      child: CustomPaint(
-                        painter: _DonutChartPainter(occupancy),
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(5, (index) {
-                        bool filled = index < (occupancy * 5).round();
-                        return Icon(
-                          Icons.person,
-                          size: 20,
-                          color: filled ? Colors.black : Colors.grey.shade400,
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              const Text(
-                "How's the parking here?",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _ReportButton(
-                    label: "Empty",
-                    color: Colors.green.shade600,
-                    icon: Icons.check_circle_outline,
-                    onTap: () => _submitReport(context, "Empty"),
-                  ),
-                  _ReportButton(
-                    label: "Moderate",
-                    color: Colors.orange.shade600,
-                    icon: Icons.error_outline,
-                    onTap: () => _submitReport(context, "Moderate"),
-                  ),
-                  _ReportButton(
-                    label: "Full",
-                    color: Colors.red.shade600,
-                    icon: Icons.cancel_outlined,
-                    onTap: () => _submitReport(context, "Full"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
             ],
           ),
-        );
-      },
+          const Divider(thickness: 1.5, height: 30),
+          
+          Text(
+            "Predicted Capacity: ${(occupancy * 100).toInt()}%",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 160,
+                  height: 160,
+                  child: CustomPaint(
+                    painter: _DonutChartPainter(occupancy),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(5, (index) {
+                    bool filled = index < (occupancy * 5).round();
+                    return Icon(
+                      Icons.person,
+                      size: 20,
+                      color: filled ? Colors.black : Colors.grey.shade400,
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          const Text(
+            "How's the parking here?",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _ReportButton(
+                label: "Empty",
+                color: Colors.green.shade600,
+                icon: Icons.check_circle_outline,
+                onTap: () => _submitReport(context, "Empty"),
+              ),
+              _ReportButton(
+                label: "Moderate",
+                color: Colors.orange.shade600,
+                icon: Icons.error_outline,
+                onTap: () => _submitReport(context, "Moderate"),
+              ),
+              _ReportButton(
+                label: "Full",
+                color: Colors.red.shade600,
+                icon: Icons.cancel_outlined,
+                onTap: () => _submitReport(context, "Full"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
     );
   }
 }
@@ -2011,6 +2321,7 @@ class _ReportButton extends StatelessWidget {
   }
 }
 
+/// NEW FROM GISELLE: STUDY HALL Map Preview
 class _StudySheetContent extends StatelessWidget {
   const _StudySheetContent({
     required this.selectedBuildingFilter,
@@ -2028,7 +2339,7 @@ class _StudySheetContent extends StatelessWidget {
     if (selectedBuildingFilter == 'All') return true;
 
     final code = buildingAbbrev.trim().toUpperCase();
-
+    // building filter
     switch (selectedBuildingFilter) {
       case 'LA':
         return code.startsWith('LA');
@@ -2077,6 +2388,7 @@ class _StudySheetContent extends StatelessWidget {
     }
   }
 
+  // boo to calculate if study hall is available based on user time
   bool _isCurrentlyAvailable(String startTime, String endTime) {
     final start = _parseTimeOfDay(startTime);
     final end = _parseTimeOfDay(endTime);
@@ -2096,6 +2408,7 @@ class _StudySheetContent extends StatelessWidget {
     return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
   }
 
+  // filter options
   @override
   Widget build(BuildContext context) {
     final buildingFilters = [
@@ -2109,7 +2422,7 @@ class _StudySheetContent extends StatelessWidget {
       'PSY',
       'HHS',
     ];
-
+    // building study hall card
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream:
           FirebaseFirestore.instance
@@ -2146,7 +2459,7 @@ class _StudySheetContent extends StatelessWidget {
 
               return _matchesBuildingFilter(building);
             }).toList();
-
+        // title card
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2198,7 +2511,7 @@ class _StudySheetContent extends StatelessWidget {
             ),
 
             const SizedBox(height: 8),
-
+            // if building is not a filter option
             if (selectedExactBuilding != null &&
                 selectedExactBuilding!.isNotEmpty)
               Padding(
@@ -2249,7 +2562,7 @@ class _StudySheetContent extends StatelessWidget {
             ),
 
             Divider(color: Colors.grey.shade300, height: 20),
-
+            // if filter option has no study hall
             if (filteredDocs.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -2276,8 +2589,11 @@ class _StudySheetContent extends StatelessWidget {
                 separatorBuilder:
                     (context, index) =>
                         Divider(color: Colors.grey.shade200, height: 1),
+                // what  study hall description needs
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
+                  // NEW FROM GISELLE REVIEW 4: gets Firestore doc id for study hall reports
+                  final docId = filteredDocs[index].id;
 
                   final building =
                       (data['buildingAbbrev'] ?? '').toString().trim();
@@ -2290,12 +2606,12 @@ class _StudySheetContent extends StatelessWidget {
                     startTime,
                     endTime,
                   );
-
+                  // final room presentation
                   final cleanRoom =
                       room.toLowerCase().startsWith('room ')
                           ? room.substring(5).trim()
                           : room;
-
+                  // final title presentation
                   final title =
                       building.isNotEmpty
                           ? '$building Room $cleanRoom'
@@ -2326,6 +2642,7 @@ class _StudySheetContent extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
+                    // how availabile now is gonna show when true
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Column(
@@ -2376,6 +2693,7 @@ class _StudySheetContent extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          // to adjust how amentities look
                           if (amenities.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
@@ -2400,6 +2718,11 @@ class _StudySheetContent extends StatelessWidget {
                         MaterialPageRoute(
                           builder:
                               (context) => ExpandedStudyHallScreen(
+                                // NEW FROM GISELLE REVIEW 4: pass report info
+                                docId: docId,
+                                reportedUserId:
+                                    (data['userId'] ?? data['createdBy'] ?? '')
+                                        .toString(),
                                 title: title,
                                 buildingName:
                                     (data['buildingName'] ?? '').toString(),
@@ -2445,7 +2768,7 @@ class _ChargingSheetContent extends StatelessWidget {
     if (selectedBuildingFilter == 'All') return true;
 
     final code = buildingAbbrev.trim().toUpperCase();
-
+    // building filter req
     switch (selectedBuildingFilter) {
       case 'LA':
         return code.startsWith('LA');
@@ -2468,6 +2791,7 @@ class _ChargingSheetContent extends StatelessWidget {
     }
   }
 
+  // filter building options
   @override
   Widget build(BuildContext context) {
     final buildingFilters = [
@@ -2495,7 +2819,7 @@ class _ChargingSheetContent extends StatelessWidget {
             child: Center(child: CircularProgressIndicator()),
           );
         }
-
+        // error handling
         if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(20),
@@ -2504,7 +2828,7 @@ class _ChargingSheetContent extends StatelessWidget {
         }
 
         final docs = snapshot.data?.docs ?? [];
-
+        // how to filter building
         final filteredDocs =
             docs.where((doc) {
               final data = doc.data();
@@ -2548,7 +2872,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   final isSelected =
                       selectedExactBuilding == null &&
                       selectedBuildingFilter == filter;
-
+                  // how filter chips are displayed
                   return ChoiceChip(
                     label: Text(filter),
                     selected: isSelected,
@@ -2587,7 +2911,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   ),
                 ),
               ),
-
+            // creating how 'add outlet details' button looks
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 20,
@@ -2621,7 +2945,7 @@ class _ChargingSheetContent extends StatelessWidget {
             ),
 
             Divider(color: Colors.grey.shade300, height: 20),
-
+            // if filter options are empty
             if (filteredDocs.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -2638,7 +2962,7 @@ class _ChargingSheetContent extends StatelessWidget {
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
-
+            // how filter options look
             if (filteredDocs.isNotEmpty)
               ListView.separated(
                 shrinkWrap: true,
@@ -2650,6 +2974,7 @@ class _ChargingSheetContent extends StatelessWidget {
                         Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
+                  final docId = filteredDocs[index].id;
 
                   final building =
                       (data['buildingAbbrev'] ?? '').toString().trim();
@@ -2666,7 +2991,7 @@ class _ChargingSheetContent extends StatelessWidget {
                       room.toLowerCase().startsWith('room ')
                           ? room.substring(5).trim()
                           : room;
-
+                  // how title is gonna be displayed
                   final title =
                       building.isNotEmpty
                           ? '$building Room $cleanRoom ⚡'
@@ -2676,14 +3001,14 @@ class _ChargingSheetContent extends StatelessWidget {
                   if (outletCount != null) {
                     subtitle = 'Number of Outlets: $outletCount';
                   }
-
+                  // outlet types
                   if (outletTypes.isNotEmpty) {
                     subtitle =
                         subtitle.isEmpty
                             ? 'Type: ${outletTypes.join(', ')}'
                             : '$subtitle\nType: ${outletTypes.join(', ')}';
                   }
-
+                  // accessibility display
                   if (accessibilityLevels.isNotEmpty) {
                     subtitle =
                         subtitle.isEmpty
@@ -2734,6 +3059,10 @@ class _ChargingSheetContent extends StatelessWidget {
                         MaterialPageRoute(
                           builder:
                               (context) => ExpandedOutletScreen(
+                                docId: docId,
+                                reportedUserId:
+                                    (data['userId'] ?? data['createdBy'] ?? '')
+                                        .toString(),
                                 title:
                                     building.isNotEmpty
                                         ? '$building Room $cleanRoom'
@@ -2868,37 +3197,57 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
       }
 
       for (var b in top5) {
-        String id = b['abbrev'] != 'None' ? b['abbrev'] : b['name'];
+        // NEW FROM GISELLE REVIEW 4: Match reviews by building name,
+        final String buildingName = (b['name'] ?? '').toString().trim();
+
         final snap =
             await FirebaseFirestore.instance
                 .collection('bathroom_reviews')
-                .where('bathroomName', isGreaterThanOrEqualTo: id)
-                .where('bathroomName', isLessThanOrEqualTo: '$id\uf8ff')
+                .where('bathroomName', isGreaterThanOrEqualTo: buildingName)
+                .where(
+                  'bathroomName',
+                  isLessThanOrEqualTo: '$buildingName\uf8ff',
+                )
                 .get();
-
+        // how to format preview
         if (snap.docs.isNotEmpty) {
-          // --- NEW: Calculate Average Star Rating ---
-          double totalRating = 0;
-          int reviewCount = 0;
-          
+          Map<String, int> counts = {};
+          double ratingTotal = 0;
+          int ratingCount = 0;
+
           for (var doc in snap.docs) {
             final data = doc.data();
-            // Assuming your star field is named 'rating' in Firebase. 
-            // If it's named 'stars' or something else, change 'rating' below!
-            if (data.containsKey('rating')) {
-              totalRating += (data['rating'] as num).toDouble();
-              reviewCount++;
+
+            final rating = data['rating'];
+            if (rating is int) {
+              ratingTotal += rating;
+              ratingCount++;
+            } else if (rating is double) {
+              ratingTotal += rating;
+              ratingCount++;
             }
-          }
-          
-          if (reviewCount > 0 && mounted) {
-            setState(() {
-              double avg = totalRating / reviewCount;
-              b['details'] = "${avg.toStringAsFixed(1)} ★ ($reviewCount reviews)";
+            // features
+            Map<String, dynamic> fts = data['features'] ?? {};
+            fts.forEach((k, v) {
+              if (v == true) counts[k] = (counts[k] ?? 0) + 1;
             });
-          } else if (mounted) {
+          }
+          // top features
+          final String topFeature =
+              counts.isNotEmpty
+                  ? counts.entries
+                      .reduce((a, b) => a.value > b.value ? a : b)
+                      .key
+                  : 'Reviewed';
+          // review
+          final String ratingText =
+              ratingCount > 0
+                  ? '⭐ ${(ratingTotal / ratingCount).toStringAsFixed(1)} ($ratingCount)'
+                  : 'Reviewed';
+
+          if (mounted) {
             setState(() {
-              b['details'] = "No ratings yet";
+              b['details'] = '$ratingText • $topFeature';
             });
           }
         } else if (mounted) {
@@ -2928,6 +3277,41 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
             ),
           ),
         ),
+
+        // NEW FROM GISELLE: Add Bathroom Review button for restroom bottom sheet
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 4,
+          ),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8F0FE),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.add, color: Colors.black, size: 22),
+          ),
+          title: const Text(
+            'Add Bathroom Review',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const BathroomFinder()),
+            );
+
+            if (result == true) {
+              _loadList();
+            }
+          },
+        ),
+
+        // NEW FROM GISELLE: Divider to match Study Hall and Outlet sheet layout
+        Divider(color: Colors.grey.shade300, height: 20),
+
         if (_isLoading)
           const Padding(
             padding: EdgeInsets.all(40),
@@ -2973,17 +3357,108 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BathroomFinder(),
-                      ),
+
+                // NEW FROM GISELLE REVIEW 4: Opens expanded bathroom page from restroom preview
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => ExpandedBathroomFinderPage(
+                            bathroomName: (b["name"] ?? '').toString(),
+                            buildingAbbrev: (b["abbrev"] ?? '').toString(),
+                            distance: (b["distStr"] ?? '').toString(),
+                            details: (b["details"] ?? '').toString(),
+                          ),
                     ),
+                  );
+                },
               );
             },
           ),
       ],
     );
+  }
+}
+
+class _SheetPlaceholder extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _SheetPlaceholder({required this.icon, required this.label});
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.black54, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.black54, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// NEW FROM GISELLE REVIEW 4: Restroom pin opens expanded bathroom page for that building
+class _BathroomClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _BathroomClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+
+    onTap(data);
+  }
+}
+
+// NEW FROM GISELLE: STUDY HALL click listener
+class _StudyHallClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _StudyHallClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
+  }
+}
+
+// NEW FROM GISELLE: OUTLET Click listener
+class _OutletClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _OutletClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
+  }
+}
+
+class _FoodAlertMapPinClickListener extends OnPointAnnotationClickListener {
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _FoodAlertMapPinClickListener(this.onTap, this.pinData);
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    final data = pinData[annotation.id];
+    if (data == null) return;
+    onTap(data);
   }
 }

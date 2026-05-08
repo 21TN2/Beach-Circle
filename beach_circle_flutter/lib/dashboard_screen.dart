@@ -17,12 +17,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
 // Forum imports
-import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
 
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'package:beach_circle_flutter/moderation/moderation_view_screen.dart';
 
 import 'screens/resources_page.dart';
 
@@ -45,6 +45,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
+
+  // NEW FROM GISELLE 4: ADDING MODERATION VIEW
+  static const List<String> adminEmails = [
+    'teef@gmail.com',
+    'reytest@gmail.com',
+    'giselle1@gmail.com',
+    'nguyentheresa204@gmail.com',
+    'josuealfaro8441@gmail.com',
+  ];
+
+  bool get _isModerator {
+    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+    return email != null &&
+        adminEmails.map((e) => e.toLowerCase()).contains(email);
+  }
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
@@ -409,13 +424,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          // Check if current user is in the admin list
-          if (user?.email != null && adminEmails.contains(user!.email))
+          if (_isModerator)
             IconButton(
               icon: const Icon(Icons.bug_report, color: Colors.red),
+              tooltip: 'Notification Test',
               onPressed: () {
                 Navigator.push(
                   context,
@@ -425,21 +441,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               },
             ),
-          if (user?.email !=
-                  null && 
-              adminEmails.contains(
-                user!.email,
-              )) 
+          if (_isModerator) // NEW FROM GISELLE 4: To view moderation
             IconButton(
-              icon: const Icon(Icons.admin_panel_settings),
+              icon: const Icon(
+                Icons.admin_panel_settings,
+                color: Colors.black87,
+              ),
+              tooltip: 'Moderation',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder:
-                        (_) => ModerationViewScreen(
-                          forumService: _forumService,
-                        ), 
+                        (context) =>
+                            ModerationViewScreen(forumService: _forumService),
                   ),
                 );
               },

@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+// NEW FROM GISELLE REVIEW 4: new import related to moderation
+import 'package:beach_circle_flutter/moderation/report_issue_page.dart';
 
+// expanded outlet page
 class ExpandedOutletScreen extends StatelessWidget {
   const ExpandedOutletScreen({
     super.key,
+    // NEW FROM GISELLE REVIEW 4: fields for reporting poster/user
+    required this.docId,
+    required this.reportedUserId,
+
     required this.title,
     required this.buildingName,
     required this.outletCount,
     required this.outletTypes,
     required this.accessibilityLevels,
   });
+  // NEW FROM GISELLE REVIEW 4: field format for moderation
+  final String docId;
+  final String reportedUserId;
 
   final String title;
   final String buildingName;
@@ -16,6 +26,7 @@ class ExpandedOutletScreen extends StatelessWidget {
   final List<String> outletTypes;
   final List<String> accessibilityLevels;
 
+  // outlet status: limited / standard / plentiful
   @override
   Widget build(BuildContext context) {
     final normalizedAccessibility =
@@ -37,6 +48,7 @@ class ExpandedOutletScreen extends StatelessWidget {
             : hasLimited
             ? 'Limited Access'
             : 'Standard Access';
+
     Color statusColor;
     if (outletStatus == 'Plentiful Outlets') {
       statusColor = const Color(0xFF43A047);
@@ -46,6 +58,7 @@ class ExpandedOutletScreen extends StatelessWidget {
       statusColor = const Color(0xFF5C6BC0);
     }
 
+    // title of page + ui
     return Scaffold(
       appBar: AppBar(
         title: const Text('Outlet Details'),
@@ -121,6 +134,7 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 18),
 
+            // section card includes outlet acccess
             _SectionCard(
               title: 'Outlet Access',
               child: Container(
@@ -145,6 +159,7 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 14),
 
+            // number of outlets card
             _SectionCard(
               title: 'Number of Outlets',
               child: Text(
@@ -155,6 +170,7 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 14),
 
+            // outlet type card
             _SectionCard(
               title: 'Outlet Type',
               child:
@@ -179,6 +195,7 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 14),
 
+            // acccessibility lvl section card
             _SectionCard(
               title: 'Accessibility Level',
               child:
@@ -203,13 +220,20 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
+            // NEW FROM GISELLE REVIEW 4: report outlet info button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report feature coming soon.'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ReportIssuePage(
+                            targetId: docId,
+                            reportedUserId: reportedUserId,
+                            targetType: 'outlet',
+                          ),
                     ),
                   );
                 },
@@ -232,12 +256,14 @@ class ExpandedOutletScreen extends StatelessWidget {
   }
 }
 
+// required fields for section cards
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
 
+  // layout format
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -251,6 +277,7 @@ class _SectionCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        // color + font layout
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
