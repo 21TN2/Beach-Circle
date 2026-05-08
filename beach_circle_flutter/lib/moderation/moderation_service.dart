@@ -41,7 +41,7 @@ class ModerationService {
     });
   }
 
-  // NEW: general report method for outlet, study hall, bathroom, dorm event, food alert, etc.
+  // general report method for outlet, study hall, bathroom, dorm event, food alert, etc.
   Future<void> reportContent({
     required String targetId,
     required String reportedUserId,
@@ -51,7 +51,7 @@ class ModerationService {
     String? imageUrl,
   }) async {
     final uid = _auth.currentUser!.uid;
-
+    // firebase fields
     await _db.collection('reports').add({
       'targetType': targetType,
       'targetId': targetId,

@@ -14,6 +14,7 @@ import '../map_features/add_outlet_screen.dart';
 import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
+import '../map_features/expanded_bathroom_finder_screen.dart';
 
 // add active pins (or phase out?)
 
@@ -69,6 +70,12 @@ class _MapScreenState extends State<MapScreen> {
   // outlet
   PointAnnotationManager? _outletPinManager;
   final Map<String, Map<String, dynamic>> _outletPinData = {};
+
+  // NEW FROM GISELLE REVIEW 4: Keeps bathroom building data in the same order as bathroom pin options
+  final List<Map<String, dynamic>> _bathroomBuildingData = [];
+
+  // NEW FROM GISELLE REVIEW 4: Connects each created bathroom pin id to its building data
+  final Map<String, Map<String, dynamic>> _bathroomPinData = {};
 
   // NEW FROM GISELLE: STUDY HALL BUILDING FILTERS
   String _mapBuildingToStudyFilter(String building) {
@@ -595,14 +602,29 @@ class _MapScreenState extends State<MapScreen> {
       final Map<String, dynamic> geoJson = json.decode(geoJsonString);
       final List features = geoJson['features'] ?? [];
       final Uint8List customIconBytes = await _createWcMarker();
+
       _bathroomPinOptions.clear();
+      _bathroomBuildingData.clear();
+      _bathroomPinData.clear();
+
       for (var feature in features) {
         final properties = feature['properties'] ?? {};
         final geometry = feature['geometry'] ?? {};
-        if (properties['feature_type'] == 'building') {
+        final name = (properties['name'] ?? '').toString();
+        final abbrev = (properties['abbrev'] ?? '').toString();
+        final featureType = (properties['feature_type'] ?? '').toString();
+
+        // NEW FROM GISELLE REVIEW 4: Include VEC because its feature_type is null
+        final isBathroomBuilding =
+            featureType == 'building' || abbrev.toUpperCase() == 'VEC';
+
+        if (isBathroomBuilding) {
           final type = geometry['type'];
           final coords = geometry['coordinates'];
-          double lat = 0.0, lng = 0.0;
+
+          double lat = 0.0;
+          double lng = 0.0;
+
           try {
             if (type == 'Point') {
               lng = (coords[0] as num).toDouble();
@@ -623,14 +645,100 @@ class _MapScreenState extends State<MapScreen> {
               PointAnnotationOptions(
                 geometry: Point(coordinates: Position(lng, lat)),
                 image: customIconBytes,
-                iconSize: 1.08,
+                iconSize: 1.20,
               ),
             );
+
+            // NEW FROM GISELLE REVIEW 4: Save building data in the same order as pin option
+            _bathroomBuildingData.add({
+              'name': name,
+              'abbrev': abbrev,
+              'lat': lat,
+              'lng': lng,
+            });
           }
         }
       }
     } catch (e) {
-      debugPrint("Error loading buildings");
+      debugPrint("Error loading buildings: $e");
+    }
+  }
+
+  // NEW FROM GISELLE REVIEW 4: Calculates distance in feet for bathroom pin taps
+  double _getDistanceFeet(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295;
+    final a =
+        0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
+
+    return 12742 * math.asin(math.sqrt(a)) * 3280.84;
+  }
+
+  // NEW FROM GISELLE REVIEW 4: Formats bathroom pin distance
+  String _formatDistance(double dist) {
+    return dist < 1000
+        ? "${dist.toStringAsFixed(0)} ft"
+        : "${(dist / 5280).toStringAsFixed(1)} mi";
+  }
+
+  // NEW FROM GISELLE REVIEW 4: Opens expanded bathroom page from restroom pin
+  void _handleBathroomPinTap(Map<String, dynamic> data) {
+    final bathroomName = (data['name'] ?? '').toString();
+    final buildingAbbrev = (data['abbrev'] ?? '').toString();
+
+    final bathroomLat = (data['lat'] as num?)?.toDouble();
+    final bathroomLng = (data['lng'] as num?)?.toDouble();
+
+    final Position locationToUse =
+        (_isDevMode && _simulatedPosition != null)
+            ? _simulatedPosition!
+            : Position(_centerLng, _centerLat);
+
+    String distance = '';
+
+    if (bathroomLat != null && bathroomLng != null) {
+      final dist = _getDistanceFeet(
+        locationToUse.lat.toDouble(),
+        locationToUse.lng.toDouble(),
+        bathroomLat,
+        bathroomLng,
+      );
+
+      distance = _formatDistance(dist);
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ExpandedBathroomFinderPage(
+              bathroomName: bathroomName,
+              buildingAbbrev: buildingAbbrev,
+              distance: distance,
+              details: '',
+            ),
+      ),
+    );
+  }
+
+  // NEW FROM GISELLE REVIEW 4: Creates restroom pins one by one
+  Future<void> _loadBathroomPins() async {
+    if (pointAnnotationManager == null) return;
+
+    _bathroomPinData.clear();
+
+    for (int i = 0; i < _bathroomPinOptions.length; i++) {
+      final annotation = await pointAnnotationManager!.create(
+        _bathroomPinOptions[i],
+      );
+
+      if (i < _bathroomBuildingData.length) {
+        _bathroomPinData[annotation.id] = _bathroomBuildingData[i];
+      }
     }
   }
 
@@ -656,7 +764,7 @@ class _MapScreenState extends State<MapScreen> {
     pointAnnotationManager =
         await mapboxMap!.annotations.createPointAnnotationManager();
     pointAnnotationManager?.addOnPointAnnotationClickListener(
-      _BathroomClickListener(context),
+      _BathroomClickListener(_handleBathroomPinTap, _bathroomPinData),
     );
 
     _devPinManager =
@@ -686,8 +794,13 @@ class _MapScreenState extends State<MapScreen> {
     _foodAlertMarkerBytes = await _createFoodAlertMarker();
 
     await _loadBuildingBathrooms();
-    await _loadStudyHallPins();
-    await _loadOutletPins();
+
+    // NEW FROM GISELLE REVIEW 4:
+    // _updateMapPins() will load only the pins for the current active filter.
+    if (widget.initialFilter != null) {
+      await Future.delayed(const Duration(milliseconds: 150));
+    }
+
     await _updateMapPins();
   }
 
@@ -968,7 +1081,9 @@ class _MapScreenState extends State<MapScreen> {
     await pointAnnotationManager!.deleteAll();
 
     if (_activeFilter == 'restroom' && _bathroomPinOptions.isNotEmpty) {
-      await pointAnnotationManager!.createMulti(_bathroomPinOptions);
+      await _loadBathroomPins();
+    } else {
+      _bathroomPinData.clear();
     }
 
     if (_studyHallPinManager != null) {
@@ -2313,34 +2428,58 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
           _dynamicList = top5;
           _isLoading = false;
         });
-
       for (var b in top5) {
-        String id = b['abbrev'] != 'None' ? b['abbrev'] : b['name'];
+        // NEW FROM GISELLE REVIEW 4: Match reviews by building name,
+        final String buildingName = (b['name'] ?? '').toString().trim();
+
         final snap =
             await FirebaseFirestore.instance
                 .collection('bathroom_reviews')
-                .where('bathroomName', isGreaterThanOrEqualTo: id)
-                .where('bathroomName', isLessThanOrEqualTo: '$id\uf8ff')
+                .where('bathroomName', isGreaterThanOrEqualTo: buildingName)
+                .where(
+                  'bathroomName',
+                  isLessThanOrEqualTo: '$buildingName\uf8ff',
+                )
                 .get();
-
+        // how to format preview
         if (snap.docs.isNotEmpty) {
           Map<String, int> counts = {};
+          double ratingTotal = 0;
+          int ratingCount = 0;
+
           for (var doc in snap.docs) {
-            Map<String, dynamic> fts = doc.data()['features'] ?? {};
+            final data = doc.data();
+
+            final rating = data['rating'];
+            if (rating is int) {
+              ratingTotal += rating;
+              ratingCount++;
+            } else if (rating is double) {
+              ratingTotal += rating;
+              ratingCount++;
+            }
+            // features
+            Map<String, dynamic> fts = data['features'] ?? {};
             fts.forEach((k, v) {
               if (v == true) counts[k] = (counts[k] ?? 0) + 1;
             });
           }
-          if (counts.isNotEmpty && mounted) {
-            setState(() {
-              b['details'] =
-                  counts.entries
+          // top features
+          final String topFeature =
+              counts.isNotEmpty
+                  ? counts.entries
                       .reduce((a, b) => a.value > b.value ? a : b)
-                      .key;
-            });
-          } else if (mounted) {
+                      .key
+                  : 'Reviewed';
+          // review
+          final String ratingText =
+              ratingCount > 0
+                  ? '⭐ ${(ratingTotal / ratingCount).toStringAsFixed(1)} ($ratingCount)'
+                  : 'Reviewed';
+
+          if (mounted) {
             setState(() {
-              b['details'] = "Functional";
+              b['details'] = '$ratingText • $topFeature';
             });
           }
         } else if (mounted) {
@@ -2370,6 +2509,41 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
             ),
           ),
         ),
+
+        // NEW FROM GISELLE: Add Bathroom Review button for restroom bottom sheet
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 4,
+          ),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8F0FE),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.add, color: Colors.black, size: 22),
+          ),
+          title: const Text(
+            'Add Bathroom Review',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const BathroomFinder()),
+            );
+
+            if (result == true) {
+              _loadList();
+            }
+          },
+        ),
+
+        // NEW FROM GISELLE: Divider to match Study Hall and Outlet sheet layout
+        Divider(color: Colors.grey.shade300, height: 20),
+
         if (_isLoading)
           const Padding(
             padding: EdgeInsets.all(40),
@@ -2415,13 +2589,22 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BathroomFinder(),
-                      ),
+
+                // NEW FROM GISELLE REVIEW 4: Opens expanded bathroom page from restroom preview
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => ExpandedBathroomFinderPage(
+                            bathroomName: (b["name"] ?? '').toString(),
+                            buildingAbbrev: (b["abbrev"] ?? '').toString(),
+                            distance: (b["distStr"] ?? '').toString(),
+                            details: (b["details"] ?? '').toString(),
+                          ),
                     ),
+                  );
+                },
               );
             },
           ),
@@ -2452,15 +2635,19 @@ class _SheetPlaceholder extends StatelessWidget {
   }
 }
 
+// NEW FROM GISELLE REVIEW 4: Restroom pin opens expanded bathroom page for that building
 class _BathroomClickListener extends OnPointAnnotationClickListener {
-  final BuildContext context;
-  _BathroomClickListener(this.context);
+  final void Function(Map<String, dynamic>) onTap;
+  final Map<String, Map<String, dynamic>> pinData;
+
+  _BathroomClickListener(this.onTap, this.pinData);
+
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const BathroomFinder()),
-    );
+    final data = pinData[annotation.id];
+    if (data == null) return;
+
+    onTap(data);
   }
 }
 

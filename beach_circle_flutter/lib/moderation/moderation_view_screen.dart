@@ -277,7 +277,7 @@ class _ReportsTab extends StatelessWidget {
         String title = '(No title)';
         String subtitle = '';
         String extra = '';
-
+        // target post: either post or map feature or forum
         if (targetType == 'post' || targetType == 'forum_post') {
           title = (data['title'] ?? '(No title)').toString();
           subtitle = (data['body'] ?? '(No body)').toString();
@@ -296,7 +296,7 @@ class _ReportsTab extends StatelessWidget {
           final accessibilityLevels = List<String>.from(
             data['accessibilityLevels'] ?? [],
           );
-
+          // accessibility and types from outlets + study hall fields
           extra =
               'Types: ${outletTypes.isEmpty ? "None listed" : outletTypes.join(", ")}\n'
               'Accessibility: ${accessibilityLevels.isEmpty ? "None listed" : accessibilityLevels.join(", ")}';
@@ -316,12 +316,43 @@ class _ReportsTab extends StatelessWidget {
           extra = 'Seats: $seats';
         } else if (targetType == 'bathroom_review') {
           title = (data['bathroomName'] ?? 'Bathroom Review').toString();
-          subtitle =
-              (data['comment'] ??
+
+          // bathroom reviews save the text under "comments"
+          final bathroomComment =
+              (data['comments'] ??
+                      data['comment'] ??
                       data['details'] ??
                       data['review'] ??
-                      'No comment provided.')
-                  .toString();
+                      '')
+                  .toString()
+                  .trim();
+
+          subtitle =
+              bathroomComment.isNotEmpty
+                  ? 'Comment: $bathroomComment'
+                  : 'Comment: No comment provided.';
+
+          final rating = data['rating'];
+          final features = data['features'];
+
+          if (rating != null) {
+            extra = 'Rating: $rating star(s)';
+          }
+
+          if (features is Map) {
+            final selectedFeatures =
+                features.entries
+                    .where((entry) => entry.value == true)
+                    .map((entry) => entry.key.toString())
+                    .toList();
+
+            if (selectedFeatures.isNotEmpty) {
+              extra =
+                  extra.isEmpty
+                      ? 'Features: ${selectedFeatures.join(", ")}'
+                      : '$extra\nFeatures: ${selectedFeatures.join(", ")}';
+            }
+          } // if report is dorm event or food alert
         } else if (targetType == 'event' || targetType == 'dorm_event') {
           title = (data['title'] ?? 'Dorm Event').toString();
           subtitle = (data['body'] ?? data['description'] ?? '').toString();

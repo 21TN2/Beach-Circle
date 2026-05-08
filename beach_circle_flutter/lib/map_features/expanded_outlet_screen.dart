@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+// NEW FROM GISELLE REVIEW 4: new import related to moderation
 import 'package:beach_circle_flutter/moderation/report_issue_page.dart';
 
 // expanded outlet page
 class ExpandedOutletScreen extends StatelessWidget {
   const ExpandedOutletScreen({
     super.key,
+    // NEW FROM GISELLE REVIEW 4: fields for reporting poster/user
     required this.docId,
     required this.reportedUserId,
+
     required this.title,
     required this.buildingName,
     required this.outletCount,
     required this.outletTypes,
     required this.accessibilityLevels,
   });
-
+  // NEW FROM GISELLE REVIEW 4: field format for moderation
   final String docId;
   final String reportedUserId;
+
   final String title;
   final String buildingName;
   final int? outletCount;
@@ -216,7 +220,7 @@ class ExpandedOutletScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // report outlet info button
+            // NEW FROM GISELLE REVIEW 4: report outlet info button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
