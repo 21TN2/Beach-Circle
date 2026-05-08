@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ExpandedDormEventPg extends StatelessWidget {
   const ExpandedDormEventPg({
+    // data collection needed
     super.key,
     required this.title,
     required this.location,
@@ -28,7 +29,7 @@ class ExpandedDormEventPg extends StatelessWidget {
     required this.isInterested,
     required this.onInterestedTap,
   });
-
+  // data format type
   final String title;
   final String location;
   final String body;
@@ -48,10 +49,11 @@ class ExpandedDormEventPg extends StatelessWidget {
   final bool isInterested;
   final VoidCallback onInterestedTap;
 
-  static const Color _bcYellow  = Color(0xFFF2C400);
-  static const Color _cardGrey  = Color(0xFFE5E5E5);
+  static const Color _bcYellow = Color(0xFFF2C400);
+  static const Color _cardGrey = Color(0xFFE5E5E5);
   static const Color _accentGold = Color(0xFFD1B000);
 
+  // how to open links
   Future<void> _openLink(BuildContext context, String url) async {
     final trimmedUrl = url.trim();
     final formattedUrl =
@@ -63,23 +65,25 @@ class ExpandedDormEventPg extends StatelessWidget {
     final uri = Uri.parse(formattedUrl);
     final didLaunch = await launchUrl(uri, mode: LaunchMode.platformDefault);
     if (!didLaunch && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Could not open link.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open link.')));
     }
   }
 
+  // formatting insta links
   String _formatInstagramUrl(String value) {
     final trimmedValue = value.trim();
     if (trimmedValue.startsWith('http://') ||
         trimmedValue.startsWith('https://')) {
       return trimmedValue;
     }
-    final handle = trimmedValue.startsWith('@')
-        ? trimmedValue.substring(1)
-        : trimmedValue;
+    final handle =
+        trimmedValue.startsWith('@') ? trimmedValue.substring(1) : trimmedValue;
     return 'https://instagram.com/$handle';
   }
 
+  // info box
   Widget _infoItem({
     required IconData icon,
     required String label,
@@ -90,40 +94,52 @@ class ExpandedDormEventPg extends StatelessWidget {
         children: [
           Icon(icon, size: 28, color: Colors.black),
           const SizedBox(height: 8),
-          Text(label,
-              style: const TextStyle(
-                  color: _accentGold,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _accentGold,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(value,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.visible,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                  height: 1.35)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.visible,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              height: 1.35,
+            ),
+          ),
         ],
       ),
     );
   }
 
+  // section card preview
   Widget _sectionCard({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-          color: _cardGrey, borderRadius: BorderRadius.circular(24)),
+        color: _cardGrey,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  color: _accentGold,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: _accentGold,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 12),
           child,
         ],
@@ -131,6 +147,7 @@ class ExpandedDormEventPg extends StatelessWidget {
     );
   }
 
+  // how the link row looks
   Widget _linkRow({
     required IconData icon,
     required String label,
@@ -143,19 +160,26 @@ class ExpandedDormEventPg extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: Colors.black87),
           const SizedBox(width: 8),
-          Text(label,
-              style: isPlainText
-                  ? const TextStyle(
-                      color: Colors.black87, fontWeight: FontWeight.w700)
-                  : const TextStyle(
+          Text(
+            label,
+            style:
+                isPlainText
+                    ? const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                    )
+                    : const TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.underline)),
+                      decoration: TextDecoration.underline,
+                    ),
+          ),
         ],
       ),
     );
   }
 
+  // building item box: looking for fields
   @override
   Widget build(BuildContext context) {
     final normalizedFlyerLink =
@@ -164,16 +188,17 @@ class ExpandedDormEventPg extends StatelessWidget {
         (registrationLink == null || registrationLink == 'null')
             ? ''
             : registrationLink!.trim();
-
-    final hasFlyer        = normalizedFlyerLink.isNotEmpty;
+    // what stay connected section needs : layout of links + highlights
+    final hasFlyer = normalizedFlyerLink.isNotEmpty;
     final hasRegistration = normalizedRegistrationLink.isNotEmpty;
-    final hasLinks        = hasFlyer || hasRegistration;
-    final hasImage        = imageUrl != null && imageUrl!.trim().isNotEmpty;
-    final hasHighlights   = highlights != null && highlights!.isNotEmpty;
+    final hasLinks = hasFlyer || hasRegistration;
+    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
+    final hasHighlights = highlights != null && highlights!.isNotEmpty;
     final hasInterestedCount = interestedCount != null;
-    final hasWebsite   = websiteLink != null && websiteLink!.trim().isNotEmpty;
-    final hasInstagram = instagramLink != null && instagramLink!.trim().isNotEmpty;
-    final hasEmail     = contactEmail != null && contactEmail!.trim().isNotEmpty;
+    final hasWebsite = websiteLink != null && websiteLink!.trim().isNotEmpty;
+    final hasInstagram =
+        instagramLink != null && instagramLink!.trim().isNotEmpty;
+    final hasEmail = contactEmail != null && contactEmail!.trim().isNotEmpty;
     final hasStayConnected = hasWebsite || hasInstagram || hasEmail;
 
     return Scaffold(
@@ -204,9 +229,10 @@ class ExpandedDormEventPg extends StatelessWidget {
                       child: Text(
                         "Dorm Life",
                         style: TextStyle(
-                            color: Colors.black45,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600),
+                          color: Colors.black45,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -217,16 +243,15 @@ class ExpandedDormEventPg extends StatelessWidget {
             ),
           ],
         ),
-        actions: [                                        // ← star lives here
+        actions: [
+          // ← star lives here
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               onTap: onInterestedTap,
               child: Icon(
                 isInterested ? Icons.star : Icons.star_border,
-                color: isInterested
-                    ? const Color(0xFFFFD700)
-                    : Colors.black,
+                color: isInterested ? const Color(0xFFFFD700) : Colors.black,
                 size: 26,
               ),
             ),
@@ -241,67 +266,76 @@ class ExpandedDormEventPg extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w800, height: 1.1),
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                height: 1.1,
+              ),
             ),
             const SizedBox(height: 18),
-
+            // if it has image
             if (hasImage) ...[
               Image.network(
                 imageUrl!,
                 width: double.infinity,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Container(
-                  color: _cardGrey,
-                  alignment: Alignment.center,
-                  child: const Text("Image failed to load",
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
+                errorBuilder:
+                    (_, __, ___) => Container(
+                      color: _cardGrey,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Image failed to load",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
               ),
               const SizedBox(height: 22),
             ],
-
+            // building main container: time, location, date
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
               decoration: BoxDecoration(
-                  color: _cardGrey,
-                  borderRadius: BorderRadius.circular(24)),
+                color: _cardGrey,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _infoItem(
-                      icon: Icons.calendar_month,
-                      label: "Date",
-                      value: dateLabel),
+                    icon: Icons.calendar_month,
+                    label: "Date",
+                    value: dateLabel,
+                  ),
                   const SizedBox(width: 10),
                   _infoItem(
-                      icon: Icons.location_on_outlined,
-                      label: "Location",
-                      value: location),
+                    icon: Icons.location_on_outlined,
+                    label: "Location",
+                    value: location,
+                  ),
                   const SizedBox(width: 10),
                   _infoItem(
-                      icon: Icons.access_time,
-                      label: "Time",
-                      value: timeText),
+                    icon: Icons.access_time,
+                    label: "Time",
+                    value: timeText,
+                  ),
                 ],
               ),
             ),
-
+            // keeping track of interested + displaying it
             if (hasInterestedCount) ...[
               const SizedBox(height: 22),
               _sectionCard(
                 title: "Interested",
                 child: Row(
                   children: [
-                    const Icon(Icons.star,
-                        color: Color(0xFFFFD700), size: 26),
+                    const Icon(Icons.star, color: Color(0xFFFFD700), size: 26),
                     const SizedBox(width: 10),
                     Text(
                       "$interestedCount people are interested",
                       style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),
@@ -309,19 +343,20 @@ class ExpandedDormEventPg extends StatelessWidget {
             ],
 
             const SizedBox(height: 22),
-
+            //section for more description
             _sectionCard(
               title: "Description",
               child: Text(
                 body.isEmpty ? "No description available." : body,
                 style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.6,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600),
+                  fontSize: 14,
+                  height: 1.6,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            // ↓ ADD THIS
+            // gets room number
             if (roomNumber != null && roomNumber!.isNotEmpty) ...[
               const SizedBox(height: 22),
               _sectionCard(
@@ -329,46 +364,56 @@ class ExpandedDormEventPg extends StatelessWidget {
                 child: Text(
                   roomNumber!,
                   style: const TextStyle(
-                      fontSize: 14,
-                      height: 1.6,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
-            // ↑ ADD THIS
+            // IF events has additional highlights
             if (hasHighlights) ...[
               const SizedBox(height: 22),
               _sectionCard(
                 title: "Good to Know",
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: highlights!
-                      .map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("• ",
+                  children:
+                      highlights!
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "• ",
                                     style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700)),
-                                Expanded(
-                                  child: Text(item,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      item,
                                       style: const TextStyle(
-                                          fontSize: 14,
-                                          height: 1.5,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w600)),
-                                ),
-                              ],
+                                        fontSize: 14,
+                                        height: 1.5,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ))
-                      .toList(),
+                          )
+                          .toList(),
                 ),
               ),
             ],
-
+            // if events has links
             if (hasLinks) ...[
               const SizedBox(height: 22),
               _sectionCard(
@@ -381,23 +426,22 @@ class ExpandedDormEventPg extends StatelessWidget {
                         icon: Icons.link,
                         label: normalizedFlyerLink,
                         isPlainText: true,
-                        onTap: () =>
-                            _openLink(context, normalizedFlyerLink),
+                        onTap: () => _openLink(context, normalizedFlyerLink),
                       ),
-                    if (hasFlyer && hasRegistration)
-                      const SizedBox(height: 10),
+                    if (hasFlyer && hasRegistration) const SizedBox(height: 10),
                     if (hasRegistration)
                       _linkRow(
                         icon: Icons.app_registration,
                         label: "Register Here",
-                        onTap: () => _openLink(
-                            context, normalizedRegistrationLink),
+                        onTap:
+                            () =>
+                                _openLink(context, normalizedRegistrationLink),
                       ),
                   ],
                 ),
               ),
             ],
-
+            // if event has stay connected section: builds the cards + how to open links
             if (hasStayConnected) ...[
               const SizedBox(height: 22),
               _sectionCard(
@@ -418,8 +462,11 @@ class ExpandedDormEventPg extends StatelessWidget {
                         icon: Icons.camera_alt_outlined,
                         label: instagramLink!,
                         isPlainText: true,
-                        onTap: () => _openLink(
-                            context, _formatInstagramUrl(instagramLink!)),
+                        onTap:
+                            () => _openLink(
+                              context,
+                              _formatInstagramUrl(instagramLink!),
+                            ),
                       ),
                     if (hasEmail && (hasWebsite || hasInstagram))
                       const SizedBox(height: 10),
@@ -428,8 +475,7 @@ class ExpandedDormEventPg extends StatelessWidget {
                         icon: Icons.email_outlined,
                         label: contactEmail!,
                         isPlainText: true,
-                        onTap: () =>
-                            _openLink(context, 'mailto:$contactEmail'),
+                        onTap: () => _openLink(context, 'mailto:$contactEmail'),
                       ),
                   ],
                 ),
@@ -437,7 +483,7 @@ class ExpandedDormEventPg extends StatelessWidget {
             ],
 
             const SizedBox(height: 22),
-
+            // report event button: what user sees at bottom at page + takes them to report issue page when clicked on
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -445,29 +491,32 @@ class ExpandedDormEventPg extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ReportIssuePage(
-                        targetId: eventId,
-                        reportedUserId: eventOwnerId,
-                        targetType: 'event',
-                      ),
+                      builder:
+                          (_) => ReportIssuePage(
+                            targetId: eventId,
+                            reportedUserId: eventOwnerId,
+                            targetType: 'event',
+                          ),
                     ),
                   );
                 },
+                // creates report event button
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                      color: Color(0xFFD6D6D6), width: 1.3),
+                  side: const BorderSide(color: Color(0xFFD6D6D6), width: 1.3),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   backgroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.flag_outlined, color: Colors.black),
                 label: const Text(
                   "Report Event",
                   style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15),
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
