@@ -62,3 +62,5 @@ __pycache__/
 Thumbs.db
 
 lib\main.dart
+
+node_modules
