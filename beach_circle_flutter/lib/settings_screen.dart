@@ -1,6 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_screen.dart'; // Ensure this import exists
+
+Future<void> _updateSetting(String field, bool value) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+    field: value,
+  }, SetOptions(merge: true));
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -191,17 +200,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ----- Notifications Section -----
             _buildSectionHeader('Notifications'),
-            _buildToggleOption('Enable Notifications', _notificationsEnabled, () {
-              setState(() => _notificationsEnabled = !_notificationsEnabled);
+            _buildToggleOption('Enable Notifications', _notificationsEnabled, () async {
+              final newVal = !_notificationsEnabled;
+              setState(() => _notificationsEnabled = newVal);
+              await _updateSetting('notif_enabled', newVal); 
             }),
-            _buildToggleOption('Event Reminders', _eventReminders, () {
-              setState(() => _eventReminders = !_eventReminders);
+            _buildToggleOption('Event Reminders', _eventReminders, () async {
+              //setState(() => _eventReminders = !_eventReminders);
+              final newVal = !_eventReminders;
+              setState(() => _eventReminders = newVal);
+              await _updateSetting('notif_eventReminders', newVal);
             }),
-            _buildToggleOption('Food Alerts', _foodAlerts, () {
-              setState(() => _foodAlerts = !_foodAlerts);
+            _buildToggleOption('Food Alerts', _foodAlerts, () async {
+              final newVal = !_foodAlerts;
+              setState(() => _foodAlerts = newVal);
+              await _updateSetting('notif_foodAlerts', newVal);
             }),
-            _buildToggleOption('System Alerts', _systemAlerts, () {
-              setState(() => _systemAlerts = !_systemAlerts);
+            _buildToggleOption('System Alerts', _systemAlerts, () async {
+              //setState(() => _systemAlerts = !_systemAlerts);
+              final newVal = !_systemAlerts;
+              setState(() => _systemAlerts = newVal);
+              await _updateSetting('notif_systemAlerts', newVal);
+              
             }),
 
             // ----- Location and Map Section -----
