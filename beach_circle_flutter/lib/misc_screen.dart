@@ -11,11 +11,7 @@ import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 
 class MiscScreen extends StatefulWidget {
-  const MiscScreen({
-    super.key,
-    this.forumService,
-    this.onOpenCategory,
-  });
+  const MiscScreen({super.key, this.forumService, this.onOpenCategory});
 
   final ForumService? forumService;
   final Null Function(ForumCategory c)? onOpenCategory;
@@ -109,9 +105,10 @@ class _MiscScreenState extends State<MiscScreen> {
         }
 
         if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
-          final oldList = (data['starredCategories'] as List)
-              .map((e) => e == true)
-              .toList();
+          final oldList =
+              (data['starredCategories'] as List)
+                  .map((e) => e == true)
+                  .toList();
 
           for (int i = 0; i < builtInCategories.length; i++) {
             final isStar = i < oldList.length ? oldList[i] : false;
@@ -160,10 +157,11 @@ class _MiscScreenState extends State<MiscScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ForumCategoryPg(
-            category: category,
-            forumService: _forumService,
-          ),
+          builder:
+              (_) => ForumCategoryPg(
+                category: category,
+                forumService: _forumService,
+              ),
         ),
       );
     }
@@ -216,10 +214,11 @@ class _MiscScreenState extends State<MiscScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => CreateForumPage(
-                onClose: () => Navigator.pop(context),
-                onSubmitted: () => Navigator.pop(context),
-              ),
+              builder:
+                  (_) => CreateForumPage(
+                    onClose: () => Navigator.pop(context),
+                    onSubmitted: () => Navigator.pop(context),
+                  ),
             ),
           );
         },
@@ -248,9 +247,10 @@ class _MiscScreenState extends State<MiscScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: isInterested
-                            ? const Color(0xFFFFC107)
-                            : const Color(0xFFE59A00),
+                        color:
+                            isInterested
+                                ? const Color(0xFFFFC107)
+                                : const Color(0xFFE59A00),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -273,10 +273,11 @@ class _MiscScreenState extends State<MiscScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection("forum_requests")
-                      .where("status", isEqualTo: "approved")
-                      .snapshots(),
+                  stream:
+                      FirebaseFirestore.instance
+                          .collection("forum_requests")
+                          .where("status", isEqualTo: "approved")
+                          .snapshots(),
                   builder: (context, snapshot) {
                     // built-in + approved categories shown in homepage
                     final List<_CategoryItem> all = List<_CategoryItem>.from(
@@ -412,7 +413,6 @@ class _CategoryCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ],

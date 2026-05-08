@@ -48,9 +48,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
   }
@@ -371,19 +368,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildEventBoardTab() {
-  return Navigator(
-    key: _ebNavKey,
-    onGenerateRoute: (settings) {
-      return MaterialPageRoute(builder: (_) => const EventBoardScreen());
-    },
-  );
-}
+    return Navigator(
+      key: _ebNavKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(builder: (_) => const EventBoardScreen());
+      },
+    );
+  }
 
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
-        return _buildEventBoardTab();
+          return _buildEventBoardTab();
         case "dormlife":
           return _buildDormTab();
         case "hourscap":
@@ -499,7 +496,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Weather? _weather; //User current location weather
 
   bool _isLoading = true; //Whether user accepts permission or denies
-  bool _locationDenied = false; //Location permission denied 
+  bool _locationDenied = false; //Location permission denied
 
   String? _currentLocationName;
 
@@ -550,7 +547,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       String city = placemarks[0].locality ?? "";
       String state = placemarks[0].administrativeArea ?? "";
 
-      String stateAbbreviation = _getStateAbbreviation(state); //Ex. California -> CA
+      String stateAbbreviation = _getStateAbbreviation(
+        state,
+      ); //Ex. California -> CA
 
       final current = await _weatherService.getWeatherByCoords(
         position.latitude,
@@ -559,7 +558,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (!mounted) return;
 
-    //Weather Widget Display 
+      //Weather Widget Display
       setState(() {
         _csulbWeather = csulb;
         _weather = current;
@@ -623,7 +622,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (condition == "clear") {
       return isNight
-          ? "assets/weather/night.json" //Json file is the weather icons 
+          ? "assets/weather/night.json" //Json file is the weather icons
           : "assets/weather/sunny.json";
     }
 
@@ -720,7 +719,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String title,
     required String name,
   }) {
-
     //Implementing Background onto Widget
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -745,7 +743,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: CircularProgressIndicator(color: Colors.white),
                   )
                   : (title == "Current Location" && _locationDenied)
-                  ? _buildLocationRetry() 
+                  ? _buildLocationRetry()
                   : const SizedBox()
               : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -798,7 +796,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
 
-                  //Weather icon 
+                  //Weather icon
                   Lottie.asset(
                     _getWeatherAnimationFor(weather),
                     width: 95,
@@ -815,7 +813,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-
           //Display message requiring location permissions
           title: const Text("Location Access Required"),
           content: const Text(
@@ -838,9 +835,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildLocationRetry() {
     return GestureDetector(
       onTap: () async {
-        LocationPermission permission = await Geolocator.requestPermission(); //Permission Request
+        LocationPermission permission =
+            await Geolocator.requestPermission(); //Permission Request
 
-        if (permission == LocationPermission.always || 
+        if (permission == LocationPermission.always ||
             permission == LocationPermission.whileInUse) {
           _fetchWeather();
         }
