@@ -4,6 +4,7 @@ class ForumReply {
   final String id;
   final String postId;
   final String body;
+  final String authorId; // NEW: needed for profile pictures
   final String author;
   final DateTime createdAt;
 
@@ -11,6 +12,7 @@ class ForumReply {
     required this.id,
     required this.postId,
     required this.body,
+    this.authorId = '', // NEW: keeps old code from breaking
     required this.author,
     required this.createdAt,
   });
@@ -31,9 +33,10 @@ class ForumReply {
 
     return ForumReply(
       id: id,
-      postId: (data['postId'] ?? '') as String,
-      body: (data['body'] ?? '') as String,
-      author: (data['author'] ?? 'Anonymous') as String,
+      postId: (data['postId'] ?? '').toString(),
+      body: (data['body'] ?? '').toString(),
+      authorId: (data['authorId'] ?? '').toString(), // NEW
+      author: (data['author'] ?? data['authorName'] ?? 'Anonymous').toString(),
       createdAt: created,
     );
   }
@@ -44,6 +47,7 @@ class ForumReply {
   Map<String, dynamic> toMap() => {
     'postId': postId,
     'body': body,
+    'authorId': authorId, // NEW
     'author': author,
     // Prefer Timestamp in Firestore writes
     'createdAt': Timestamp.fromDate(createdAt),

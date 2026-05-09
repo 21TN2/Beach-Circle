@@ -64,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
-//State Abbreviation for Weather Location
+  //State Abbreviation for Weather Location
   String _getStateAbbreviation(String stateName) {
     const stateMap = {
       "Alabama": "AL",
@@ -406,7 +406,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (_currentIndex == 2) return _buildForumTab();
     if (_currentIndex == 3) return const ResourcesPage();
-    return const SettingsScreen();
+    return SettingsScreen(
+      onBackToDashboard: () {
+        setState(() {
+          _currentIndex = 0;
+          _homePage = "home";
+          _mapFilter = null;
+        });
+      },
+    );
   }
 
   PreferredSizeWidget? _buildAppBar() {
@@ -541,7 +549,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // Current location of the User
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       //Find City & State of the User
