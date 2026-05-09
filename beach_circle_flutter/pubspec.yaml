@@ -36,6 +36,9 @@ dependencies:
   geocoding: ^4.0.0
   lottie: ^3.3.2
 
+  #Moderation
+  profanity_filter: ^2.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

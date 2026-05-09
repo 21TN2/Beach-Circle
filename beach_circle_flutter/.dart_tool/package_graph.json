@@ -26,6 +26,7 @@
         "mapbox_maps_flutter",
         "maps_toolkit",
         "path_provider",
+        "profanity_filter",
         "url_launcher"
       ],
       "devDependencies": [
@@ -57,6 +58,11 @@
         "test_api",
         "vector_math"
       ]
+    },
+    {
+      "name": "profanity_filter",
+      "version": "2.0.0",
+      "dependencies": []
     },
     {
       "name": "lottie",
