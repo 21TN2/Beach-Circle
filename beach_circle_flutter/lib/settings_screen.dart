@@ -12,7 +12,9 @@ Future<void> _updateSetting(String field, bool value) async {
 }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.onBackToDashboard});
+
+  final VoidCallback? onBackToDashboard;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -99,9 +101,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 2,
-              offset: const Offset(0, 1)),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
         ],
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -113,9 +116,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               text,
               style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
             ),
             if (trailing != null) trailing,
           ],
@@ -132,7 +136,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         automaticallyImplyLeading: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (widget.onBackToDashboard != null) {
+              widget.onBackToDashboard!();
+            }
+          },
         ),
         backgroundColor: const Color(0xFFFFD700),
         elevation: 0,
@@ -179,7 +187,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -200,11 +210,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ----- Notifications Section -----
             _buildSectionHeader('Notifications'),
-            _buildToggleOption('Enable Notifications', _notificationsEnabled, () async {
-              final newVal = !_notificationsEnabled;
-              setState(() => _notificationsEnabled = newVal);
-              await _updateSetting('notif_enabled', newVal); 
-            }),
+            _buildToggleOption(
+              'Enable Notifications',
+              _notificationsEnabled,
+              () async {
+                final newVal = !_notificationsEnabled;
+                setState(() => _notificationsEnabled = newVal);
+                await _updateSetting('notif_enabled', newVal);
+              },
+            ),
             _buildToggleOption('Event Reminders', _eventReminders, () async {
               //setState(() => _eventReminders = !_eventReminders);
               final newVal = !_eventReminders;
@@ -221,7 +235,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final newVal = !_systemAlerts;
               setState(() => _systemAlerts = newVal);
               await _updateSetting('notif_systemAlerts', newVal);
-              
             }),
 
             // ----- Location and Map Section -----

@@ -179,6 +179,7 @@ class ForumCategoryPg extends StatelessWidget {
                           currentUserId: currentUserId,
                           currentUserName: currentUserName,
                           postAuthorName: p.authorName ?? "Anonymous",
+                          postAuthorId: p.authorId,
                           postCreatedAt: p.createdAt,
                           mediaUrl: p.mediaUrl,
                           mediaType: p.mediaType,
