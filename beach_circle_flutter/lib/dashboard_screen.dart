@@ -1,4 +1,3 @@
-import 'package:beach_circle_flutter/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notification_test_screen.dart';
@@ -7,9 +6,8 @@ import 'eventboard_screen.dart';
 import 'feedbackanalytics_screen.dart';
 import 'hourscap_screen.dart';
 import 'misc_screen.dart';
-import 'addres_screen.dart';
 import 'settings_screen.dart';
-
+import 'map/map_screen.dart';
 
 // Weather packages
 import 'package:lottie/lottie.dart';
@@ -18,21 +16,12 @@ import 'package:beach_circle_flutter/weather/services/weather_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
-//import 'bathroom_finder.dart';
-//import 'map/map_screen.dart';
-
-
-// Weather packages
-import 'package:lottie/lottie.dart';
-import 'package:beach_circle_flutter/weather/models/weather_model.dart';
-import 'package:beach_circle_flutter/weather/services/weather_service.dart';
-
 // Forum imports
-import 'package:beach_circle_flutter/screens/moderation_view_screen.dart';
 import 'package:beach_circle_flutter/community_goods/smf/model/forum_category.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_pg.dart';
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 import 'package:beach_circle_flutter/community_goods/smf/screens/create_forum_page_pg.dart';
+import 'package:beach_circle_flutter/moderation/moderation_view_screen.dart';
 
 import 'screens/resources_page.dart';
 
@@ -46,6 +35,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   String _homePage = "home";
+  String? _mapFilter;
 
   final ForumService _forumService = ForumService();
   final GlobalKey<NavigatorState> _forumNavKey = GlobalKey<NavigatorState>();
@@ -55,14 +45,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  // NEW FROM GISELLE 4: ADDING MODERATION VIEW
+  static const List<String> adminEmails = [
+    'teef@gmail.com',
+    'reytest@gmail.com',
+    'giselle1@gmail.com',
+    'nguyentheresa204@gmail.com',
+    'josuealfaro8441@gmail.com',
+  ];
+
+  bool get _isModerator {
+    final email = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+    return email != null &&
+        adminEmails.map((e) => e.toLowerCase()).contains(email);
+  }
 
   void _logOut() async {
     await FirebaseAuth.instance.signOut();
   }
 
-//State Abbreviation for Weather Location 
+  //State Abbreviation for Weather Location
   String _getStateAbbreviation(String stateName) {
     const stateMap = {
       "Alabama": "AL",
@@ -121,7 +123,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ----------  dashboard tiles  ----------
-
   Widget _tileOpen(IconData icon, String label, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
@@ -130,7 +131,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          // Fixed deprecation warning
           hoverColor: Colors.blue.withValues(alpha: 0.25),
           splashColor: Colors.blue.withValues(alpha: 0.25),
           onTap: onTap,
@@ -188,7 +188,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          // CSULB Image
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
@@ -210,7 +209,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // -------- DASHBOARD TILES --------------
           const Text(
             'Map Features',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -219,23 +217,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           _scrollingRow([
             _tileOpen(Icons.local_pizza, 'Food Alert', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "food";
+              });
             }),
             _tileOpen(Icons.directions_car, 'Parking', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "parking";
+              });
             }),
             _tileOpen(Icons.power, 'Outlets', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "charging";
+              });
             }),
             // Bathroom Tile
             _tileOpen(Icons.family_restroom, 'Bathrooms', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "restroom";
+              });
             }),
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (_) => const BathroomFinder()),
             _tileOpen(Icons.auto_stories, 'Study Halls', () {
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _mapFilter = "study";
+              });
             }),
           ]),
 
@@ -364,19 +374,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildEventBoardTab() {
-  return Navigator(
-    key: _ebNavKey,
-    onGenerateRoute: (settings) {
-      return MaterialPageRoute(builder: (_) => const EventBoardScreen());
-    },
-  );
-}
+    return Navigator(
+      key: _ebNavKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(builder: (_) => const EventBoardScreen());
+      },
+    );
+  }
 
   Widget _buildBody(BuildContext context) {
     if (_currentIndex == 0) {
       switch (_homePage) {
         case "events":
-        return _buildEventBoardTab();
+          return _buildEventBoardTab();
         case "dormlife":
           return _buildDormTab();
         case "hourscap":
@@ -388,10 +398,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return _dashboardBody(context);
       }
     }
-    if (_currentIndex == 1) return const MapScreen();
+    if (_currentIndex == 1 && (_mapFilter != null)) {
+      return MapScreen(initialFilter: _mapFilter);
+    } else if (_currentIndex == 1) {
+      return MapScreen();
+    }
+
     if (_currentIndex == 2) return _buildForumTab();
     if (_currentIndex == 3) return const ResourcesPage();
-    return const SettingsScreen();
+    return SettingsScreen(
+      onBackToDashboard: () {
+        setState(() {
+          _currentIndex = 0;
+          _homePage = "home";
+          _mapFilter = null;
+        });
+      },
+    );
   }
 
   PreferredSizeWidget? _buildAppBar() {
@@ -403,18 +426,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'teef@gmail.com',
       'reytest@gmail.com',
       'giselle1@gmail.com',
-      'josuealfaro8441@gmail.com',
     ];
 
     if (_currentIndex == 0 && _homePage == "home") {
       return AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Dashboard'),
         centerTitle: true,
         actions: [
-          // Check if current user is in the admin list
-          if (user?.email != null && adminEmails.contains(user!.email))
+          if (_isModerator)
             IconButton(
               icon: const Icon(Icons.bug_report, color: Colors.red),
+              tooltip: 'Notification Test',
               onPressed: () {
                 Navigator.push(
                   context,
@@ -424,21 +447,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               },
             ),
-          if (user?.email !=
-                  null && // NEW FROM GISELLE ---> ADDED MODS VIEW SCREEN
-              adminEmails.contains(
-                user!.email,
-              )) // Checks current user is a moderator
+          if (_isModerator) // NEW FROM GISELLE 4: To view moderation
             IconButton(
-              icon: const Icon(Icons.admin_panel_settings),
+              icon: const Icon(
+                Icons.admin_panel_settings,
+                color: Colors.black87,
+              ),
+              tooltip: 'Moderation',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder:
-                        (_) => ModerationViewScreen(
-                          forumService: _forumService,
-                        ), // to view Moderator only screen
+                        (context) =>
+                            ModerationViewScreen(forumService: _forumService),
                   ),
                 );
               },
@@ -464,6 +486,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentIndex = index;
             if (index == 0) _homePage = "home";
+            if (index != 1) _mapFilter = null;
           });
         },
         items: const [
@@ -486,7 +509,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Weather? _weather; //User current location weather
 
   bool _isLoading = true; //Whether user accepts permission or denies
-  bool _locationDenied = false; //Location permission denied 
+  bool _locationDenied = false; //Location permission denied
 
   String? _currentLocationName;
 
@@ -525,7 +548,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // Current location of the User
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       //Find City & State of the User
@@ -537,7 +562,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       String city = placemarks[0].locality ?? "";
       String state = placemarks[0].administrativeArea ?? "";
 
-      String stateAbbreviation = _getStateAbbreviation(state); //Ex. California -> CA
+      String stateAbbreviation = _getStateAbbreviation(
+        state,
+      ); //Ex. California -> CA
 
       final current = await _weatherService.getWeatherByCoords(
         position.latitude,
@@ -546,7 +573,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (!mounted) return;
 
-    //Weather Widget Display 
+      //Weather Widget Display
       setState(() {
         _csulbWeather = csulb;
         _weather = current;
@@ -555,7 +582,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Weather error: $e");
+      debugPrint("Weather error: $e");
     }
   }
 
@@ -610,7 +637,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (condition == "clear") {
       return isNight
-          ? "assets/weather/night.json" //Json file is the weather icons 
+          ? "assets/weather/night.json" //Json file is the weather icons
           : "assets/weather/sunny.json";
     }
 
@@ -707,7 +734,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String title,
     required String name,
   }) {
-
     //Implementing Background onto Widget
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -732,7 +758,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: CircularProgressIndicator(color: Colors.white),
                   )
                   : (title == "Current Location" && _locationDenied)
-                  ? _buildLocationRetry() 
+                  ? _buildLocationRetry()
                   : const SizedBox()
               : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -785,7 +811,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
 
-                  //Weather icon 
+                  //Weather icon
                   Lottie.asset(
                     _getWeatherAnimationFor(weather),
                     width: 95,
@@ -796,45 +822,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  //Location permission Denied
-  void _showLocationErrorDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-
-          //Display message requiring location permissions
-          title: const Text("Location Access Required"),
-          content: const Text(
-            "Please enable location access to view current weather.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   //If location permission is not accepted or denied(Allow Retry)
   Widget _buildLocationRetry() {
     return GestureDetector(
       onTap: () async {
-        LocationPermission permission = await Geolocator.requestPermission(); //Permission Request
+        LocationPermission permission =
+            await Geolocator.requestPermission(); //Permission Request
 
-        if (permission == LocationPermission.always || 
+        if (permission == LocationPermission.always ||
             permission == LocationPermission.whileInUse) {
           _fetchWeather();
         }
       },
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.location_off, size: 50, color: Colors.white),
           SizedBox(height: 12),
 

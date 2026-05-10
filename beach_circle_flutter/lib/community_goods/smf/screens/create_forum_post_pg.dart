@@ -240,7 +240,7 @@ class _CreateForumPostPgState extends State<CreateForumPostPg> {
                 const SizedBox(height: 16),
 
                 const Text(
-                  "Post Media (Optional)",
+                  "Attach Media",
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),

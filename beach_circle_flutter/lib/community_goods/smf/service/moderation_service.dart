@@ -4,10 +4,18 @@
 // imports related to firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:profanity_filter/profanity_filter.dart';
 
 class ModerationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Added moderation for inappropriate content
+  static final ProfanityFilter _filter = ProfanityFilter();
+
+  static bool containsBlockedContent(String text) {
+    return _filter.hasProfanity(text);
+  }
 
   Future<void> reportContent({
     required String targetId,
@@ -17,7 +25,13 @@ class ModerationService {
     required String details,
     String? imageUrl,
   }) async {
-    final uid = _auth.currentUser!.uid;
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User must be signed in to report content.');
+    }
+
+    final uid = user.uid;
 
     await _db.collection('reports').add({
       'targetType': targetType,

@@ -9,6 +9,8 @@ test_beach_circle_key.json
 **/GoogleService-Info.plist
 # Firebase secrets
 lib/firebase_options.dart
+# Ignore my secret API keys
+lib/email_config.dart
 
 # Keystores
 *.jks
@@ -62,3 +64,7 @@ __pycache__/
 Thumbs.db
 
 lib\main.dart
+
+node_modules
+functions\node_modules
+node_modules

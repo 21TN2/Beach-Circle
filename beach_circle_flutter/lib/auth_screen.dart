@@ -60,18 +60,22 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Grab the screen height once to use for our math
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5C518),
       body: SafeArea(
         child: Stack(
           children: [
-            // WHITE DOME BACKGROUND BOTTOM HALF
+            // FIX 1: Anchor the dome to the TOP instead of the bottom.
+            // 100% - 55% = 45%. This keeps it exactly where it was, but immune to the keyboard!
             Positioned(
-              bottom: 0,
+              top: screenHeight * 0.45, 
               left: -50,
               right: -50,
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.55,
+                height: screenHeight * 0.55,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -82,153 +86,145 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
 
-            // CONTENT
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 1),
-
-                  // BEACH CIRCLE LOGO
-                  Image.asset('assets/logo.png', width: 400, height: 400),
-
-                  const SizedBox(height: 1),
-
-                  // LOG IN WITH EMAIL & CREATE ACCOUNT TEXT
-                  Text(
-                    _isLogin ? 'Log in with email' : 'Create an account',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // EMAIL
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.email, color: Colors.black),
-                        hintText: 'Email',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  // PASSWORD
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.lock, color: Colors.black),
-                        hintText: 'Password',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  // LOGIN BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child:
-                          _isLoading
-                              ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text(
-                                _isLogin ? 'Login' : 'Sign Up',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  // BOTTOM LINKS (TEXT FOR NOW)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            // FIX 2: Wrap the content in a SingleChildScrollView so it doesn't overflow
+            Positioned.fill(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(), // Adds a nice iOS-style bounce
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          // setState(() {
-                          //   _isLogin = !_isLogin;
-                          // });
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          _isLogin
-                              ? 'Click Here to Sign Up'
-                              : 'Have an account? Log In',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      const Text(
-                        'Continue as a Guest',
-                        style: TextStyle(
-                          fontSize: 14,
+                      const SizedBox(height: 1),
+
+                      // BEACH CIRCLE LOGO
+                      Image.asset('assets/logo.png', width: 400, height: 400),
+
+                      const SizedBox(height: 1),
+
+                      // LOG IN WITH EMAIL & CREATE ACCOUNT TEXT
+                      Text(
+                        _isLogin ? 'Log in with email' : 'Create an account',
+                        style: const TextStyle(
+                          fontSize: 24,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
                         ),
                       ),
+
+                      const SizedBox(height: 30),
+
+                      // EMAIL
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextField(
+                          controller: _emailController,
+                          autofocus: true, // <--- FORCES KEYBOARD TO POP UP
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.email, color: Colors.black),
+                            hintText: 'Email',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // PASSWORD
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.lock, color: Colors.black),
+                            hintText: 'Password',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // LOGIN BUTTON
+                      SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text(
+                                    _isLogin ? 'Login' : 'Sign Up',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // BOTTOM LINKS (CENTERED CREATE ACCOUNT)
+                      Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            _isLogin
+                                ? 'Click Here to Sign Up'
+                                : 'Have an account? Log In',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Add a little extra padding at the bottom so the keyboard doesn't hug the text too tightly
+                      const SizedBox(height: 40),
                     ],
                   ),
-
-                  const SizedBox(height: 40),
-                ],
+                ),
               ),
             ),
           ],

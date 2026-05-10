@@ -5,6 +5,7 @@ import 'interested_button.dart';
 import 'report_button.dart';
 import '../screens/report_issue_pg.dart';
 import '../service/moderation_helper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ForumPostTile extends StatefulWidget {
   final String postId;
@@ -22,6 +23,7 @@ class ForumPostTile extends StatefulWidget {
 
   //  original post author info
   final String postAuthorName;
+  final String postAuthorId;
   final DateTime? postCreatedAt;
 
   final String? mediaUrl;
@@ -39,6 +41,7 @@ class ForumPostTile extends StatefulWidget {
     required this.currentUserId,
     required this.currentUserName,
     required this.postAuthorName,
+    required this.postAuthorId,
     this.postCreatedAt,
     required this.mediaUrl,
     required this.mediaType,
@@ -74,6 +77,54 @@ class _ForumPostTileState extends State<ForumPostTile> {
   String initial(String name) {
     if (name.trim().isEmpty) return "A";
     return name.trim()[0].toUpperCase();
+  }
+
+  // Profile pic shown
+  Widget _profilePicture({
+    required String userId,
+    required String fallbackName,
+    double radius = 16,
+  }) {
+    if (userId.trim().isEmpty || userId == "anon" || userId == "TODO-user-id") {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.white,
+        child: Text(
+          initial(fallbackName),
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data();
+        final photoUrl = (data?['photo_url'] ?? '').toString().trim();
+
+        if (photoUrl.isEmpty) {
+          return CircleAvatar(
+            radius: radius,
+            backgroundColor: Colors.white,
+            child: Text(
+              initial(fallbackName),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          );
+        }
+
+        return CircleAvatar(
+          radius: radius,
+          backgroundColor: Colors.white,
+          backgroundImage: NetworkImage(photoUrl),
+          onBackgroundImageError: (_, __) {},
+        );
+      },
+    );
   }
 
   @override
@@ -129,13 +180,9 @@ class _ForumPostTileState extends State<ForumPostTile> {
               padding: const EdgeInsets.only(left: 40, top: 6),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      initial(widget.postAuthorName),
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
+                  _profilePicture(
+                    userId: widget.postAuthorId,
+                    fallbackName: widget.postAuthorName,
                   ),
 
                   const SizedBox(width: 8),
@@ -238,17 +285,9 @@ class _ForumPostTileState extends State<ForumPostTile> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 /// REPLY PROFILE ICON
-                                CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor:
-                                      Colors.grey.shade800, // darker
-                                  child: Text(
-                                    initial(reply.author),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white, // white letter
-                                    ),
-                                  ),
+                                _profilePicture(
+                                  userId: reply.authorId,
+                                  fallbackName: reply.author,
                                 ),
 
                                 const SizedBox(width: 10),
@@ -326,7 +365,9 @@ class _ForumPostTileState extends State<ForumPostTile> {
                       if (ModerationHelper.containsProfanity(text)) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text("Please keep the community friendly. Remove inappropriate language before replying."),
+                            content: Text(
+                              "Please keep the community friendly. Remove inappropriate language before replying.",
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );

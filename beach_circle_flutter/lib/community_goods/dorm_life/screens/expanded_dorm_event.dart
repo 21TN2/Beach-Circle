@@ -495,7 +495,7 @@ class ExpandedDormEventPg extends StatelessWidget {
                           (_) => ReportIssuePage(
                             targetId: eventId,
                             reportedUserId: eventOwnerId,
-                            targetType: 'event',
+                            targetType: 'dorm_event',
                           ),
                     ),
                   );
@@ -511,7 +511,7 @@ class ExpandedDormEventPg extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.flag_outlined, color: Colors.black),
                 label: const Text(
-                  "Report Event",
+                  "Report Dorm Event",
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w700,

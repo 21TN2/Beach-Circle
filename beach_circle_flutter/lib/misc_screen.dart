@@ -11,11 +11,10 @@ import 'package:beach_circle_flutter/community_goods/smf/screens/forum_category_
 import 'package:beach_circle_flutter/community_goods/smf/service/forum_service.dart';
 
 class MiscScreen extends StatefulWidget {
-  const MiscScreen({
-    super.key,
-    required ForumService forumService,
-    required Null Function(ForumCategory c) onOpenCategory,
-  });
+  const MiscScreen({super.key, this.forumService, this.onOpenCategory});
+
+  final ForumService? forumService;
+  final Null Function(ForumCategory c)? onOpenCategory;
 
   @override
   State<MiscScreen> createState() => _MiscScreenState();
@@ -23,10 +22,8 @@ class MiscScreen extends StatefulWidget {
 
 class _MiscScreenState extends State<MiscScreen> {
   bool isInterested = false;
-
   Set<String> starredCategoryIds = {};
-
-  final ForumService _forumService = ForumService();
+  late final ForumService _forumService;
 
   // built-in categories
   final List<_CategoryItem> builtInCategories = const [
@@ -84,6 +81,7 @@ class _MiscScreenState extends State<MiscScreen> {
   @override
   void initState() {
     super.initState();
+    _forumService = widget.forumService ?? ForumService();
     _loadPrefs();
   }
 
@@ -98,23 +96,27 @@ class _MiscScreenState extends State<MiscScreen> {
     final savedInterested = data['interested'];
     final savedStarIds = data['starredCategoryIds'];
 
-    setState(() {
-      if (savedInterested is bool) isInterested = savedInterested;
+    if (mounted) {
+      setState(() {
+        if (savedInterested is bool) isInterested = savedInterested;
 
-      if (savedStarIds is List) {
-        starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
-      }
-
-      if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
-        final oldList =
-            (data['starredCategories'] as List).map((e) => e == true).toList();
-
-        for (int i = 0; i < builtInCategories.length; i++) {
-          final isStar = i < oldList.length ? oldList[i] : false;
-          if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+        if (savedStarIds is List) {
+          starredCategoryIds = savedStarIds.map((e) => e.toString()).toSet();
         }
-      }
-    });
+
+        if (starredCategoryIds.isEmpty && data['starredCategories'] is List) {
+          final oldList =
+              (data['starredCategories'] as List)
+                  .map((e) => e == true)
+                  .toList();
+
+          for (int i = 0; i < builtInCategories.length; i++) {
+            final isStar = i < oldList.length ? oldList[i] : false;
+            if (isStar) starredCategoryIds.add(builtInCategories[i].id);
+          }
+        }
+      });
+    }
   }
 
   Future<void> _savePrefs() async {
@@ -149,16 +151,20 @@ class _MiscScreenState extends State<MiscScreen> {
       imageUrl: cat.imageUrl,
     );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => ForumCategoryPg(
-              category: category,
-              forumService: _forumService,
-            ),
-      ),
-    );
+    if (widget.onOpenCategory != null) {
+      widget.onOpenCategory!(category);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => ForumCategoryPg(
+                category: category,
+                forumService: _forumService,
+              ),
+        ),
+      );
+    }
   }
 
   Widget _buildGrid(List<_CategoryItem> visible) {
@@ -270,8 +276,8 @@ class _MiscScreenState extends State<MiscScreen> {
                   // shows approved categories from forumCategories
                   stream:
                       FirebaseFirestore.instance
-                          .collection("forumCategories")
-                          .orderBy("title")
+                          .collection("forum_requests")
+                          .where("status", isEqualTo: "approved")
                           .snapshots(),
                   builder: (context, snapshot) {
                     // built-in + approved categories shown in homepage
@@ -318,7 +324,7 @@ class _HeaderPill extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.only(left: 13, right: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Stack(
@@ -336,7 +342,6 @@ class _HeaderPill extends StatelessWidget {
               ),
             ),
           ),
-
           const Positioned(
             right: 0,
             child: Icon(Icons.chevron_right, color: Colors.black54),
@@ -347,7 +352,6 @@ class _HeaderPill extends StatelessWidget {
   }
 }
 
-// CATEGORY CARD WITH DARK OVERLAY
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.title,
@@ -382,16 +386,14 @@ class _CategoryCard extends StatelessWidget {
 
           // DARK OVERLAY FIXED
           Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.45)),
+            child: Container(color: Colors.black.withValues(alpha: 0.45)),
           ),
-
           Positioned.fill(
             child: Material(
               color: Colors.transparent,
               child: InkWell(onTap: onTap),
             ),
           ),
-
           Positioned(
             top: 8,
             right: 8,
@@ -403,7 +405,6 @@ class _CategoryCard extends StatelessWidget {
               ),
             ),
           ),
-
           Center(
             child: Text(
               title,
@@ -412,7 +413,6 @@ class _CategoryCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ],

@@ -10,25 +10,34 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.1.2
-  file_picker: ^8.0.7
+  file_picker: ^11.0.2
   mapbox_maps_flutter: ^2.12.0
-
+  google_mlkit_image_labeling: ^0.14.2
+  path_provider: ^2.1.0
+  maps_toolkit: ^3.0.0
+  
   #Resource page Packages
   cupertino_icons: ^1.0.8
   url_launcher: ^6.3.0 #For the url links add this
-  font_awesome_flutter: ^10.7.0
+  font_awesome_flutter: ^11.0.0
 
   # Firebase packages
-  firebase_core: ^3.15.2
-  firebase_auth: ^5.0.0
-  cloud_firestore: ^5.0.0
+  firebase_core: ^4.7.0
+  firebase_auth: ^6.4.0
+  cloud_firestore: ^6.3.0
+  firebase_storage: ^13.3.0
+  firebase_messaging: ^16.2.0
 
 
   #Weather Packages
   http: ^1.6.0
   geolocator: ^14.0.2
+  flutter_activity_recognition: 4.0.0
   geocoding: ^4.0.0
   lottie: ^3.3.2
+
+  #Moderation
+  profanity_filter: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -41,10 +50,14 @@ flutter:
     - assets/logo.png
     - assets/forum/
     - assets/weather/
+    - assets/csulb.geojson
+    - assets/bathrooms.txt
+    - assets/images/
+    - assets/csulb.geojson
+    - assets/bathrooms.txt
     - assets/en.txt
     - assets/char_map.txt
-    - assets/images/
-    
+
 # flutter:
 #   assets:
 #     - assets/.env/.env.public.dev

@@ -1,13 +1,15 @@
+//Packages to implement Analytics & Feedback Page
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:beach_circle_flutter/community_goods/smf/service/moderation_service.dart';
 
+//Creates the Feedback Page
 class FeedbackanalyticsScreen extends StatefulWidget {
   const FeedbackanalyticsScreen({super.key});
 
@@ -16,6 +18,7 @@ class FeedbackanalyticsScreen extends StatefulWidget {
       _FeedbackanalyticsScreenState();
 }
 
+//Deatils on the Feedback Page
 class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
   bool showFeedbackForm = false;
 
@@ -23,6 +26,130 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
     await FirebaseAuth.instance.signOut();
   }
 
+  //Months to track for Analytics Data
+  static const List<String> _monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  String _monthLabel(Timestamp? timestamp) {
+    if (timestamp == null) return 'Unknown Month';
+    final date = timestamp.toDate();
+    return '${_monthNames[date.month - 1]} ${date.year}';
+  }
+
+  //Organize Feedback Forms by Month
+  Map<String, List<QueryDocumentSnapshot>> _groupByMonth(
+    List<QueryDocumentSnapshot> docs,
+  ) {
+    final Map<String, List<QueryDocumentSnapshot>> grouped = {};
+
+    for (final doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final createdAt = data['createdAt'] as Timestamp?;
+      final label = _monthLabel(createdAt);
+      grouped.putIfAbsent(label, () => []);
+      grouped[label]!.add(doc);
+    }
+
+    return grouped;
+  }
+
+  Widget _buildStatusSection({
+    required BuildContext context,
+    required String title,
+    required List<QueryDocumentSnapshot> docs,
+    required String emptyMessage,
+  }) {
+    if (docs.isEmpty) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(emptyMessage),
+        ),
+      );
+    }
+
+    final grouped = _groupByMonth(docs);
+
+    //Section Feedback Forms by Month
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: Text(
+          '$title (${docs.length})',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        children:
+            grouped.entries.map((entry) {
+              final month = entry.key;
+              final monthDocs = entry.value;
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 8),
+                      child: Text(
+                        month,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    ...monthDocs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final title = (data['title'] ?? 'Untitled').toString();
+                      final status = (data['status'] ?? '--').toString();
+                      final category = (data['category'] ?? '--').toString();
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: ListTile(
+                          title: Text(title),
+                          subtitle: Text('$category • $status'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => FeedbackDetailsPage(
+                                      feedbackId: doc.id,
+                                      feedbackData: data,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            }).toList(),
+      ),
+    );
+  }
+
+
+  //Feedback Form for Users
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -63,6 +190,7 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
     );
   }
 
+  //Home page for Analytics & Feedback
   Widget _analyticsHome({
     required String name,
     required VoidCallback onOpenFeedback,
@@ -84,6 +212,8 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
+
+          //Feedback Form Card
           Card(
             elevation: 2,
             child: ListTile(
@@ -95,16 +225,21 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
             ),
           ),
           const SizedBox(height: 24),
+
+          //Analytics Card
           const Text(
             'Analytics',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
+
+          //Information for the Database
           StreamBuilder<QuerySnapshot>(
             stream:
                 FirebaseFirestore.instance
                     .collection('feedback')
                     .where('userId', isEqualTo: currentUser?.uid)
+                    .where('userDeleted', isEqualTo: false)
                     .orderBy('createdAt', descending: true)
                     .snapshots(),
             builder: (context, snapshot) {
@@ -120,6 +255,7 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
                 );
               }
 
+              //Troubleshoot if analytics data is not popping up
               if (snapshot.hasError) {
                 return Container(
                   width: double.infinity,
@@ -132,14 +268,17 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
                 );
               }
 
+              //Shows total feedback forms user has
               final docs = snapshot.data?.docs ?? [];
               final totalFeedbackSubmissions = docs.length;
 
               String mostRecentFeedbackSubmitted = '--';
               String feedbackStatus = '--';
+              Map<String, dynamic>? mostRecentData;
 
               if (docs.isNotEmpty) {
                 final latest = docs.first.data() as Map<String, dynamic>;
+                mostRecentData = latest;
                 mostRecentFeedbackSubmitted =
                     (latest['title'] ?? '').toString().isEmpty
                         ? 'Untitled'
@@ -147,6 +286,43 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
                 feedbackStatus = (latest['status'] ?? '--').toString();
               }
 
+              //Shows how many forms are submitted
+              final submitted =
+                  docs
+                      .where(
+                        (doc) =>
+                            (((doc.data() as Map<String, dynamic>)['status'] ??
+                                        'Submitted')
+                                    .toString() ==
+                                'Submitted'),
+                      )
+                      .toList();
+
+              //Shows how many forms are under review
+              final underReview =
+                  docs
+                      .where(
+                        (doc) =>
+                            (((doc.data() as Map<String, dynamic>)['status'] ??
+                                        '')
+                                    .toString() ==
+                                'Under Review'),
+                      )
+                      .toList();
+
+              //Shows how many forms are completed and reviewed by the moderator
+              final completed =
+                  docs
+                      .where(
+                        (doc) =>
+                            (((doc.data() as Map<String, dynamic>)['status'] ??
+                                        '')
+                                    .toString() ==
+                                'Completed'),
+                      )
+                      .toList();
+
+              //Shows Users Feedback information(Submissions, Recent Feedback, Recent Feedback Status)
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -180,12 +356,56 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+
+                  //Shows most recent feedback information(Title, Category, Status, Month Submitted)
+                  if (mostRecentData != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE9E9E9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Most Recent Feedback',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Title: ${(mostRecentData['title'] ?? 'Untitled').toString()}',
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Category: ${(mostRecentData['category'] ?? '--').toString()}',
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Status: ${(mostRecentData['status'] ?? '--').toString()}',
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Month Submitted: ${_monthLabel(mostRecentData['createdAt'] as Timestamp?)}',
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 24),
+
+                  //Feedback History 
                   const Text(
                     'My Feedback History',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
+
+                  //If User has no feedback 
                   if (docs.isEmpty)
                     Container(
                       width: double.infinity,
@@ -198,36 +418,26 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
                     )
                   else
                     Column(
-                      children:
-                          docs.map((doc) {
-                            final data = doc.data() as Map<String, dynamic>;
-                            final title =
-                                (data['title'] ?? 'Untitled').toString();
-                            final status = (data['status'] ?? '--').toString();
-                            final category =
-                                (data['category'] ?? '--').toString();
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: ListTile(
-                                title: Text(title),
-                                subtitle: Text('$category • $status'),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => FeedbackDetailsPage(
-                                            feedbackId: doc.id,
-                                            feedbackData: data,
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          }).toList(),
+                      children: [
+                        _buildStatusSection(
+                          context: context,
+                          title: 'Submitted',
+                          docs: submitted,
+                          emptyMessage: 'No submitted feedback.',
+                        ),
+                        _buildStatusSection(
+                          context: context,
+                          title: 'Under Review',
+                          docs: underReview,
+                          emptyMessage: 'No feedback currently under review.',
+                        ),
+                        _buildStatusSection(
+                          context: context,
+                          title: 'Completed',
+                          docs: completed,
+                          emptyMessage: 'No completed feedback yet.',
+                        ),
+                      ],
                     ),
                 ],
               );
@@ -239,6 +449,8 @@ class _FeedbackanalyticsScreenState extends State<FeedbackanalyticsScreen> {
   }
 }
 
+
+//Feedback Form Page Created
 class FeedbackFormContent extends StatefulWidget {
   final VoidCallback onBack;
 
@@ -248,10 +460,12 @@ class FeedbackFormContent extends StatefulWidget {
   State<FeedbackFormContent> createState() => _FeedbackFormContentState();
 }
 
+//Feedback Form Details
 class _FeedbackFormContentState extends State<FeedbackFormContent> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController feedbackController = TextEditingController();
 
+  //Category and Feature selection 
   final String defaultCategory = 'Make Selection';
   final String defaultFeature = 'Make Selection';
 
@@ -262,12 +476,14 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
   bool showErrors = false;
   bool isSubmitting = false;
 
+  //Allow documents and images to be imported
   XFile? selectedImage;
   Uint8List? selectedImageBytes;
   PlatformFile? selectedDocument;
 
   final ImagePicker _imagePicker = ImagePicker();
 
+  //Category List
   final List<String> categories = [
     'Make Selection',
     'Bug Report',
@@ -275,6 +491,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     'UI Issue',
   ];
 
+  //Feature List 
   final List<String> features = [
     'Make Selection',
     'Maps',
@@ -308,6 +525,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     super.dispose();
   }
 
+  //Checks to see if all information are filled for the feedback form
   bool get isFormComplete {
     return titleController.text.trim().isNotEmpty &&
         selectedCategory != defaultCategory &&
@@ -316,11 +534,13 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
         selectedReaction != null;
   }
 
+  //Allows photos from the gallery to be inputted
   Future<void> _pickImageFromGallery() async {
     final XFile? pickedFile = await _imagePicker.pickImage(
       source: ImageSource.gallery,
     );
 
+    //Allow files to be inputted
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
       setState(() {
@@ -331,6 +551,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     }
   }
 
+  //Allows Users to take a photo from the camera
   Future<void> _pickImageFromCamera() async {
     final XFile? pickedFile = await _imagePicker.pickImage(
       source: ImageSource.camera,
@@ -346,8 +567,9 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     }
   }
 
+  //Allows different types of document to be picked
   Future<void> _pickDocument() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
       withData: kIsWeb,
@@ -362,6 +584,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     }
   }
 
+  //Shows the upload option(It is optional)
   void _showUploadOptions() {
     showModalBottomSheet(
       context: context,
@@ -369,6 +592,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
         return SafeArea(
           child: Wrap(
             children: [
+
+              //Choose from the Gallery
               ListTile(
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Choose Photo from Gallery'),
@@ -377,6 +602,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                   _pickImageFromGallery();
                 },
               ),
+
+              //From the Camera
               ListTile(
                 leading: const Icon(Icons.camera_alt),
                 title: const Text('Take Photo'),
@@ -385,6 +612,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                   _pickImageFromCamera();
                 },
               ),
+
+              //From files
               ListTile(
                 leading: const Icon(Icons.insert_drive_file),
                 title: const Text('Choose Document'),
@@ -400,17 +629,20 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     );
   }
 
+  //Submission for the Feedback
   Future<void> submitFeedback() async {
     setState(() {
       showErrors = true;
     });
 
+    //If all sections are filled and have details
     final titleFilled = titleController.text.trim().isNotEmpty;
     final categoryFilled = selectedCategory != defaultCategory;
     final featureFilled = selectedFeature != defaultFeature;
     final descriptionFilled = feedbackController.text.trim().isNotEmpty;
     final reactionFilled = selectedReaction != null;
 
+    //Allow submissions if all these sections are filled
     final canSubmit =
         titleFilled &&
         categoryFilled &&
@@ -418,9 +650,23 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
         descriptionFilled &&
         reactionFilled;
 
+    //If not all sections are filled 
     if (!canSubmit) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please complete all required fields.')),
+      );
+      return;
+    }
+
+    //This is moderation to make sure users are not writing inappropriate content
+    if (ModerationService.containsBlockedContent(titleController.text) ||
+        ModerationService.containsBlockedContent(feedbackController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Your feedback contains inappropriate language and cannot be submitted.',
+          ),
+        ),
       );
       return;
     }
@@ -429,6 +675,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
       isSubmitting = true;
     });
 
+    //Information for the Database
     try {
       final user = FirebaseAuth.instance.currentUser;
 
@@ -441,18 +688,27 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
         'description': feedbackController.text.trim(),
         'helpfulRating': selectedReaction,
         'status': 'Submitted',
+        'moderatorResponse': '',
+        'reviewedBy': '',
+        'reviewedAt': null,
+        'userDeleted': false,
+        'moderatorDeleted': false,
+        'deletedByUserAt': null,
+        'deletedByModeratorAt': null,
         'createdAt': FieldValue.serverTimestamp(),
         'hasImage': selectedImage != null,
         'hasDocument': selectedDocument != null,
         'documentName': selectedDocument?.name,
       });
 
+      //Once the feedback is submitted
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Feedback submitted successfully')),
       );
 
+      //Clears the feedback form
       setState(() {
         titleController.clear();
         feedbackController.clear();
@@ -469,6 +725,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     } catch (e) {
       if (!mounted) return;
 
+      //If feedback form fails to submit
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to submit feedback: $e')));
@@ -481,6 +738,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     }
   }
 
+  //If section has errors
   @override
   Widget build(BuildContext context) {
     final titleHasError = showErrors && titleController.text.trim().isEmpty;
@@ -490,6 +748,17 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
         showErrors && feedbackController.text.trim().isEmpty;
     final reactionHasError = showErrors && selectedReaction == null;
 
+    final titleHasModerationError =
+        showErrors &&
+        ModerationService.containsBlockedContent(titleController.text.trim());
+
+    final descriptionHasModerationError =
+        showErrors &&
+        ModerationService.containsBlockedContent(
+          feedbackController.text.trim(),
+        );
+
+    //Analytics and Feedback Page Build
     return Column(
       children: [
         _topHeader(),
@@ -500,6 +769,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 6),
+
+                //Title page
                 const Center(
                   child: Text(
                     'Help us make Beach Circle Better!',
@@ -538,6 +809,10 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                   ),
                 ),
                 const SizedBox(height: 12),
+
+                //Feedback Build
+
+                //Title
                 const Text(
                   'Title',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -557,7 +832,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
                         color:
-                            titleHasError
+                            titleHasError || titleHasModerationError
                                 ? Colors.red
                                 : const Color(0xFFD0D0D0),
                       ),
@@ -566,7 +841,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
                         color:
-                            titleHasError
+                            titleHasError || titleHasModerationError
                                 ? Colors.red
                                 : const Color(0xFFD0D0D0),
                       ),
@@ -574,7 +849,10 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
-                        color: titleHasError ? Colors.red : Colors.blue,
+                        color:
+                            titleHasError || titleHasModerationError
+                                ? Colors.red
+                                : Colors.blue,
                       ),
                     ),
                   ),
@@ -587,7 +865,17 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       style: TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   ),
+                if (titleHasModerationError)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6, left: 4),
+                    child: Text(
+                      'Title contains inappropriate language.',
+                      style: TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
                 const SizedBox(height: 14),
+
+                //Category
                 const Text(
                   'Category',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -613,6 +901,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     ),
                   ),
                 const SizedBox(height: 14),
+
+                //Features
                 const Text(
                   'Which Feature?',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -649,6 +939,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                   onChanged: (_) {
                     setState(() {});
                   },
+
+                  //Description
                   decoration: InputDecoration(
                     hintText: 'Description',
                     filled: true,
@@ -658,7 +950,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
                         color:
-                            descriptionHasError
+                            descriptionHasError || descriptionHasModerationError
                                 ? Colors.red
                                 : const Color(0xFFD0D0D0),
                       ),
@@ -667,7 +959,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
                         color:
-                            descriptionHasError
+                            descriptionHasError || descriptionHasModerationError
                                 ? Colors.red
                                 : const Color(0xFFD0D0D0),
                       ),
@@ -675,7 +967,10 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(
-                        color: descriptionHasError ? Colors.red : Colors.blue,
+                        color:
+                            descriptionHasError || descriptionHasModerationError
+                                ? Colors.red
+                                : Colors.blue,
                       ),
                     ),
                   ),
@@ -688,7 +983,17 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       style: TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   ),
+                if (descriptionHasModerationError)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6, left: 4),
+                    child: Text(
+                      'Feedback contains inappropriate language.',
+                      style: TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
                 const SizedBox(height: 14),
+
+                //Additional Uploads
                 const Text(
                   'Additional Uploads',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -707,6 +1012,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                   ),
                 ),
                 const SizedBox(height: 10),
+
+                //Images
                 if (selectedImage != null)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -727,6 +1034,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                       ),
                     ],
                   ),
+
+                  //Documents
                 if (selectedDocument != null)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -753,6 +1062,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                         ),
                       ),
                       const SizedBox(height: 6),
+
+                      //Document be removed
                       TextButton(
                         onPressed: () {
                           setState(() {
@@ -764,6 +1075,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     ],
                   ),
                 const SizedBox(height: 10),
+
+                //Helpful Section
                 const Text(
                   'Was this Helpful?',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -778,6 +1091,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     _reactionBox(2, '☹️'),
                   ],
                 ),
+
+                //If user doesn't select if it was helpful
                 if (reactionHasError)
                   const Padding(
                     padding: EdgeInsets.only(top: 8),
@@ -787,6 +1102,8 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     ),
                   ),
                 const SizedBox(height: 18),
+
+                //Page Format
                 Align(
                   alignment: Alignment.centerRight,
                   child: SizedBox(
@@ -795,7 +1112,13 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
-                            isFormComplete
+                            isFormComplete &&
+                                    !ModerationService.containsBlockedContent(
+                                      titleController.text,
+                                    ) &&
+                                    !ModerationService.containsBlockedContent(
+                                      feedbackController.text,
+                                    )
                                 ? const Color(0xFFD6E7F7)
                                 : Colors.grey.shade300,
                         foregroundColor: Colors.black87,
@@ -830,6 +1153,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     );
   }
 
+  //Image size allowed
   Widget _buildSelectedImagePreview() {
     if (selectedImageBytes != null) {
       return Image.memory(
@@ -858,6 +1182,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     );
   }
 
+  //Header for Analytics & Feedback Page
   Widget _topHeader() {
     return Container(
       color: const Color(0xFFE7C600),
@@ -875,6 +1200,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     );
   }
 
+  //Drop down feature for category, feature, and analytics information
   Widget _dropdownField({
     required String value,
     required List<String> items,
@@ -915,6 +1241,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
     );
   }
 
+  //Reaction box for if it was helpful
   Widget _reactionBox(int index, String emoji) {
     final isSelected = selectedReaction == index;
 
@@ -940,6 +1267,7 @@ class _FeedbackFormContentState extends State<FeedbackFormContent> {
   }
 }
 
+//Thank you page after Feedback is submitted
 class ThankYouFeedbackPage extends StatelessWidget {
   const ThankYouFeedbackPage({super.key});
 
@@ -948,6 +1276,7 @@ class ThankYouFeedbackPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
       body: SafeArea(
+        //Page Build
         child: Column(
           children: [
             Container(
@@ -983,6 +1312,8 @@ class ThankYouFeedbackPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 42),
+
+                    //Message for User
                     const Text(
                       'Thank you for making\nBeach Circle better!',
                       textAlign: TextAlign.center,
@@ -1007,6 +1338,8 @@ class ThankYouFeedbackPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 52),
+
+                    //Additional Messages
                     const Text(
                       'Your feedback has\nbeen submitted and\nis under review. We\nappreciate your\npatience.',
                       textAlign: TextAlign.center,
@@ -1017,6 +1350,8 @@ class ThankYouFeedbackPage extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+
+                    //Text Build
                     Align(
                       alignment: Alignment.centerRight,
                       child: SizedBox(
@@ -1050,6 +1385,7 @@ class ThankYouFeedbackPage extends StatelessWidget {
   }
 }
 
+//Search Header
 class _SearchHeaderBox extends StatelessWidget {
   const _SearchHeaderBox();
 
@@ -1081,6 +1417,7 @@ class _SearchHeaderBox extends StatelessWidget {
   }
 }
 
+//Analytics Feedback Page
 class FeedbackDetailsPage extends StatelessWidget {
   final String feedbackId;
   final Map<String, dynamic> feedbackData;
@@ -1091,47 +1428,60 @@ class FeedbackDetailsPage extends StatelessWidget {
     required this.feedbackData,
   });
 
+  //If User wants to delete Feedback
   Future<void> _deleteFeedback(BuildContext context) async {
     try {
       await FirebaseFirestore.instance
           .collection('feedback')
           .doc(feedbackId)
-          .delete();
+          .update({
+            'userDeleted': true,
+            'deletedByUserAt': FieldValue.serverTimestamp(),
+          });
 
       if (!context.mounted) return;
 
+      //If user wants to hide their analytics
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Feedback deleted successfully.')),
+        const SnackBar(content: Text('Feedback hidden from your analytics.')),
       );
 
       Navigator.pop(context);
     } catch (e) {
+
+      //If User wants to delete their feedback
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to delete feedback: $e')));
     }
   }
 
+  //Feedback Form Page build for moderators
   @override
   Widget build(BuildContext context) {
+
+    //Moderator details
     final title = (feedbackData['title'] ?? 'Untitled').toString();
     final category = (feedbackData['category'] ?? '--').toString();
     final feature = (feedbackData['feature'] ?? '--').toString();
     final description = (feedbackData['description'] ?? '--').toString();
     final status = (feedbackData['status'] ?? '--').toString();
+    final moderatorResponse =
+        (feedbackData['moderatorResponse'] ?? '').toString();
+    final reviewedBy = (feedbackData['reviewedBy'] ?? '').toString();
     final helpfulRating = feedbackData['helpfulRating']?.toString() ?? '--';
     String ratingText = '--';
     if (helpfulRating == '0') ratingText = 'Helpful 😄';
     if (helpfulRating == '1') ratingText = 'Neutral 🙂';
     if (helpfulRating == '2') ratingText = 'Not Helpful ☹️';
-    final canDelete = status == 'Submitted';
+    final canDelete = status == 'Submitted' || status == 'Completed';
 
+    //Feedback Form view for Moderators
     return Scaffold(
       appBar: AppBar(title: const Text('Feedback Details')),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             _detailRow('Title', title),
             _detailRow('Category', category),
@@ -1139,7 +1489,16 @@ class FeedbackDetailsPage extends StatelessWidget {
             _detailRow('Description', description),
             _detailRow('Helpful Rating', ratingText),
             _detailRow('Status', status),
+            _detailRow(
+              'Moderator Response',
+              moderatorResponse.isEmpty
+                  ? 'No response yet.'
+                  : moderatorResponse,
+            ),
+            _detailRow('Reviewed By', reviewedBy.isEmpty ? '--' : reviewedBy),
             const SizedBox(height: 24),
+
+            //When feedback is submitted, User can delete or hide if they want to
             if (canDelete)
               SizedBox(
                 width: double.infinity,
@@ -1151,7 +1510,7 @@ class FeedbackDetailsPage extends StatelessWidget {
                         return AlertDialog(
                           title: const Text('Delete Feedback'),
                           content: const Text(
-                            'Are you sure you want to delete this feedback?',
+                            'Are you sure you want to hide this feedback from your analytics?',
                           ),
                           actions: [
                             TextButton(
@@ -1179,6 +1538,8 @@ class FeedbackDetailsPage extends StatelessWidget {
                 ),
               )
             else
+
+            //If Feedback is under review, it cannot be deleted
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -1187,7 +1548,7 @@ class FeedbackDetailsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
-                  'This feedback can no longer be deleted because it is already being processed or completed.',
+                  'This feedback cannot be deleted while it is under review.',
                 ),
               ),
           ],
@@ -1196,6 +1557,7 @@ class FeedbackDetailsPage extends StatelessWidget {
     );
   }
 
+  //Page format for the moderator feedback form view page
   Widget _detailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
