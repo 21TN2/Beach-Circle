@@ -60,6 +60,7 @@ class _MapScreenState extends State<MapScreen> {
   CircleAnnotationManager? _devCircleManager;
   CircleAnnotation? _devCircle;
   bool _isDevMode = false;
+  bool _isAddingPersonalPin = false;
   Position? _simulatedPosition;
 
   String? _activeFilter;
@@ -111,10 +112,9 @@ class _MapScreenState extends State<MapScreen> {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
-    final Paint shadowPaint =
-        Paint()
-          ..color = Colors.black.withValues(alpha: 0.25)
-          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
+    final Paint shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.25)
+      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
 
     final Paint pinPaint = Paint()..color = color;
     final Paint whitePaint = Paint()..color = Colors.white;
@@ -124,12 +124,11 @@ class _MapScreenState extends State<MapScreen> {
     canvas.drawCircle(const Offset(85, 44), 32, pinPaint);
     canvas.drawCircle(const Offset(85, 44), 11, whitePaint);
 
-    final Path triangle =
-        Path()
-          ..moveTo(67, 72)
-          ..lineTo(103, 72)
-          ..lineTo(85, 108)
-          ..close();
+    final Path triangle = Path()
+      ..moveTo(67, 72)
+      ..lineTo(103, 72)
+      ..lineTo(85, 108)
+      ..close();
     canvas.drawPath(triangle, pinPaint);
 
     final RRect labelBox = RRect.fromRectAndRadius(
@@ -268,13 +267,12 @@ class _MapScreenState extends State<MapScreen> {
 
       final coordinates = routes[0]['geometry']['coordinates'] as List;
 
-      final List<Position> routePoints =
-          coordinates.map((point) {
-            return Position(
-              (point[0] as num).toDouble(),
-              (point[1] as num).toDouble(),
-            );
-          }).toList();
+      final List<Position> routePoints = coordinates.map((point) {
+        return Position(
+          (point[0] as num).toDouble(),
+          (point[1] as num).toDouble(),
+        );
+      }).toList();
 
       // Clear old route drawings
       await polylineAnnotationManager!.deleteAll();
@@ -309,13 +307,12 @@ class _MapScreenState extends State<MapScreen> {
       );
 
       // Recreate trail manager AFTER route line so dots sit on top
-      _routeTrailManager =
-          await mapboxMap!.annotations.createCircleAnnotationManager();
-
+      _routeTrailManager = await mapboxMap!.annotations
+          .createCircleAnnotationManager();
 
       // Recreate marker manager AFTER route line and trail so START/END sit on top
-      _routeMarkerManager =
-          await mapboxMap!.annotations.createPointAnnotationManager();
+      _routeMarkerManager = await mapboxMap!.annotations
+          .createPointAnnotationManager();
 
       final Position startPoint = routePoints.first;
       final Position endPoint = routePoints.last;
@@ -1040,10 +1037,9 @@ class _MapScreenState extends State<MapScreen> {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
 
-    final Paint shadowPaint =
-        Paint()
-          ..color = Colors.black.withOpacity(0.20)
-          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 5);
+    final Paint shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.20)
+      ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 5);
 
     canvas.drawCircle(
       Offset(circleCenter.dx, circleCenter.dy + 3),
@@ -1086,11 +1082,10 @@ class _MapScreenState extends State<MapScreen> {
     final Paint badgePaint = Paint()..color = badgeColor;
     canvas.drawRRect(badgeRRect, badgePaint);
 
-    final Paint badgeBorderPaint =
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2;
+    final Paint badgeBorderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     canvas.drawRRect(badgeRRect, badgeBorderPaint);
 
@@ -1133,11 +1128,10 @@ class _MapScreenState extends State<MapScreen> {
       await _studyHallPinManager!.deleteAll();
       _studyHallPinData.clear();
 
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection('study_halls')
-              .where('status', isEqualTo: 'approved')
-              .get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('study_halls')
+          .where('status', isEqualTo: 'approved')
+          .get();
 
       final Map<String, Map<String, dynamic>> buildingsMap = {};
 
@@ -1225,11 +1219,10 @@ class _MapScreenState extends State<MapScreen> {
       await _outletPinManager!.deleteAll();
       _outletPinData.clear();
 
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection('outlets')
-              .where('status', isEqualTo: 'approved')
-              .get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('outlets')
+          .where('status', isEqualTo: 'approved')
+          .get();
 
       final Map<String, Map<String, dynamic>> buildingsMap = {};
 
@@ -1395,10 +1388,9 @@ class _MapScreenState extends State<MapScreen> {
     final bathroomLat = (data['lat'] as num?)?.toDouble();
     final bathroomLng = (data['lng'] as num?)?.toDouble();
 
-    final Position locationToUse =
-        (_isDevMode && _simulatedPosition != null)
-            ? _simulatedPosition!
-            : Position(_centerLng, _centerLat);
+    final Position locationToUse = (_isDevMode && _simulatedPosition != null)
+        ? _simulatedPosition!
+        : Position(_centerLng, _centerLat);
 
     String distance = '';
 
@@ -1416,13 +1408,12 @@ class _MapScreenState extends State<MapScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => ExpandedBathroomFinderPage(
-              bathroomName: bathroomName,
-              buildingAbbrev: buildingAbbrev,
-              distance: distance,
-              details: '',
-            ),
+        builder: (context) => ExpandedBathroomFinderPage(
+          bathroomName: bathroomName,
+          buildingAbbrev: buildingAbbrev,
+          distance: distance,
+          details: '',
+        ),
       ),
     );
   }
@@ -1686,12 +1677,12 @@ class _MapScreenState extends State<MapScreen> {
           await _devPinManager!.create(
             PointAnnotationOptions(
               geometry: Point(coordinates: Position(currentX, currentY)),
-              textField:
-                  progress >= 1.0 ? "Car ${i + 1} (Parked)" : "Car ${i + 1}",
-              textColor:
-                  progress >= 1.0
-                      ? Colors.green.toARGB32()
-                      : Colors.blueAccent.toARGB32(),
+              textField: progress >= 1.0
+                  ? "Car ${i + 1} (Parked)"
+                  : "Car ${i + 1}",
+              textColor: progress >= 1.0
+                  ? Colors.green.toARGB32()
+                  : Colors.blueAccent.toARGB32(),
               textHaloColor: Colors.white.toARGB32(),
               textHaloWidth: 2.0,
             ),
@@ -1738,19 +1729,19 @@ class _MapScreenState extends State<MapScreen> {
       LocationComponentSettings(enabled: true, pulsingEnabled: true),
     );
 
-    pointAnnotationManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    pointAnnotationManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
     pointAnnotationManager?.addOnPointAnnotationClickListener(
       _BathroomClickListener(_handleBathroomPinTap, _bathroomPinData),
     );
 
     // User pins(Circle pins)
-    circleAnnotationManager =
-        await mapboxMap!.annotations.createCircleAnnotationManager();
-    _routeMarkerManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
-    _routeTrailManager =
-        await mapboxMap!.annotations.createCircleAnnotationManager();
+    circleAnnotationManager = await mapboxMap!.annotations
+        .createCircleAnnotationManager();
+    _routeMarkerManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
+    _routeTrailManager = await mapboxMap!.annotations
+        .createCircleAnnotationManager();
     // If user wants to edit or delete existing pins
     circleAnnotationManager!.addOnCircleAnnotationClickListener(
       _PinClickListener(
@@ -1762,11 +1753,10 @@ class _MapScreenState extends State<MapScreen> {
           if (docId == null) return;
 
           // Pin Details
-          final pinDoc =
-              await FirebaseFirestore.instance
-                  .collection('pins')
-                  .doc(docId)
-                  .get();
+          final pinDoc = await FirebaseFirestore.instance
+              .collection('pins')
+              .doc(docId)
+              .get();
 
           final pinData = pinDoc.data() ?? {};
           final String label = (pinData['label'] ?? '').toString();
@@ -1834,38 +1824,38 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     // Route Options
-    polylineAnnotationManager =
-        await mapboxMap!.annotations.createPolylineAnnotationManager();
+    polylineAnnotationManager = await mapboxMap!.annotations
+        .createPolylineAnnotationManager();
 
-    _devPinManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
-    _devCircleManager =
-        await mapboxMap!.annotations.createCircleAnnotationManager();
-    _foodAlertPinManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    _devPinManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
+    _devCircleManager = await mapboxMap!.annotations
+        .createCircleAnnotationManager();
+    _foodAlertPinManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
 
-    _foodAlertMapPinManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    _foodAlertMapPinManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
     _foodAlertMapPinManager?.addOnPointAnnotationClickListener(
       _FoodAlertMapPinClickListener(_handleFoodAlertPinTap, _foodAlertPinData),
     );
 
-    _studyHallPinManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    _studyHallPinManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
     _studyHallPinManager?.addOnPointAnnotationClickListener(
       _StudyHallClickListener(_handleStudyHallPinTap, _studyHallPinData),
     );
 
-    _outletPinManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    _outletPinManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
     _outletPinManager?.addOnPointAnnotationClickListener(
       _OutletClickListener(_handleOutletPinTap, _outletPinData),
     );
 
-    _parkingLotManager =
-        await mapboxMap!.annotations.createPolygonAnnotationManager();
-    _parkingLabelManager =
-        await mapboxMap!.annotations.createPointAnnotationManager();
+    _parkingLotManager = await mapboxMap!.annotations
+        .createPolygonAnnotationManager();
+    _parkingLabelManager = await mapboxMap!.annotations
+        .createPointAnnotationManager();
 
     _foodAlertMarkerBytes = await _createFoodAlertMarker();
 
@@ -1934,7 +1924,16 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     // Creates a personal location pin
-    await _showAddUserPinDialog(context);
+    // Only create personal pins when pin mode is ON
+    if (_isAddingPersonalPin) {
+      await _showAddUserPinDialog(context);
+
+      if (mounted) {
+        setState(() {
+          _isAddingPersonalPin = false;
+        });
+      }
+    }
   }
 
   Future<void> _placeFoodAlertPin(Point point) async {
@@ -1998,16 +1997,15 @@ class _MapScreenState extends State<MapScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (_) => FoodAlertDetailPage(
-              docId: docId,
-              title: title,
-              description: description,
-              isActive: true,
-              timeStr: timeStr,
-              currentUserId: currentUserId,
-              alertUserId: alertUserId,
-            ),
+        builder: (_) => FoodAlertDetailPage(
+          docId: docId,
+          title: title,
+          description: description,
+          isActive: true,
+          timeStr: timeStr,
+          currentUserId: currentUserId,
+          alertUserId: alertUserId,
+        ),
       ),
     );
   }
@@ -2021,11 +2019,10 @@ class _MapScreenState extends State<MapScreen> {
     final markerBytes = _foodAlertMarkerBytes ?? await _createFoodAlertMarker();
 
     try {
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection('food_alerts')
-              .where('active', isEqualTo: true)
-              .get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('food_alerts')
+          .where('active', isEqualTo: true)
+          .get();
 
       final now = DateTime.now();
       final currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -2242,10 +2239,9 @@ class _MapScreenState extends State<MapScreen> {
 
     if (_activeFilter == null) return null;
 
-    final Position locationToUse =
-        (_isDevMode && _simulatedPosition != null)
-            ? _simulatedPosition!
-            : Position(_centerLng, _centerLat);
+    final Position locationToUse = (_isDevMode && _simulatedPosition != null)
+        ? _simulatedPosition!
+        : Position(_centerLng, _centerLat);
 
     if (_activeFilter == 'restroom') {
       return _RestroomSheetContent(currentPosition: locationToUse);
@@ -2414,23 +2410,22 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
 
-      bottomSheet:
-          sheetContent != null
-              ? _FilterBottomSheet(
-                child: sheetContent,
-                onClose: () {
-                  if (_foodAlertStep == _FoodAlertStep.fillingForm) {
-                    _cancelFoodAlertFlow();
-                  } else {
-                    setState(() {
-                      _activeFilter = null;
-                      _reportingLotName = null;
-                    });
-                    _updateMapPins();
-                  }
-                },
-              )
-              : null,
+      bottomSheet: sheetContent != null
+          ? _FilterBottomSheet(
+              child: sheetContent,
+              onClose: () {
+                if (_foodAlertStep == _FoodAlertStep.fillingForm) {
+                  _cancelFoodAlertFlow();
+                } else {
+                  setState(() {
+                    _activeFilter = null;
+                    _reportingLotName = null;
+                  });
+                  _updateMapPins();
+                }
+              },
+            )
+          : null,
 
       body: Stack(
         children: [
@@ -2484,13 +2479,12 @@ class _MapScreenState extends State<MapScreen> {
                         value: startCategory,
                         hint: const Text('Select start category'),
                         isExpanded: true,
-                        items:
-                            buildingCategories.map((category) {
-                              return DropdownMenuItem<String>(
-                                value: category,
-                                child: Text(category),
-                              );
-                            }).toList(),
+                        items: buildingCategories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             startCategory = value;
@@ -2505,13 +2499,12 @@ class _MapScreenState extends State<MapScreen> {
                         value: startBuilding,
                         hint: const Text('Select start building'),
                         isExpanded: true,
-                        items:
-                            startCategoryBuildings.map((building) {
-                              return DropdownMenuItem<Building>(
-                                value: building,
-                                child: Text(building.name),
-                              );
-                            }).toList(),
+                        items: startCategoryBuildings.map((building) {
+                          return DropdownMenuItem<Building>(
+                            value: building,
+                            child: Text(building.name),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             startBuilding = value;
@@ -2525,13 +2518,12 @@ class _MapScreenState extends State<MapScreen> {
                         value: endCategory,
                         hint: const Text('Select destination category'),
                         isExpanded: true,
-                        items:
-                            buildingCategories.map((category) {
-                              return DropdownMenuItem<String>(
-                                value: category,
-                                child: Text(category),
-                              );
-                            }).toList(),
+                        items: buildingCategories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             endCategory = value;
@@ -2546,13 +2538,12 @@ class _MapScreenState extends State<MapScreen> {
                         value: endBuilding,
                         hint: const Text('Select destination building'),
                         isExpanded: true,
-                        items:
-                            endCategoryBuildings.map((building) {
-                              return DropdownMenuItem<Building>(
-                                value: building,
-                                child: Text(building.name),
-                              );
-                            }).toList(),
+                        items: endCategoryBuildings.map((building) {
+                          return DropdownMenuItem<Building>(
+                            value: building,
+                            child: Text(building.name),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             endBuilding = value;
@@ -2646,15 +2637,9 @@ class _MapScreenState extends State<MapScreen> {
                           padding: const EdgeInsets.only(bottom: 10),
                           child: RawMaterialButton(
                             onPressed: () => _onFilterTapped(f),
-                            fillColor:
-                                _activeFilter == f.key
-                                    ? const Color(0xFFFFCC00)
-                                    : const ui.Color.fromARGB(
-                                      255,
-                                      243,
-                                      250,
-                                      255,
-                                    ),
+                            fillColor: _activeFilter == f.key
+                                ? const Color(0xFFFFCC00)
+                                : const ui.Color.fromARGB(255, 243, 250, 255),
                             shape: const CircleBorder(),
                             constraints: const BoxConstraints.tightFor(
                               width: 55,
@@ -2703,7 +2688,29 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             ),
-
+          // 📍 Add Personal Pin Button
+          if (_foodAlertStep == _FoodAlertStep.none)
+            Positioned(
+              bottom: 270, // sits above zoom controls
+              left: 15,
+              child: RawMaterialButton(
+                onPressed: () {
+                  setState(() {
+                    _isAddingPersonalPin = !_isAddingPersonalPin;
+                  });
+                },
+                fillColor: _isAddingPersonalPin
+                    ? const Color(0xFFFFCC00) // active = yellow
+                    : Colors.grey.shade300,
+                shape: const CircleBorder(),
+                constraints: const BoxConstraints.tightFor(
+                  width: 50,
+                  height: 50,
+                ),
+                elevation: 10,
+                child: const Icon(Icons.add_location_alt, color: Colors.black),
+              ),
+            ),
           if (_foodAlertStep == _FoodAlertStep.none)
             Positioned(
               bottom: 40,
@@ -2782,10 +2789,9 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed:
-                          _foodAlertPinPosition != null
-                              ? _confirmFoodAlertPin
-                              : null,
+                      onPressed: _foodAlertPinPosition != null
+                          ? _confirmFoodAlertPin
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         disabledBackgroundColor: Colors.red.shade200,
@@ -2954,10 +2960,9 @@ class _ParkingSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filteredLots =
-        availableLots
-            .where((name) => _matchesZone(name, selectedZoneFilter))
-            .toList();
+    final filteredLots = availableLots
+        .where((name) => _matchesZone(name, selectedZoneFilter))
+        .toList();
     filteredLots.sort();
 
     return Column(
@@ -2999,8 +3004,9 @@ class _ParkingSheetContent extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color:
-                        isSelected ? Colors.transparent : Colors.grey.shade300,
+                    color: isSelected
+                        ? Colors.transparent
+                        : Colors.grey.shade300,
                   ),
                 ),
               );
@@ -3024,12 +3030,8 @@ class _ParkingSheetContent extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.only(top: 5, bottom: 20),
             itemCount: filteredLots.length,
-            separatorBuilder:
-                (context, index) => Divider(
-                  color: Colors.grey.shade300,
-                  height: 1,
-                  thickness: 1,
-                ),
+            separatorBuilder: (context, index) =>
+                Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
             itemBuilder: (context, index) {
               final name = filteredLots[index];
 
@@ -3148,11 +3150,10 @@ class _ParkingReportSheetContent extends StatelessWidget {
 
   void _submitReport(BuildContext context, String status) async {
     try {
-      final query =
-          await FirebaseFirestore.instance
-              .collection('parking_lots')
-              .where('name', isEqualTo: lotName)
-              .get();
+      final query = await FirebaseFirestore.instance
+          .collection('parking_lots')
+          .where('name', isEqualTo: lotName)
+          .get();
 
       int newSearch = 0;
       if (status == 'Full') newSearch = 20;
@@ -3303,10 +3304,9 @@ class _DonutChartPainter extends CustomPainter {
   void paint(ui.Canvas canvas, ui.Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(size.width, size.height) / 2;
-    final paint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 22;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 22;
 
     paint.color = Colors.green.shade400;
     canvas.drawCircle(center, radius, paint);
@@ -3475,11 +3475,10 @@ class _StudySheetContent extends StatelessWidget {
     ];
     // building study hall card
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream:
-          FirebaseFirestore.instance
-              .collection('study_halls')
-              .where('status', isEqualTo: 'approved')
-              .snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('study_halls')
+          .where('status', isEqualTo: 'approved')
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -3497,19 +3496,18 @@ class _StudySheetContent extends StatelessWidget {
 
         final docs = snapshot.data?.docs ?? [];
 
-        final filteredDocs =
-            docs.where((doc) {
-              final data = doc.data();
-              final building = (data['buildingAbbrev'] ?? '').toString().trim();
+        final filteredDocs = docs.where((doc) {
+          final data = doc.data();
+          final building = (data['buildingAbbrev'] ?? '').toString().trim();
 
-              if (selectedExactBuilding != null &&
-                  selectedExactBuilding!.isNotEmpty) {
-                return building.toUpperCase() ==
-                    selectedExactBuilding!.toUpperCase();
-              }
+          if (selectedExactBuilding != null &&
+              selectedExactBuilding!.isNotEmpty) {
+            return building.toUpperCase() ==
+                selectedExactBuilding!.toUpperCase();
+          }
 
-              return _matchesBuildingFilter(building);
-            }).toList();
+          return _matchesBuildingFilter(building);
+        }).toList();
         // title card
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3549,8 +3547,9 @@ class _StudySheetContent extends StatelessWidget {
                     backgroundColor: Colors.white,
                     labelStyle: TextStyle(
                       color: Colors.black87,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -3637,17 +3636,17 @@ class _StudySheetContent extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
                 itemCount: filteredDocs.length,
-                separatorBuilder:
-                    (context, index) =>
-                        Divider(color: Colors.grey.shade200, height: 1),
+                separatorBuilder: (context, index) =>
+                    Divider(color: Colors.grey.shade200, height: 1),
                 // what  study hall description needs
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
                   // NEW FROM GISELLE REVIEW 4: gets Firestore doc id for study hall reports
                   final docId = filteredDocs[index].id;
 
-                  final building =
-                      (data['buildingAbbrev'] ?? '').toString().trim();
+                  final building = (data['buildingAbbrev'] ?? '')
+                      .toString()
+                      .trim();
                   final room = (data['roomNumber'] ?? '').toString().trim();
                   final startTime = (data['startTime'] ?? '').toString();
                   final endTime = (data['endTime'] ?? '').toString();
@@ -3658,15 +3657,13 @@ class _StudySheetContent extends StatelessWidget {
                     endTime,
                   );
                   // final room presentation
-                  final cleanRoom =
-                      room.toLowerCase().startsWith('room ')
-                          ? room.substring(5).trim()
-                          : room;
+                  final cleanRoom = room.toLowerCase().startsWith('room ')
+                      ? room.substring(5).trim()
+                      : room;
                   // final title presentation
-                  final title =
-                      building.isNotEmpty
-                          ? '$building Room $cleanRoom'
-                          : 'Room $cleanRoom';
+                  final title = building.isNotEmpty
+                      ? '$building Room $cleanRoom'
+                      : 'Room $cleanRoom';
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -3767,24 +3764,22 @@ class _StudySheetContent extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (context) => ExpandedStudyHallScreen(
-                                // NEW FROM GISELLE REVIEW 4: pass report info
-                                docId: docId,
-                                reportedUserId:
-                                    (data['userId'] ?? data['createdBy'] ?? '')
-                                        .toString(),
-                                title: title,
-                                buildingName:
-                                    (data['buildingName'] ?? '').toString(),
-                                startTime: startTime,
-                                endTime: endTime,
-                                seats:
-                                    seats is int
-                                        ? seats
-                                        : int.tryParse('$seats'),
-                                amenities: amenities,
-                              ),
+                          builder: (context) => ExpandedStudyHallScreen(
+                            // NEW FROM GISELLE REVIEW 4: pass report info
+                            docId: docId,
+                            reportedUserId:
+                                (data['userId'] ?? data['createdBy'] ?? '')
+                                    .toString(),
+                            title: title,
+                            buildingName: (data['buildingName'] ?? '')
+                                .toString(),
+                            startTime: startTime,
+                            endTime: endTime,
+                            seats: seats is int
+                                ? seats
+                                : int.tryParse('$seats'),
+                            amenities: amenities,
+                          ),
                         ),
                       );
                     },
@@ -3858,11 +3853,10 @@ class _ChargingSheetContent extends StatelessWidget {
     ];
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream:
-          FirebaseFirestore.instance
-              .collection('outlets')
-              .where('status', isEqualTo: 'approved')
-              .snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('outlets')
+          .where('status', isEqualTo: 'approved')
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -3880,19 +3874,18 @@ class _ChargingSheetContent extends StatelessWidget {
 
         final docs = snapshot.data?.docs ?? [];
         // how to filter building
-        final filteredDocs =
-            docs.where((doc) {
-              final data = doc.data();
-              final building = (data['buildingAbbrev'] ?? '').toString().trim();
+        final filteredDocs = docs.where((doc) {
+          final data = doc.data();
+          final building = (data['buildingAbbrev'] ?? '').toString().trim();
 
-              if (selectedExactBuilding != null &&
-                  selectedExactBuilding!.isNotEmpty) {
-                return building.toUpperCase() ==
-                    selectedExactBuilding!.toUpperCase();
-              }
+          if (selectedExactBuilding != null &&
+              selectedExactBuilding!.isNotEmpty) {
+            return building.toUpperCase() ==
+                selectedExactBuilding!.toUpperCase();
+          }
 
-              return _matchesBuildingFilter(building);
-            }).toList();
+          return _matchesBuildingFilter(building);
+        }).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3932,8 +3925,9 @@ class _ChargingSheetContent extends StatelessWidget {
                     backgroundColor: Colors.white,
                     labelStyle: TextStyle(
                       color: Colors.black87,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -4020,15 +4014,15 @@ class _ChargingSheetContent extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
                 itemCount: filteredDocs.length,
-                separatorBuilder:
-                    (context, index) =>
-                        Divider(color: Colors.grey.shade200, height: 1),
+                separatorBuilder: (context, index) =>
+                    Divider(color: Colors.grey.shade200, height: 1),
                 itemBuilder: (context, index) {
                   final data = filteredDocs[index].data();
                   final docId = filteredDocs[index].id;
 
-                  final building =
-                      (data['buildingAbbrev'] ?? '').toString().trim();
+                  final building = (data['buildingAbbrev'] ?? '')
+                      .toString()
+                      .trim();
                   final room = (data['roomNumber'] ?? '').toString().trim();
                   final outletCount = data['outletCount'];
                   final outletTypes = List<String>.from(
@@ -4038,15 +4032,13 @@ class _ChargingSheetContent extends StatelessWidget {
                     data['accessibilityLevels'] ?? [],
                   );
 
-                  final cleanRoom =
-                      room.toLowerCase().startsWith('room ')
-                          ? room.substring(5).trim()
-                          : room;
+                  final cleanRoom = room.toLowerCase().startsWith('room ')
+                      ? room.substring(5).trim()
+                      : room;
                   // how title is gonna be displayed
-                  final title =
-                      building.isNotEmpty
-                          ? '$building Room $cleanRoom ⚡'
-                          : 'Room $cleanRoom ⚡';
+                  final title = building.isNotEmpty
+                      ? '$building Room $cleanRoom ⚡'
+                      : 'Room $cleanRoom ⚡';
 
                   String subtitle = '';
                   if (outletCount != null) {
@@ -4054,17 +4046,15 @@ class _ChargingSheetContent extends StatelessWidget {
                   }
                   // outlet types
                   if (outletTypes.isNotEmpty) {
-                    subtitle =
-                        subtitle.isEmpty
-                            ? 'Type: ${outletTypes.join(', ')}'
-                            : '$subtitle\nType: ${outletTypes.join(', ')}';
+                    subtitle = subtitle.isEmpty
+                        ? 'Type: ${outletTypes.join(', ')}'
+                        : '$subtitle\nType: ${outletTypes.join(', ')}';
                   }
                   // accessibility display
                   if (accessibilityLevels.isNotEmpty) {
-                    subtitle =
-                        subtitle.isEmpty
-                            ? 'Accessibility: ${accessibilityLevels.join(', ')}'
-                            : '$subtitle\nAccessibility: ${accessibilityLevels.join(', ')}';
+                    subtitle = subtitle.isEmpty
+                        ? 'Accessibility: ${accessibilityLevels.join(', ')}'
+                        : '$subtitle\nAccessibility: ${accessibilityLevels.join(', ')}';
                   }
 
                   return ListTile(
@@ -4108,25 +4098,22 @@ class _ChargingSheetContent extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (context) => ExpandedOutletScreen(
-                                docId: docId,
-                                reportedUserId:
-                                    (data['userId'] ?? data['createdBy'] ?? '')
-                                        .toString(),
-                                title:
-                                    building.isNotEmpty
-                                        ? '$building Room $cleanRoom'
-                                        : 'Room $cleanRoom',
-                                buildingName:
-                                    (data['buildingName'] ?? '').toString(),
-                                outletCount:
-                                    outletCount is int
-                                        ? outletCount
-                                        : int.tryParse('$outletCount'),
-                                outletTypes: outletTypes,
-                                accessibilityLevels: accessibilityLevels,
-                              ),
+                          builder: (context) => ExpandedOutletScreen(
+                            docId: docId,
+                            reportedUserId:
+                                (data['userId'] ?? data['createdBy'] ?? '')
+                                    .toString(),
+                            title: building.isNotEmpty
+                                ? '$building Room $cleanRoom'
+                                : 'Room $cleanRoom',
+                            buildingName: (data['buildingName'] ?? '')
+                                .toString(),
+                            outletCount: outletCount is int
+                                ? outletCount
+                                : int.tryParse('$outletCount'),
+                            outletTypes: outletTypes,
+                            accessibilityLevels: accessibilityLevels,
+                          ),
                         ),
                       );
                     },
@@ -4229,10 +4216,9 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
           'name': props['name'],
           'abbrev': props['abbrev'],
           'distVal': dist,
-          'distStr':
-              dist < 1000
-                  ? "${dist.toStringAsFixed(0)} ft"
-                  : "${(dist / 5280).toStringAsFixed(1)} mi",
+          'distStr': dist < 1000
+              ? "${dist.toStringAsFixed(0)} ft"
+              : "${(dist / 5280).toStringAsFixed(1)} mi",
           'details': 'Loading stats...',
         });
       }
@@ -4251,15 +4237,11 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
         // NEW FROM GISELLE REVIEW 4: Match reviews by building name,
         final String buildingName = (b['name'] ?? '').toString().trim();
 
-        final snap =
-            await FirebaseFirestore.instance
-                .collection('bathroom_reviews')
-                .where('bathroomName', isGreaterThanOrEqualTo: buildingName)
-                .where(
-                  'bathroomName',
-                  isLessThanOrEqualTo: '$buildingName\uf8ff',
-                )
-                .get();
+        final snap = await FirebaseFirestore.instance
+            .collection('bathroom_reviews')
+            .where('bathroomName', isGreaterThanOrEqualTo: buildingName)
+            .where('bathroomName', isLessThanOrEqualTo: '$buildingName\uf8ff')
+            .get();
         // how to format preview
         if (snap.docs.isNotEmpty) {
           Map<String, int> counts = {};
@@ -4284,17 +4266,13 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
             });
           }
           // top features
-          final String topFeature =
-              counts.isNotEmpty
-                  ? counts.entries
-                      .reduce((a, b) => a.value > b.value ? a : b)
-                      .key
-                  : 'Reviewed';
+          final String topFeature = counts.isNotEmpty
+              ? counts.entries.reduce((a, b) => a.value > b.value ? a : b).key
+              : 'Reviewed';
           // review
-          final String ratingText =
-              ratingCount > 0
-                  ? '⭐ ${(ratingTotal / ratingCount).toStringAsFixed(1)} ($ratingCount)'
-                  : 'Reviewed';
+          final String ratingText = ratingCount > 0
+              ? '⭐ ${(ratingTotal / ratingCount).toStringAsFixed(1)} ($ratingCount)'
+              : 'Reviewed';
 
           if (mounted) {
             setState(() {
@@ -4374,9 +4352,8 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.only(top: 5, bottom: 20),
             itemCount: _dynamicList.length,
-            separatorBuilder:
-                (context, index) =>
-                    Divider(color: Colors.grey.shade200, height: 1),
+            separatorBuilder: (context, index) =>
+                Divider(color: Colors.grey.shade200, height: 1),
             itemBuilder: (context, index) {
               final b = _dynamicList[index];
               return ListTile(
@@ -4414,13 +4391,12 @@ class _RestroomSheetContentState extends State<_RestroomSheetContent> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder:
-                          (context) => ExpandedBathroomFinderPage(
-                            bathroomName: (b["name"] ?? '').toString(),
-                            buildingAbbrev: (b["abbrev"] ?? '').toString(),
-                            distance: (b["distStr"] ?? '').toString(),
-                            details: (b["details"] ?? '').toString(),
-                          ),
+                      builder: (context) => ExpandedBathroomFinderPage(
+                        bathroomName: (b["name"] ?? '').toString(),
+                        buildingAbbrev: (b["abbrev"] ?? '').toString(),
+                        distance: (b["distStr"] ?? '').toString(),
+                        details: (b["details"] ?? '').toString(),
+                      ),
                     ),
                   );
                 },
