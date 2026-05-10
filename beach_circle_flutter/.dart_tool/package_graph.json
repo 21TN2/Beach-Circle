@@ -935,7 +935,7 @@
     },
     {
       "name": "posix",
-      "version": "6.5.0",
+      "version": "6.0.3",
       "dependencies": [
         "ffi",
         "meta",

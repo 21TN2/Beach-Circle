@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math' as math;
-import 'dart:async'; 
+import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -16,6 +16,12 @@ import '../map_features/expanded_study_hall_screen.dart';
 import '../map_features/food_alert.dart';
 import '../map_features/expanded_outlet_screen.dart';
 import '../map_features/expanded_bathroom_finder_screen.dart';
+
+//New packages from old map screen
+import 'package:beach_circle_flutter/community_goods/smf/service/moderation_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:beach_circle_flutter/mapbox.dart';
+import 'package:beach_circle_flutter/community_goods/smf/model/csulb_buildings.dart';
 
 // add active pins (or phase out?)
 
@@ -64,14 +70,651 @@ class _MapScreenState extends State<MapScreen> {
   String? _selectedExactOutletBuilding;
 
   String _selectedParkingZoneFilter = 'All';
-  String? _reportingLotName; 
+  String? _reportingLotName;
 
   PolygonAnnotationManager? _parkingLotManager;
-  PointAnnotationManager? _parkingLabelManager; 
-  final Map<String, List<Position>> _parkingGeometries = {}; 
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _parkingStreamSubscription;
-  final Map<String, String> _polygonIdToLotName = {}; 
-  final Map<String, String> _labelIdToLotName = {}; 
+  PointAnnotationManager? _parkingLabelManager;
+  final Map<String, List<Position>> _parkingGeometries = {};
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+  _parkingStreamSubscription;
+  final Map<String, String> _polygonIdToLotName = {};
+  final Map<String, String> _labelIdToLotName = {};
+
+  //============NEW FOR ROUTE OPTIONS===================
+  //Building Coordinates
+  PolylineAnnotationManager? polylineAnnotationManager;
+  PolylineAnnotation? currentRouteAnnotation;
+  Building? startBuilding;
+  Building? endBuilding;
+  String? startCategory;
+  String? endCategory;
+
+  //Creates circle pins on the map
+  CircleAnnotationManager? circleAnnotationManager;
+  CircleAnnotationManager? _routeTrailManager;
+  PointAnnotationManager? _routeMarkerManager;
+  //Pins Id for the firebase
+  final Map<String, String> _annotationToDocId = {};
+
+  bool _ignoreNextMapTap = false;
+
+  //Show or hide route panel
+  bool _showRoutePanel = false;
+
+  Future<Uint8List> _createRouteMarker({
+    required String label,
+    required Color color,
+  }) async {
+    const double width = 170;
+    const double height = 140;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final Paint shadowPaint =
+        Paint()
+          ..color = Colors.black.withValues(alpha: 0.25)
+          ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4);
+
+    final Paint pinPaint = Paint()..color = color;
+    final Paint whitePaint = Paint()..color = Colors.white;
+
+    canvas.drawCircle(const Offset(85, 48), 32, shadowPaint);
+
+    canvas.drawCircle(const Offset(85, 44), 32, pinPaint);
+    canvas.drawCircle(const Offset(85, 44), 11, whitePaint);
+
+    final Path triangle =
+        Path()
+          ..moveTo(67, 72)
+          ..lineTo(103, 72)
+          ..lineTo(85, 108)
+          ..close();
+    canvas.drawPath(triangle, pinPaint);
+
+    final RRect labelBox = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(35, 92, 100, 38),
+      const Radius.circular(18),
+    );
+
+    canvas.drawRRect(labelBox, pinPaint);
+
+    final TextPainter textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+
+    textPainter.layout();
+
+    textPainter.paint(
+      canvas,
+      Offset(85 - textPainter.width / 2, 111 - textPainter.height / 2),
+    );
+
+    final image = await recorder.endRecording().toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  //ROUTE OPTIONS BUILDING CATEGORIES
+  List<String> get buildingCategories {
+    final categories = csulbBuildings.map((b) => b.category).toSet().toList();
+    categories.sort();
+    return categories;
+  }
+
+  List<Building> get startCategoryBuildings {
+    if (startCategory == null) return [];
+    return csulbBuildings.where((b) => b.category == startCategory).toList();
+  }
+
+  List<Building> get endCategoryBuildings {
+    if (endCategory == null) return [];
+    return csulbBuildings.where((b) => b.category == endCategory).toList();
+  }
+
+  //Clear route selections and map line
+  Future<void> _clearRoute() async {
+    setState(() {
+      startBuilding = null;
+      endBuilding = null;
+      startCategory = null;
+      endCategory = null;
+      _showRoutePanel = false;
+    });
+
+    //Remove route line from map
+    if (polylineAnnotationManager != null) {
+      await polylineAnnotationManager!.deleteAll();
+      currentRouteAnnotation = null;
+    }
+    await _routeTrailManager?.deleteAll();
+    await _routeMarkerManager?.deleteAll();
+  }
+
+  List<Position> _createTrailDots(List<Position> routePoints) {
+    final List<Position> dots = [];
+
+    for (int i = 0; i < routePoints.length - 1; i++) {
+      final start = routePoints[i];
+      final end = routePoints[i + 1];
+
+      const int dotsPerSegment = 6;
+
+      for (int j = 1; j < dotsPerSegment; j += 2) {
+        final double t = j / dotsPerSegment;
+
+        final double lng = start.lng + ((end.lng - start.lng) * t);
+        final double lat = start.lat + ((end.lat - start.lat) * t);
+
+        dots.add(Position(lng, lat));
+      }
+    }
+
+    return dots;
+  }
+
+  //Building Selection
+  Future<void> _getRoute() async {
+    if (startBuilding == null || endBuilding == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select both buildings.')),
+      );
+      return;
+    }
+
+    if (polylineAnnotationManager == null || mapboxMap == null) return;
+
+    try {
+      await polylineAnnotationManager!.deleteAll();
+      currentRouteAnnotation = null;
+
+      final url =
+          'https://api.mapbox.com/directions/v5/mapbox/walking/'
+          '${startBuilding!.lng},${startBuilding!.lat};'
+          '${endBuilding!.lng},${endBuilding!.lat}'
+          '?geometries=geojson&access_token=$mapboxAccessToken';
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get route: ${response.statusCode}'),
+          ),
+        );
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      final routes = data['routes'];
+
+      if (routes == null || routes.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No route found.')));
+        return;
+      }
+
+      final coordinates = routes[0]['geometry']['coordinates'] as List;
+
+      final List<Position> routePoints =
+          coordinates.map((point) {
+            return Position(
+              (point[0] as num).toDouble(),
+              (point[1] as num).toDouble(),
+            );
+          }).toList();
+
+      // Clear old route drawings
+      await polylineAnnotationManager!.deleteAll();
+      await _routeMarkerManager?.deleteAll();
+      await _routeTrailManager?.deleteAll();
+
+      // Shadow
+      await polylineAnnotationManager!.create(
+        PolylineAnnotationOptions(
+          geometry: LineString(coordinates: routePoints),
+          lineColor: Colors.black.withValues(alpha: 0.24).toARGB32(),
+          lineWidth: 16.0,
+        ),
+      );
+
+      // White outline
+      await polylineAnnotationManager!.create(
+        PolylineAnnotationOptions(
+          geometry: LineString(coordinates: routePoints),
+          lineColor: Colors.white.toARGB32(),
+          lineWidth: 13.0,
+        ),
+      );
+
+      // Main blue route
+      currentRouteAnnotation = await polylineAnnotationManager!.create(
+        PolylineAnnotationOptions(
+          geometry: LineString(coordinates: routePoints),
+          lineColor: const Color(0xFF1A73E8).toARGB32(),
+          lineWidth: 9.0,
+        ),
+      );
+
+      // Recreate trail manager AFTER route line so dots sit on top
+      _routeTrailManager =
+          await mapboxMap!.annotations.createCircleAnnotationManager();
+
+
+      // Recreate marker manager AFTER route line and trail so START/END sit on top
+      _routeMarkerManager =
+          await mapboxMap!.annotations.createPointAnnotationManager();
+
+      final Position startPoint = routePoints.first;
+      final Position endPoint = routePoints.last;
+
+      final startMarker = await _createRouteMarker(
+        label: 'START',
+        color: const Color(0xFF1E9E59),
+      );
+
+      final endMarker = await _createRouteMarker(
+        label: 'END',
+        color: const Color(0xFFD93025),
+      );
+
+      await _routeMarkerManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: startPoint),
+          image: startMarker,
+          iconSize: 1.35,
+          iconOffset: [0.0, -25.0],
+        ),
+      );
+
+      await _routeMarkerManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: endPoint),
+          image: endMarker,
+          iconSize: 1.35,
+          iconOffset: [0.0, -25.0],
+        ),
+      );
+
+      setState(() {
+        _showRoutePanel = false;
+      });
+
+      await mapboxMap!.flyTo(
+        CameraOptions(
+          center: Point(
+            coordinates: Position(startBuilding!.lng, startBuilding!.lat),
+          ),
+          zoom: 16.0,
+        ),
+        MapAnimationOptions(duration: 1200),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting route: $e')));
+    }
+  }
+
+  //=========================LOCATION PINS========================
+  //Load pins to the map
+  Future<void> _refreshPinsFromFirebase() async {
+    if (circleAnnotationManager == null) return;
+
+    await circleAnnotationManager!.deleteAll();
+    _annotationToDocId.clear();
+
+    final snapshot = await FirebaseFirestore.instance.collection('pins').get();
+
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+
+      final latRaw = data['lat'];
+      final lngRaw = data['lng'];
+      final colorRaw = data['color'];
+
+      if (latRaw == null || lngRaw == null) continue;
+
+      final double lat = (latRaw as num).toDouble();
+      final double lng = (lngRaw as num).toDouble();
+      final String colorName = (colorRaw ?? 'blue').toString();
+
+      //Draws blue circle as a pin
+      final annotation = await circleAnnotationManager!.create(
+        CircleAnnotationOptions(
+          geometry: Point(coordinates: Position(lng, lat)),
+          circleRadius: 8.0,
+          circleColor: _getPinColor(colorName),
+          circleStrokeWidth: 2.0,
+          circleStrokeColor: Colors.white.value,
+        ),
+      );
+
+      _annotationToDocId[annotation.id] = doc.id;
+    }
+  }
+
+  //Edit existing pin
+  Future<void> _showEditPinDialog({
+    required String docId,
+    required String currentLabel,
+    required String currentDescription,
+    required String currentColor,
+  }) async {
+    final TextEditingController labelController = TextEditingController(
+      text: currentLabel,
+    );
+    final TextEditingController descriptionController = TextEditingController(
+      text: currentDescription,
+    );
+
+    String selectedColor = currentColor;
+
+    final shouldSave = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit pin'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Label'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: labelController,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Fav study spot',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Description'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Quiet, good views, near outlets',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Choose pin color'),
+                    const SizedBox(height: 6),
+                    DropdownButton<String>(
+                      value: selectedColor,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem(value: 'blue', child: Text('Blue')),
+                        DropdownMenuItem(value: 'red', child: Text('Red')),
+                        DropdownMenuItem(value: 'green', child: Text('Green')),
+                        DropdownMenuItem(
+                          value: 'purple',
+                          child: Text('Purple'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'orange',
+                          child: Text('Orange'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'yellow',
+                          child: Text('Yellow'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setDialogState(() {
+                          selectedColor = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldSave != true) return;
+
+    final String updatedLabel = labelController.text.trim();
+    final String updatedDescription = descriptionController.text.trim();
+
+    //Moderation for edited content
+    if (ModerationService.containsBlockedContent(updatedLabel) ||
+        ModerationService.containsBlockedContent(updatedDescription)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inappropriate language is not allowed.')),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance.collection('pins').doc(docId).update({
+      'label': updatedLabel,
+      'description': updatedDescription,
+      'color': selectedColor,
+    });
+
+    await _refreshPinsFromFirebase();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Pin updated')));
+  }
+
+  // User input for creating a personal location pin
+  Future<void> _showAddUserPinDialog(
+    MapContentGestureContext tapContext,
+  ) async {
+    final double lat = tapContext.point.coordinates.lat.toDouble();
+    final double lng = tapContext.point.coordinates.lng.toDouble();
+
+    // Default Color Pin
+    String selectedColor = 'blue';
+
+    // User input for pin details
+    final TextEditingController labelController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+
+    // Ask users if they want to pin location
+    final shouldPin = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Pin this location?'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Do you want to pin this spot?'),
+                    const SizedBox(height: 12),
+
+                    const Text('Label'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: labelController,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Fav study spot',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Description'),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Example: Quiet, good views, near outlets',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    const Text('Choose pin color'),
+                    const SizedBox(height: 6),
+                    DropdownButton<String>(
+                      value: selectedColor,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem(value: 'blue', child: Text('Blue')),
+                        DropdownMenuItem(value: 'red', child: Text('Red')),
+                        DropdownMenuItem(value: 'green', child: Text('Green')),
+                        DropdownMenuItem(
+                          value: 'purple',
+                          child: Text('Purple'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'orange',
+                          child: Text('Orange'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'yellow',
+                          child: Text('Yellow'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setDialogState(() {
+                          selectedColor = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('No'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldPin != true) return;
+    if (circleAnnotationManager == null) return;
+
+    final String label = labelController.text.trim();
+    final String description = descriptionController.text.trim();
+
+    // Checks for inappropriate content
+    if (ModerationService.containsBlockedContent(label) ||
+        ModerationService.containsBlockedContent(description)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inappropriate language is not allowed.')),
+      );
+      return;
+    }
+
+    CircleAnnotation? annotation;
+
+    try {
+      // Pin shown immediately
+      annotation = await circleAnnotationManager!.create(
+        CircleAnnotationOptions(
+          geometry: Point(coordinates: Position(lng, lat)),
+          circleRadius: 8.0,
+          circleColor: _getPinColor(selectedColor),
+          circleStrokeWidth: 2.0,
+          circleStrokeColor: Colors.white.value,
+        ),
+      );
+
+      // Save pin in firebase
+      final docRef = await FirebaseFirestore.instance.collection('pins').add({
+        'lat': lat,
+        'lng': lng,
+        'color': selectedColor,
+        'label': label,
+        'description': description,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      _annotationToDocId[annotation.id] = docRef.id;
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pin saved')));
+    } catch (e) {
+      if (annotation != null) {
+        await circleAnnotationManager!.delete(annotation);
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save pin: $e')));
+    }
+  }
+
+  //Pin Colors
+  int _getPinColor(String colorName) {
+    switch (colorName) {
+      case 'red':
+        return Colors.red.value;
+      case 'green':
+        return Colors.green.value;
+      case 'purple':
+        return Colors.purple.value;
+      case 'orange':
+        return Colors.orange.value;
+      case 'yellow':
+        return Colors.yellow.value;
+      case 'blue':
+      default:
+        return Colors.blue.value;
+    }
+  }
 
   // --- NEW: LIFTED PARKING STATE ---
   // This holds the live data so both Firebase AND the Demo can update the bottom sheet!
@@ -242,8 +885,11 @@ class _MapScreenState extends State<MapScreen> {
     final Canvas canvas = Canvas(recorder);
 
     final Paint bgPaint = Paint()..color = Colors.white;
-    final RRect rrect = RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, width, height), const Radius.circular(18));
-    
+    final RRect rrect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(0, 0, width, height),
+      const Radius.circular(18),
+    );
+
     canvas.drawShadow(Path()..addRRect(rrect), Colors.black, 4, true);
     canvas.drawRRect(rrect, bgPaint);
 
@@ -270,8 +916,13 @@ class _MapScreenState extends State<MapScreen> {
       iconPainter.paint(canvas, Offset(startX, 9));
     }
 
-    final ui.Image image = await recorder.endRecording().toImage(width.toInt(), height.toInt());
-    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final ui.Image image = await recorder.endRecording().toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     return byteData!.buffer.asUint8List();
   }
 
@@ -482,10 +1133,11 @@ class _MapScreenState extends State<MapScreen> {
       await _studyHallPinManager!.deleteAll();
       _studyHallPinData.clear();
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection('study_halls')
-          .where('status', isEqualTo: 'approved')
-          .get();
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('study_halls')
+              .where('status', isEqualTo: 'approved')
+              .get();
 
       final Map<String, Map<String, dynamic>> buildingsMap = {};
 
@@ -517,7 +1169,7 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-        
+
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
@@ -573,10 +1225,11 @@ class _MapScreenState extends State<MapScreen> {
       await _outletPinManager!.deleteAll();
       _outletPinData.clear();
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection('outlets')
-          .where('status', isEqualTo: 'approved')
-          .get();
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('outlets')
+              .where('status', isEqualTo: 'approved')
+              .get();
 
       final Map<String, Map<String, dynamic>> buildingsMap = {};
 
@@ -605,13 +1258,13 @@ class _MapScreenState extends State<MapScreen> {
             }
           }
         }
-        
+
         if (buildingsMap.containsKey(buildingAbbrev)) {
           buildingsMap[buildingAbbrev]!['totalCount'] =
               (buildingsMap[buildingAbbrev]!['totalCount'] as int) + 1;
         }
       }
-      
+
       for (final entry in buildingsMap.entries) {
         final buildingData = entry.value;
         final badgeText = '${buildingData['totalCount']}';
@@ -622,7 +1275,7 @@ class _MapScreenState extends State<MapScreen> {
           badgeText: badgeText,
           badgeColor: const Color(0xFF5F6B8C),
         );
-        
+
         final annotation = await _outletPinManager!.create(
           PointAnnotationOptions(
             geometry: Point(
@@ -793,7 +1446,9 @@ class _MapScreenState extends State<MapScreen> {
   // --- PARKING GEOJSON PARSING ---
   Future<void> _loadParkingLotGeometries() async {
     try {
-      final String geoJsonString = await rootBundle.loadString('assets/csulb.geojson');
+      final String geoJsonString = await rootBundle.loadString(
+        'assets/csulb.geojson',
+      );
       final Map<String, dynamic> geoJson = json.decode(geoJsonString);
       final List features = geoJson['features'] ?? [];
 
@@ -802,28 +1457,40 @@ class _MapScreenState extends State<MapScreen> {
       for (var feature in features) {
         final properties = feature['properties'] ?? {};
         final geometry = feature['geometry'] ?? {};
-        
+
         final featureType = (properties['feature_type'] ?? '').toString();
         final lotName = (properties['name'] ?? 'Unnamed Lot').toString().trim();
-        
-        if (featureType == 'parking' || lotName.toUpperCase().contains('LOT ') || lotName.toUpperCase().contains('PARKING')) {
+
+        if (featureType == 'parking' ||
+            lotName.toUpperCase().contains('LOT ') ||
+            lotName.toUpperCase().contains('PARKING')) {
           final type = geometry['type'];
           final coords = geometry['coordinates'];
-          
+
           List<Position> positions = [];
 
           try {
-             if (type == 'Polygon') {
-               for (var point in coords[0]) {
-                 positions.add(Position((point[0] as num).toDouble(), (point[1] as num).toDouble()));
-               }
-             } else if (type == 'MultiPolygon') {
-               for (var point in coords[0][0]) {
-                 positions.add(Position((point[0] as num).toDouble(), (point[1] as num).toDouble()));
-               }
-             }
+            if (type == 'Polygon') {
+              for (var point in coords[0]) {
+                positions.add(
+                  Position(
+                    (point[0] as num).toDouble(),
+                    (point[1] as num).toDouble(),
+                  ),
+                );
+              }
+            } else if (type == 'MultiPolygon') {
+              for (var point in coords[0][0]) {
+                positions.add(
+                  Position(
+                    (point[0] as num).toDouble(),
+                    (point[1] as num).toDouble(),
+                  ),
+                );
+              }
+            }
           } catch (e) {
-             continue;
+            continue;
           }
 
           if (positions.isNotEmpty && lotName.isNotEmpty) {
@@ -837,38 +1504,41 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // --- DRAW PARKING POLYGONS AND MARKERS ---
-  Future<void> _drawParkingPolygons([Map<String, int> counts = const {}]) async {
+  Future<void> _drawParkingPolygons([
+    Map<String, int> counts = const {},
+  ]) async {
     if (_parkingLotManager == null) return;
     await _parkingLotManager!.deleteAll();
     if (_parkingLabelManager != null) await _parkingLabelManager!.deleteAll();
 
-    _polygonIdToLotName.clear(); 
+    _polygonIdToLotName.clear();
     _labelIdToLotName.clear();
-    
+
     List<PolygonAnnotationOptions> polygonOptions = [];
     List<PointAnnotationOptions> labelOptions = [];
-    List<String> lotNamesList = []; 
+    List<String> lotNamesList = [];
 
     for (final name in _parkingGeometries.keys) {
       int searchingCount = counts[name] ?? 0;
-      
-      double occupancy = searchingCount / 20.0; // Assume 20 is max for the UI scale
+
+      double occupancy =
+          searchingCount / 20.0; // Assume 20 is max for the UI scale
       if (occupancy > 1.0) occupancy = 1.0;
 
-      int colorValue = Colors.green.toARGB32(); 
-      if (occupancy >= 0.75) { 
-        colorValue = Colors.red.toARGB32(); 
-      } else if (occupancy >= 0.25) { 
-        colorValue = Colors.orange.toARGB32(); 
+      int colorValue = Colors.green.toARGB32();
+      if (occupancy >= 0.75) {
+        colorValue = Colors.red.toARGB32();
+      } else if (occupancy >= 0.25) {
+        colorValue = Colors.orange.toARGB32();
       }
 
       polygonOptions.add(
         PolygonAnnotationOptions(
           geometry: Polygon(coordinates: [_parkingGeometries[name]!]),
           fillColor: colorValue,
-          fillOpacity: 0.5, 
-          fillOutlineColor: Colors.black.toARGB32(), 
-        )
+          fillOpacity: 0.5,
+          fillOutlineColor: Colors.black.toARGB32(),
+        ),
       );
       lotNamesList.add(name);
 
@@ -887,10 +1557,10 @@ class _MapScreenState extends State<MapScreen> {
           geometry: Point(coordinates: Position(centerX, centerY)),
           image: markerBytes,
           iconSize: 1.0,
-        )
+        ),
       );
     }
-    
+
     if (polygonOptions.isNotEmpty) {
       final annotations = await _parkingLotManager!.createMulti(polygonOptions);
       for (int i = 0; i < annotations.length; i++) {
@@ -901,12 +1571,14 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     if (labelOptions.isNotEmpty && _parkingLabelManager != null) {
-       final labelAnnotations = await _parkingLabelManager!.createMulti(labelOptions);
-       for (int i = 0; i < labelAnnotations.length; i++) {
-         if (labelAnnotations[i] != null) {
-           _labelIdToLotName[labelAnnotations[i]!.id] = lotNamesList[i];
-         }
-       }
+      final labelAnnotations = await _parkingLabelManager!.createMulti(
+        labelOptions,
+      );
+      for (int i = 0; i < labelAnnotations.length; i++) {
+        if (labelAnnotations[i] != null) {
+          _labelIdToLotName[labelAnnotations[i]!.id] = lotNamesList[i];
+        }
+      }
     }
   }
 
@@ -917,49 +1589,45 @@ class _MapScreenState extends State<MapScreen> {
         .collection('parking_lots')
         .snapshots()
         .listen((snapshot) {
-      final Map<String, int> liveCounts = {};
-      final Map<String, Map<String, dynamic>> fullData = {};
-      
-      for (var doc in snapshot.docs) {
-        final name = (doc.data()['name'] ?? '').toString();
-        final count = doc.data()['searching_count'] ?? 0;
-        liveCounts[name] = count;
-        fullData[name] = doc.data();
-      }
-      
-      // Update central state so bottom sheet can re-render instantly
-      if (mounted) {
-        setState(() {
-          _liveParkingData = fullData;
+          final Map<String, int> liveCounts = {};
+          final Map<String, Map<String, dynamic>> fullData = {};
+
+          for (var doc in snapshot.docs) {
+            final name = (doc.data()['name'] ?? '').toString();
+            final count = doc.data()['searching_count'] ?? 0;
+            liveCounts[name] = count;
+            fullData[name] = doc.data();
+          }
+
+          // Update central state so bottom sheet can re-render instantly
+          if (mounted) {
+            setState(() {
+              _liveParkingData = fullData;
+            });
+          }
+          _drawParkingPolygons(liveCounts);
         });
-      }
-      _drawParkingPolygons(liveCounts);
-    });
 
     _drawParkingPolygons();
   }
-
 
   // --- REFINED DEMO SIMULATION LOGIC ---
   void _runParkingDemo() async {
     _demoTimer?.cancel();
     _parkingStreamSubscription?.cancel(); // Stop firebase from overwriting demo
     int tick = 0;
-    
+
     setState(() {
       _activeFilter = 'parking';
       _selectedParkingZoneFilter = 'G Lots';
       _reportingLotName = null;
       _demoLotCounts.clear();
       // Inject fake empty data for the menu to read
-      _liveParkingData['Lot G3'] = {
-        'searching_count': 0,
-        'parked_count': 0,
-      };
+      _liveParkingData['Lot G3'] = {'searching_count': 0, 'parked_count': 0};
     });
-    
-    double lotCenterX = -118.1135; 
-    double lotCenterY = 33.7840;   
+
+    double lotCenterX = -118.1135;
+    double lotCenterY = 33.7840;
 
     final lotG3Coords = _parkingGeometries['Lot G3'];
     if (lotG3Coords != null && lotG3Coords.isNotEmpty) {
@@ -976,7 +1644,7 @@ class _MapScreenState extends State<MapScreen> {
     mapboxMap?.flyTo(
       CameraOptions(
         center: Point(coordinates: Position(lotCenterX, lotCenterY)),
-        zoom: 17.5, 
+        zoom: 17.5,
       ),
       MapAnimationOptions(duration: 1000),
     );
@@ -989,48 +1657,54 @@ class _MapScreenState extends State<MapScreen> {
       tick++;
 
       setState(() {
-        _demoLotCounts['Lot G3'] = math.min(tick, 20); 
+        _demoLotCounts['Lot G3'] = math.min(tick, 20);
         // Feed fake live data into the bottom sheet state
         _liveParkingData['Lot G3'] = {
           'searching_count': math.min(tick, 20),
-          'parked_count': tick > 5 ? (tick - 5) : 0, 
+          'parked_count': tick > 5 ? (tick - 5) : 0,
         };
       });
-      
+
       _drawParkingPolygons(_demoLotCounts);
 
       if (_devPinManager != null) {
-         await _devPinManager!.deleteAll();
-         
-         for (int i = 0; i < math.min(tick, 20); i++) {
-           double offsetX = math.sin(i * 1.5) * 0.00025;
-           double offsetY = math.cos(i * 1.5) * 0.00025;
-           double progress = math.min((tick - i) / 3.0, 1.0); 
-           
-           double startX = lotCenterX - 0.0008;
-           double startY = lotCenterY - 0.0008;
-           double endX = lotCenterX + offsetX;
-           double endY = lotCenterY + offsetY;
+        await _devPinManager!.deleteAll();
 
-           double currentX = startX + (endX - startX) * progress;
-           double currentY = startY + (endY - startY) * progress;
+        for (int i = 0; i < math.min(tick, 20); i++) {
+          double offsetX = math.sin(i * 1.5) * 0.00025;
+          double offsetY = math.cos(i * 1.5) * 0.00025;
+          double progress = math.min((tick - i) / 3.0, 1.0);
 
-           await _devPinManager!.create(
-             PointAnnotationOptions(
-               geometry: Point(coordinates: Position(currentX, currentY)),
-               textField: progress >= 1.0 ? "Car ${i+1} (Parked)" : "Car ${i+1}",
-               textColor: progress >= 1.0 ? Colors.green.toARGB32() : Colors.blueAccent.toARGB32(),
-               textHaloColor: Colors.white.toARGB32(),
-               textHaloWidth: 2.0,
-             )
-           );
-         }
+          double startX = lotCenterX - 0.0008;
+          double startY = lotCenterY - 0.0008;
+          double endX = lotCenterX + offsetX;
+          double endY = lotCenterY + offsetY;
+
+          double currentX = startX + (endX - startX) * progress;
+          double currentY = startY + (endY - startY) * progress;
+
+          await _devPinManager!.create(
+            PointAnnotationOptions(
+              geometry: Point(coordinates: Position(currentX, currentY)),
+              textField:
+                  progress >= 1.0 ? "Car ${i + 1} (Parked)" : "Car ${i + 1}",
+              textColor:
+                  progress >= 1.0
+                      ? Colors.green.toARGB32()
+                      : Colors.blueAccent.toARGB32(),
+              textHaloColor: Colors.white.toARGB32(),
+              textHaloWidth: 2.0,
+            ),
+          );
+        }
       }
 
       if (tick >= 20) {
         timer.cancel();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("20s Demo Complete: Lot G3 has reached capacity.")),
+          const SnackBar(
+            content: Text("20s Demo Complete: Lot G3 has reached capacity."),
+          ),
         );
         Future.delayed(const Duration(seconds: 4), () {
           if (mounted) {
@@ -1070,9 +1744,105 @@ class _MapScreenState extends State<MapScreen> {
       _BathroomClickListener(_handleBathroomPinTap, _bathroomPinData),
     );
 
-    _devPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
-    _devCircleManager = await mapboxMap!.annotations.createCircleAnnotationManager();
-    _foodAlertPinManager = await mapboxMap!.annotations.createPointAnnotationManager();
+    // User pins(Circle pins)
+    circleAnnotationManager =
+        await mapboxMap!.annotations.createCircleAnnotationManager();
+    _routeMarkerManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _routeTrailManager =
+        await mapboxMap!.annotations.createCircleAnnotationManager();
+    // If user wants to edit or delete existing pins
+    circleAnnotationManager!.addOnCircleAnnotationClickListener(
+      _PinClickListener(
+        onPinTapped: (annotation) async {
+          _ignoreNextMapTap = true;
+
+          // Gets pin's Id from firebase
+          final docId = _annotationToDocId[annotation.id];
+          if (docId == null) return;
+
+          // Pin Details
+          final pinDoc =
+              await FirebaseFirestore.instance
+                  .collection('pins')
+                  .doc(docId)
+                  .get();
+
+          final pinData = pinDoc.data() ?? {};
+          final String label = (pinData['label'] ?? '').toString();
+          final String description = (pinData['description'] ?? '').toString();
+          final String color = (pinData['color'] ?? 'blue').toString();
+
+          final action = await showDialog<String>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(label.isEmpty ? 'Pinned location' : label),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (description.isNotEmpty) Text(description),
+                    if (description.isNotEmpty) const SizedBox(height: 12),
+                    Text('Color: $color'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'close'),
+                    child: const Text('Close'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'edit'),
+                    child: const Text('Edit'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, 'delete'),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (action == 'delete') {
+            // Deletes pin from firebase
+            await FirebaseFirestore.instance
+                .collection('pins')
+                .doc(docId)
+                .delete();
+
+            await _refreshPinsFromFirebase();
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Pin deleted')));
+            return;
+          }
+
+          if (action == 'edit') {
+            await _showEditPinDialog(
+              docId: docId,
+              currentLabel: label,
+              currentDescription: description,
+              currentColor: color,
+            );
+          }
+        },
+      ),
+    );
+
+    // Route Options
+    polylineAnnotationManager =
+        await mapboxMap!.annotations.createPolylineAnnotationManager();
+
+    _devPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
+    _devCircleManager =
+        await mapboxMap!.annotations.createCircleAnnotationManager();
+    _foodAlertPinManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
 
     _foodAlertMapPinManager =
         await mapboxMap!.annotations.createPointAnnotationManager();
@@ -1092,14 +1862,19 @@ class _MapScreenState extends State<MapScreen> {
       _OutletClickListener(_handleOutletPinTap, _outletPinData),
     );
 
-    _parkingLotManager = await mapboxMap!.annotations.createPolygonAnnotationManager();
-    _parkingLabelManager = await mapboxMap!.annotations.createPointAnnotationManager();
+    _parkingLotManager =
+        await mapboxMap!.annotations.createPolygonAnnotationManager();
+    _parkingLabelManager =
+        await mapboxMap!.annotations.createPointAnnotationManager();
 
     _foodAlertMarkerBytes = await _createFoodAlertMarker();
 
     await _loadBuildingBathrooms();
-    
-    await _loadParkingLotGeometries(); 
+
+    await _loadParkingLotGeometries();
+
+    // Load personal saved pins from Firebase
+    await _refreshPinsFromFirebase();
 
     if (widget.initialFilter != null) {
       await Future.delayed(const Duration(milliseconds: 150));
@@ -1113,34 +1888,53 @@ class _MapScreenState extends State<MapScreen> {
       await _placeFoodAlertPin(context.point);
       return;
     }
-    if (!_isDevMode) return;
-    _simulatedPosition = context.point.coordinates;
-    if (_devPin != null) {
-      await _devPinManager?.delete(_devPin!);
+
+    // Prevents users from pinning while route panel is open
+    if (_showRoutePanel) return;
+
+    if (_ignoreNextMapTap) {
+      _ignoreNextMapTap = false;
+      return;
     }
-    if (_devCircle != null) {
-      await _devCircleManager?.delete(_devCircle!);
+
+    if (_isDevMode) {
+      _simulatedPosition = context.point.coordinates;
+
+      if (_devPin != null) {
+        await _devPinManager?.delete(_devPin!);
+      }
+
+      if (_devCircle != null) {
+        await _devCircleManager?.delete(_devCircle!);
+      }
+
+      _devCircle = await _devCircleManager?.create(
+        CircleAnnotationOptions(
+          geometry: context.point,
+          circleRadius: 9.0,
+          circleColor: const Color(0xFF4285F4).toARGB32(),
+          circleStrokeWidth: 3.0,
+          circleStrokeColor: Colors.white.toARGB32(),
+        ),
+      );
+
+      _devPin = await _devPinManager?.create(
+        PointAnnotationOptions(
+          geometry: context.point,
+          textField: "You (Simulated)",
+          textColor: Colors.black.toARGB32(),
+          textHaloColor: Colors.white.toARGB32(),
+          textHaloWidth: 2.0,
+          textOffset: [0.0, 1.2],
+        ),
+      );
+
+      setState(() {});
+      return;
     }
-    _devCircle = await _devCircleManager?.create(
-      CircleAnnotationOptions(
-        geometry: context.point,
-        circleRadius: 9.0,
-        circleColor: const Color(0xFF4285F4).toARGB32(),
-        circleStrokeWidth: 3.0,
-        circleStrokeColor: Colors.white.toARGB32(),
-      ),
-    );
-    _devPin = await _devPinManager?.create(
-      PointAnnotationOptions(
-        geometry: context.point,
-        textField: "You (Simulated)",
-        textColor: Colors.black.toARGB32(),
-        textHaloColor: Colors.white.toARGB32(),
-        textHaloWidth: 2.0,
-        textOffset: [0.0, 1.2],
-      ),
-    );
-    setState(() {});
+
+    // Creates a personal location pin
+    await _showAddUserPinDialog(context);
   }
 
   Future<void> _placeFoodAlertPin(Point point) async {
@@ -1333,7 +2127,7 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       final wasSameFilter = _activeFilter == filter.key;
       _activeFilter = wasSameFilter ? null : filter.key;
-      _reportingLotName = null; 
+      _reportingLotName = null;
 
       if (!wasSameFilter && filter.key == 'study') {
         _selectedStudyBuildingFilter = 'All';
@@ -1344,7 +2138,7 @@ class _MapScreenState extends State<MapScreen> {
         _selectedOutletBuildingFilter = 'All';
         _selectedExactOutletBuilding = null;
       }
-      
+
       if (!wasSameFilter && filter.key == 'parking') {
         _selectedParkingZoneFilter = 'All';
       }
@@ -1410,7 +2204,7 @@ class _MapScreenState extends State<MapScreen> {
         if (_isDevMode && _demoTimer != null && _demoTimer!.isActive) {
           // Let demo keep rendering
         } else {
-          _listenToParkingFirebase(); 
+          _listenToParkingFirebase();
         }
       } else {
         _parkingStreamSubscription?.cancel();
@@ -1427,6 +2221,9 @@ class _MapScreenState extends State<MapScreen> {
         _foodAlertPinData.clear();
       }
     }
+
+    // Keep personal location pins visible after filter changes
+    await _refreshPinsFromFirebase();
   }
 
   Widget? get _activeSheetContent {
@@ -1451,9 +2248,7 @@ class _MapScreenState extends State<MapScreen> {
             : Position(_centerLng, _centerLat);
 
     if (_activeFilter == 'restroom') {
-      return _RestroomSheetContent(
-        currentPosition: locationToUse,
-      );
+      return _RestroomSheetContent(currentPosition: locationToUse);
     }
 
     if (_activeFilter == 'study') {
@@ -1491,7 +2286,7 @@ class _MapScreenState extends State<MapScreen> {
         },
       );
     }
-    
+
     if (_activeFilter == 'parking') {
       if (_reportingLotName != null) {
         return _ParkingReportSheetContent(
@@ -1502,7 +2297,7 @@ class _MapScreenState extends State<MapScreen> {
             setState(() {
               _reportingLotName = null;
             });
-          }
+          },
         );
       }
 
@@ -1522,7 +2317,7 @@ class _MapScreenState extends State<MapScreen> {
           setState(() {
             _reportingLotName = lotName;
           });
-        }
+        },
       );
     }
 
@@ -1570,8 +2365,17 @@ class _MapScreenState extends State<MapScreen> {
                     if (_isDevMode)
                       TextButton.icon(
                         onPressed: _runParkingDemo,
-                        icon: const Icon(Icons.play_circle_fill, color: Colors.red),
-                        label: const Text("Run 20s Demo", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                        icon: const Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.red,
+                        ),
+                        label: const Text(
+                          "Run 20s Demo",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     Text(
                       "DEV",
@@ -1618,7 +2422,7 @@ class _MapScreenState extends State<MapScreen> {
                   if (_foodAlertStep == _FoodAlertStep.fillingForm) {
                     _cancelFoodAlertFlow();
                   } else {
-                    setState(() { 
+                    setState(() {
                       _activeFilter = null;
                       _reportingLotName = null;
                     });
@@ -1627,6 +2431,7 @@ class _MapScreenState extends State<MapScreen> {
                 },
               )
               : null,
+
       body: Stack(
         children: [
           MapWidget(
@@ -1636,6 +2441,151 @@ class _MapScreenState extends State<MapScreen> {
             onMapCreated: _onMapCreated,
             onTapListener: _onMapTapped,
           ),
+
+          // Route panel only shows when user taps directions button
+          if (_showRoutePanel)
+            Positioned(
+              top: 20,
+              left: 12,
+              right: 80,
+              child: Card(
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Route panel header
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Find Route',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          // Close route panel button
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _showRoutePanel = false;
+                              });
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+
+                      DropdownButton<String>(
+                        value: startCategory,
+                        hint: const Text('Select start category'),
+                        isExpanded: true,
+                        items:
+                            buildingCategories.map((category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            startCategory = value;
+                            startBuilding = null;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      DropdownButton<Building>(
+                        value: startBuilding,
+                        hint: const Text('Select start building'),
+                        isExpanded: true,
+                        items:
+                            startCategoryBuildings.map((building) {
+                              return DropdownMenuItem<Building>(
+                                value: building,
+                                child: Text(building.name),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            startBuilding = value;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      DropdownButton<String>(
+                        value: endCategory,
+                        hint: const Text('Select destination category'),
+                        isExpanded: true,
+                        items:
+                            buildingCategories.map((category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            endCategory = value;
+                            endBuilding = null;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      DropdownButton<Building>(
+                        value: endBuilding,
+                        hint: const Text('Select destination building'),
+                        isExpanded: true,
+                        items:
+                            endCategoryBuildings.map((building) {
+                              return DropdownMenuItem<Building>(
+                                value: building,
+                                child: Text(building.name),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            endBuilding = value;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Get Route Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _getRoute,
+                          child: const Text('Get Route'),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Clear Route Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: _clearRoute,
+                          child: const Text('Clear Route'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
           if (_foodAlertStep == _FoodAlertStep.placingPin)
             Positioned(
@@ -1681,7 +2631,7 @@ class _MapScreenState extends State<MapScreen> {
           if (_foodAlertStep == _FoodAlertStep.none)
             Positioned(
               top: 20,
-              bottom: 370,
+              bottom: 250,
               right: 12,
               child: ScrollConfiguration(
                 behavior: ScrollConfiguration.of(
@@ -1690,37 +2640,65 @@ class _MapScreenState extends State<MapScreen> {
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
-                    children:
-                        _filters
-                            .map(
-                              (f) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: RawMaterialButton(
-                                  onPressed: () => _onFilterTapped(f),
-                                  fillColor:
-                                      _activeFilter == f.key
-                                          ? const Color(0xFFFFCC00)
-                                          : const ui.Color.fromARGB(
-                                            255,
-                                            243,
-                                            250,
-                                            255,
-                                          ),
-                                  shape: const CircleBorder(),
-                                  constraints: const BoxConstraints.tightFor(
-                                    width: 55,
-                                    height: 55,
-                                  ),
-                                  elevation: 4,
-                                  child: Icon(
-                                    f.icon,
-                                    color: Colors.black87,
-                                    size: 30,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
+                    children: [
+                      ..._filters.map(
+                        (f) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: RawMaterialButton(
+                            onPressed: () => _onFilterTapped(f),
+                            fillColor:
+                                _activeFilter == f.key
+                                    ? const Color(0xFFFFCC00)
+                                    : const ui.Color.fromARGB(
+                                      255,
+                                      243,
+                                      250,
+                                      255,
+                                    ),
+                            shape: const CircleBorder(),
+                            constraints: const BoxConstraints.tightFor(
+                              width: 55,
+                              height: 55,
+                            ),
+                            elevation: 4,
+                            child: Icon(
+                              f.icon,
+                              color: Colors.black87,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // 🚀 ROUTE BUTTON (cleanly added under others)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: RawMaterialButton(
+                          onPressed: () {
+                            setState(() {
+                              _showRoutePanel = !_showRoutePanel;
+                            });
+                          },
+                          fillColor: const ui.Color.fromARGB(
+                            255,
+                            243,
+                            250,
+                            255,
+                          ), // ✅ MATCHED
+                          shape: const CircleBorder(),
+                          constraints: const BoxConstraints.tightFor(
+                            width: 55,
+                            height: 55,
+                          ),
+                          elevation: 4,
+                          child: const Icon(
+                            Icons.directions,
+                            color: Colors.black87,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1836,6 +2814,18 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
+// Detects when a user taps a saved personal pin
+class _PinClickListener extends OnCircleAnnotationClickListener {
+  final Future<void> Function(CircleAnnotation annotation) onPinTapped;
+
+  _PinClickListener({required this.onPinTapped});
+
+  @override
+  void onCircleAnnotationClick(CircleAnnotation annotation) {
+    onPinTapped(annotation);
+  }
+}
+
 class _FilterBottomSheet extends StatelessWidget {
   final Widget child;
   final VoidCallback onClose;
@@ -1913,7 +2903,7 @@ class _ParkingSheetContent extends StatelessWidget {
   final String selectedZoneFilter;
   final ValueChanged<String> onZoneFilterChanged;
   final ValueChanged<String> onReportTapped;
-  final List<String> availableLots; 
+  final List<String> availableLots;
   final Map<String, Map<String, dynamic>> liveDataMap;
 
   const _ParkingSheetContent({
@@ -1957,13 +2947,17 @@ class _ParkingSheetContent extends StatelessWidget {
     if (zone == 'G Lots') return name.contains(' G') || name.startsWith('G');
     if (zone == 'E Lots') return name.contains(' E') || name.startsWith('E');
     if (zone == 'Pyramid') return name.contains('PYRAMID');
-    if (zone == 'Palo Verde') return name.contains('PALO VERDE') || name.contains('PV');
+    if (zone == 'Palo Verde')
+      return name.contains('PALO VERDE') || name.contains('PV');
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredLots = availableLots.where((name) => _matchesZone(name, selectedZoneFilter)).toList();
+    final filteredLots =
+        availableLots
+            .where((name) => _matchesZone(name, selectedZoneFilter))
+            .toList();
     filteredLots.sort();
 
     return Column(
@@ -2004,7 +2998,10 @@ class _ParkingSheetContent extends StatelessWidget {
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey.shade300),
+                  side: BorderSide(
+                    color:
+                        isSelected ? Colors.transparent : Colors.grey.shade300,
+                  ),
                 ),
               );
             },
@@ -2027,20 +3024,27 @@ class _ParkingSheetContent extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.only(top: 5, bottom: 20),
             itemCount: filteredLots.length,
-            separatorBuilder: (context, index) =>
-                Divider(color: Colors.grey.shade300, height: 1, thickness: 1),
+            separatorBuilder:
+                (context, index) => Divider(
+                  color: Colors.grey.shade300,
+                  height: 1,
+                  thickness: 1,
+                ),
             itemBuilder: (context, index) {
               final name = filteredLots[index];
-              
+
               final liveData = liveDataMap[name] ?? {};
               final searchingCount = liveData['searching_count'] ?? 0;
               final parkedCount = liveData['parked_count'] ?? 0;
-              
+
               final statusText = _calculateStatus(searchingCount, parkedCount);
               final statusColor = _getStatusColor(statusText);
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -2076,21 +3080,44 @@ class _ParkingSheetContent extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text('● Actively Searching: $searchingCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                    Text(
+                      '● Actively Searching: $searchingCount',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('● Parked Vehicles: $parkedCount', style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+                    Text(
+                      '● Parked Vehicles: $parkedCount',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () => onReportTapped(name),
-                        icon: const Icon(Icons.add_circle_outline, color: Colors.black87, size: 20),
+                        icon: const Icon(
+                          Icons.add_circle_outline,
+                          color: Colors.black87,
+                          size: 20,
+                        ),
                         label: const Text(
                           'Make a Report',
-                          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey.shade300, width: 1),
+                          side: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -2121,10 +3148,11 @@ class _ParkingReportSheetContent extends StatelessWidget {
 
   void _submitReport(BuildContext context, String status) async {
     try {
-      final query = await FirebaseFirestore.instance
-          .collection('parking_lots')
-          .where('name', isEqualTo: lotName)
-          .get();
+      final query =
+          await FirebaseFirestore.instance
+              .collection('parking_lots')
+              .where('name', isEqualTo: lotName)
+              .get();
 
       int newSearch = 0;
       if (status == 'Full') newSearch = 20;
@@ -2144,12 +3172,12 @@ class _ParkingReportSheetContent extends StatelessWidget {
           'last_report': FieldValue.serverTimestamp(),
         });
       }
-      
+
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Report submitted for $lotName')),
-      );
-      onBack(); 
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Report submitted for $lotName')));
+      onBack();
     } catch (e) {
       debugPrint("Error updating report: $e");
     }
@@ -2159,7 +3187,7 @@ class _ParkingReportSheetContent extends StatelessWidget {
   Widget build(BuildContext context) {
     int searchingCount = lotData['searching_count'] ?? 0;
     int parkedCount = lotData['parked_count'] ?? 0;
-    
+
     final total = searchingCount + parkedCount;
     double occupancy = total == 0 ? 0 : searchingCount / 20.0;
     if (occupancy > 1.0) occupancy = 1.0;
@@ -2175,24 +3203,37 @@ class _ParkingReportSheetContent extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Location:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(lotName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                  const Text(
+                    "Location:",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    lotName,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.cancel_outlined, size: 30, color: Colors.black54),
+                icon: const Icon(
+                  Icons.cancel_outlined,
+                  size: 30,
+                  color: Colors.black54,
+                ),
                 onPressed: onBack,
               ),
             ],
           ),
           const Divider(thickness: 1.5, height: 30),
-          
+
           Text(
             "Predicted Capacity: ${(occupancy * 100).toInt()}%",
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          
+
           Center(
             child: Stack(
               alignment: Alignment.center,
@@ -2200,9 +3241,7 @@ class _ParkingReportSheetContent extends StatelessWidget {
                 SizedBox(
                   width: 160,
                   height: 160,
-                  child: CustomPaint(
-                    painter: _DonutChartPainter(occupancy),
-                  ),
+                  child: CustomPaint(painter: _DonutChartPainter(occupancy)),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -2225,7 +3264,7 @@ class _ParkingReportSheetContent extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2264,9 +3303,10 @@ class _DonutChartPainter extends CustomPainter {
   void paint(ui.Canvas canvas, ui.Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(size.width, size.height) / 2;
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 22;
+    final paint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 22;
 
     paint.color = Colors.green.shade400;
     canvas.drawCircle(center, radius, paint);
@@ -2291,7 +3331,12 @@ class _ReportButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _ReportButton({required this.label, required this.color, required this.icon, required this.onTap});
+  const _ReportButton({
+    required this.label,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2303,7 +3348,9 @@ class _ReportButton extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: color, width: 1.5),
             padding: const EdgeInsets.symmetric(vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           child: Column(
             children: [
@@ -2311,7 +3358,11 @@ class _ReportButton extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
